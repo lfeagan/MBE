@@ -1,0 +1,61 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+###############################################################################
+# Module: homebin
+# Description:
+# 	Adds the user's ~/home/bin folder into PATH
+###############################################################################
+
+homebin_dependencies=( 'mbe' )
+homebin_functions=( 'homebin_load' 'homebin_unload' 'homebin_setpath' 'homebin_usage' )
+
+homebin_load ()
+{
+	DEBUG echo "homebin_load: enter"
+	local module="homebin"
+
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "homebin_load: leave"
+}
+
+homebin_unload ()
+{
+	local func
+	for func in "${homebin_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+homebin_setpath ()
+{
+	# Add in the bin folder in my home directory
+	if [ -e $HOME/bin ]; then
+		PATH=$HOME/bin:$PATH
+	fi
+}
+
+homebin_usage ()
+{
+
+}

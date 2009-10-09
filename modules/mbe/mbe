@@ -1,0 +1,399 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+############################################################
+# Module: mbe
+# Description:
+#  Contains the core MBE tools used for managing the bash
+#  environment, including modules, debugging, and logging.
+############################################################
+
+function mbe_load
+{
+	local module="mbe"
+	# Load preferences file
+	source "${MODULES_DIR}/${module}/${module}.prefs"
+	# Load the features specified in preferences file
+	for feature in "${mbe_features[@]}"; do
+		source "${MODULES_DIR}/${module}/${feature}"
+		${module}_${feature}_load
+	done
+	return
+}
+
+function mbe_unload
+{
+	return 1
+}
+
+function mbe_setpath
+{
+	local module="mbe"
+}
+
+function mbe_usage
+{
+	echo "Modular Bash Environment (MBE)"
+	echo "MBE provides a framework for loading and unloading coherent sets of functions and"
+	echo "environment variables at run-time. Using the MBE system typically involves the"
+	echo "addition of a handful of lines to the .bashrc file source during an interactive login."
+	echo "Common Functions"
+	echo " mbe_loadModules <module1> <module2>... - Loads one or more modules into the current environment"
+	echo " mbe_loadAllModules <module1> <module2>... - Loads all available modules into the current environment"
+	echo " mbe_unloadModules <module1> <modoule2>... - Unloads one or more modules from the current environment"
+	echo " mbe_listLoadedModules - Lists the modules currently loaded in the environment"
+	echo " mbe_listAllModules - Lists all modules that can be loaded"
+}
+
+############################################################
+# debug
+# Description:
+#  Adds the 'DEBUG' function, used to enable conditional
+#  execution of the code following 'DEBUG'.
+############################################################
+#_DEBUG="on"
+function DEBUG
+{
+   [ "$_DEBUG" == "on" ] &&  $@ || :
+}
+
+############################################################
+# Function(s): timestamp, log???
+# Description:
+#  Adds the 'figure out name' function, used for
+#  centralized logging.
+############################################################
+function timestamp
+{
+	date '+%Y.%m.%d_%H:%M:%S.%N'
+}
+
+############################################################
+# Function(s): envpathsearch
+# Description: 
+#  Given an input array of programs in order of preference,
+#  searches through an array of paths and sets an
+#  environment variable.
+############################################################
+function mbe_envpathsearch
+{
+  # $1,env_var   -->  Environment variable to be exported
+  # $2,progs_len --> Length of array of programs to search for
+  # $3,progs     --> Array of programs to search for, in order of preference
+  # $4,paths     --> Array of paths to search for the programs in, in order of preference
+
+	local env_var=$1; shift;
+	local progs_len=$1; shift;
+  
+	local progs=( )
+	local idx='0'
+	until [ "$idx" -eq "$progs_len" ] # Read progs to be searched for
+	do
+		progs[$idx]="$1"
+		DEBUG echo "progs=${progs[@]}"
+		let 'idx += 1'
+		shift
+	done
+
+	local paths=( )
+	local idx='0'
+	until [ -z "$1" ] # Read paths to search beneath until no more arguments remain
+	do
+		paths[$idx]="$1"
+		DEBUG echo "paths=${paths[@]}"
+		let 'idx += 1'
+		shift
+	done
+
+	#echo -e "env_var=$env_var progs=(${progs[@]}) paths=(${paths[@]})"
+	RETVAL=""
+	local prog path
+	for prog in "${progs[@]}"; do
+		for path in "${paths[@]}"; do
+			DEBUG echo "testing $path/$prog"
+			if [ -f "${path}/${prog}" ]; then
+				#echo "exporting $env_var"
+				RETVAL="export $env_var=${path}/${prog}"
+				return
+			fi
+		done
+	done
+}
+
+############################################################
+# Function: updatembe
+# Description: 
+#  Updates the mbe environment by pulling from the update
+#  server.
+############################################################
+function mbe_updatembe
+{
+    pushd $HOME
+	local outdir="mbe-update"
+	svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk ${HOME}/.mbe/update
+    local retval="$?"
+    if [[ "$retval" == "0" ]]; then
+        ${outdir}/bash/trunk/install
+        rm -rf ${outdir}
+    else
+        echo "ERROR:  Failed to checkout bash files for updating."
+    fi
+    popd
+}
+
+function mbe_checkModulesDir
+{
+	# Search the modules directory for all pre-modules
+	#modules=('')
+
+	# Determine folder that contains modules to be loaded
+	# On Linux, readlink utility is used
+	# On other platforms, assume $HOME
+	if [ -z "${MODULES_DIR}" ]; then # If MODULES_DIR is not yet set
+		# Use readlink on Linux systems to figure out where the src folder is to cd to
+		#	if [ -x "/usr/bin/readlink" ]; then 
+		#	MODULES_DIR=`readlink -f $0`
+		#	export MODULES_DIR="${MODULES_DIR%/*/*}"
+		#	echo "MODULES_DIR=$MODULES_DIR"
+	#else # On systems without readlink we must rely on a static definition.
+		export MODULES_DIR="${HOME}/bash/modules"
+	  #echo "MODULES_DIR=$MODULES_DIR"
+	fi
+
+	# Check for existence of modules directory and set return value appropriately
+	if [ ! -d "${MODULES_DIR}" ]; then
+		unset MODULES_DIR
+		return 1
+	else
+		return 0
+	fi
+}
+
+function mbe_loadModules
+{
+	# Loads one or more modules into mbe
+	if (( $# < 1 )); then
+		echo "ERROR: Must provide at least 1 argument to mbe_loadModules"
+		return 1
+	fi
+	local newmodule newmodules
+	newmodules=( $@ )
+
+	for newmodule in "${newmodules[@]}"; do
+		mbe_isModuleLoaded "$newmodule"
+		if [ "$?" == "1" ]; then
+			# Module is already loaded
+			continue
+		else
+			# Module is not yet loaded
+			DEBUG echo "mbe_loadModule: loading $newmodule"
+			if [ -n "$MODULES_DIR" ]; then
+				DEBUG echo -e "mbe_loadModules: source \"${MODULES_DIR}/${newmodule}/${newmodule}\""
+				source "${MODULES_DIR}/${newmodule}/${newmodule}"
+				"${newmodule}_load"
+				MODULES_LOADED=( ${MODULES_LOADED[@]} ${newmodule} )
+			fi
+		fi
+	done
+	mbe_buildpath
+	return
+}
+
+function mbe_unloadModules
+{
+	# Unloads one or more modules from mbe
+	if (( $# < 1 )); then
+		echo "ERROR: Must provide at least 1 argument to mbe_unloadModules"
+		return 1
+	fi
+	local oldmodule oldmodules
+	oldmodules=( $@ )
+
+	for oldmodule in "${oldmodules[@]}"; do
+		mbe_isModuleLoaded "$oldmodule"
+		if [ "$?" == "0" ]; then
+			# Module is already unloaded
+			continue
+		else
+			# Module is not yet unloaded
+			DEBUG echo "mbe_unloadModules: unloading $oldmodule"
+			"${oldmodule}_unload"
+			MODULES_LOADED=( ${MODULES_LOADED[@]/$oldmodule/} )
+		fi
+	done
+	mbe_buildpath
+	return
+}
+
+function mbe_loadAllModules
+{
+	local modules
+	modules=( $(mbe_listAllModules) )
+	mbe_loadModules "${modules[@]}"
+}
+
+function mbe_isModuleLoaded
+{
+	# $1 is the name of the module to check
+	if [ -z "$1" ]; then
+		echo "ERROR: Must provide at least one argument"
+		return 1
+	fi
+
+	local name
+	for name in "${MODULES_LOADED[@]}"; do
+		if [ "$1" == "$name" ]; then
+			return 1
+		fi
+	done
+	return 0
+}
+
+function mbe_listLoadedModules
+{
+	echo "${MODULES_LOADED[@]}"
+}
+
+function mbe_listAllModules
+{
+	# Lists all available modules.
+	# With no arguments looks at user's modules directory
+	# Takes an optional '-a' argument to specify use of the archive.
+
+	if [ -n "$MODULES_DIR" ]; then
+		#pushd "$MODULES_DIR" > /dev/null
+		#read -r -a modules <<< $(ls -1 ${MODULES_DIR})
+		modules=( ${MODULES_DIR}/* )
+		local module
+		for module in "${modules[@]}"; do
+			module="${module##/*/}"
+			echo -ne "$module "
+		done
+		echo -ne "\n"
+		#popd > /dev/null
+	fi
+}
+
+
+##################################
+# ##### PATH CONFIGURATION ##### #
+##################################
+
+# *** DO NOT PERFORM export OF "STANDARD" PATH VARIABLES ***
+# e.g. INCLUDE, PATH, LD_LIBRARY_PATH, MANPATH
+
+# Save the OS-defined PATHS for use when rebuilding the PATH
+# If the ORIG_ variables have already been set, then do not resave 
+# as this means that someone is sourcing this .bashrc again
+if [ -z "${ORIG_PATH}" ]; then
+	export ORIG_INCLUDE="${INCLUDE}"
+	export ORIG_LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
+	export ORIG_MANPATH="${MANPATH}"
+	export ORIG_PATH="${PATH}"
+fi
+
+function mbe_cleanpath
+{
+	# Removes path elements that do not exist from a colon-delimited string
+	uncleanpath="$1"
+	pathelems=( ${uncleanpath//:/ } )
+	pathelems_clean=( )
+	#echo "#numelems=${#pathelems[*]}"
+	for pathelem in ${pathelems[*]}; do
+		#echo "checking ${pathelem}"
+		if [ -d "${pathelem}" ]; then
+			pathelems_clean[${#pathelems_clean[@]}]="${pathelem}"
+		fi
+	done
+	#echo "${pathelems_clean[@]}"
+		
+	# Algorithm could user either numelems or lastelem to determine delimiter insertion
+	let idx=0
+ 	let numelems=${#pathelems_clean[*]}
+	#echo "numelems=$numelems"
+	cleanpath=""
+	if (( $numelems > 0 )); then # There is at least one arary element
+		if (( $numelems == 1 )); then # There is only one array element
+			echo "${pathelems_clean[$lastelemidx]}"
+		else # There is more than one path element
+			cleanpath="${pathelems_clean[$idx]}"
+			let "idx+=1"
+			while (( $idx < $numelems )); do
+					#echo "idx=$idx"
+					cleanpath="${cleanpath}:${pathelems_clean[$idx]}"
+				let "idx+=1"
+			done
+			echo "$cleanpath"
+		fi
+	else # There are zero array elements
+		echo ""
+	fi
+}
+
+function mbe_buildpath
+{
+	DEBUG echo "mbe_buildpath: enter"
+	# Finds installed programs and configures paths for them
+	# Reset the PATH envvars to the saved ORIG_*s
+	INCLUDE="${ORIG_INCLUDE}"
+	LD_LIBRARY_PATH="${ORIG_LD_LIBRARY_PATH}"
+	MANPATH="${ORIG_MANPATH}"
+	PATH="${ORIG_PATH}"
+
+	for module in "${MODULES_LOADED[@]}"; do
+		DEBUG echo "mbe_buildpath: ${module}_setpath"
+		${module}_setpath
+	done
+
+	# Prepend USER_PATHS elements
+	if [ "${#USER_PATHS[*]}" -gt 0 ]; then
+		for user_path in ${USER_PATHS[@]}; do
+#			if [ -d "${user_path}" ]; then
+				PATH="${user_path}:${PATH}"
+#			fi
+		done
+	fi
+	# Prepend USER_LD_LIBRARY_PATHS elements
+	if [ "${#USER_LD_LIBRARY_PATHS[*]}" -gt 0 ]; then
+		for user_ld_library_path in ${USER_LD_LIBRARY_PATHS[@]}; do
+#if [ -d "${user_ld_library_path}" ]; then
+				LD_LIBRARY_PATH="${user_ld_library_path}:${LD_LIBRARY_PATH}"
+#			fi
+		done
+	fi
+	# Prepend USER_MANPATHS elements
+	if [ "${#USER_MANPATHS[*]}" -gt 0 ]; then
+		for user_manpath in ${USER_MANPATHS[@]}; do
+#			if [ -d "${user_manpath}" ]; then
+				MANPATH="${user_manpath}:${MANPATH}"
+#			fi
+		done
+	fi
+
+	# Cleanup unavailable path elements
+	PATH=$(mbe_cleanpath "${PATH}")
+	LD_LIBRARY_PATH=$(mbe_cleanpath "${LD_LIBRARY_PATH}")
+	MANPATH=$(mbe_cleanpath ${MANPATH})
+
+	# Perform exports
+	export INCLUDE
+	export LD_LIBRARY_PATH
+	export MANPATH 
+	export PATH
+	DEBUG echo "mbe_buildpath: exit"
+}

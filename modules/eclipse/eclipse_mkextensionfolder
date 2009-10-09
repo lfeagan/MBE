@@ -1,0 +1,87 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+# Required File/Folder Structure
+#  eclipse/
+#  |-- .eclipseextension
+#  |-- features/
+#  `--  plugins/
+
+# Arguments
+#  -f = force creation of output folders, over-write if they already exist
+#  -d = specify target directory
+
+PRODUCT="SDP70"
+
+if [ -z "$1" ]; then
+	OUTDIR="${PWD}"
+else
+	OUTDIR="$1"
+fi
+
+# Check that OUTDIR is in fact a directory and is writable
+if [ ! -d "${OUTDIR}" ]; then
+	echo -e "Creating output folder '$OUTDIR'"
+	mkdir "${OUTDIR}"
+else
+	# Check for write permission on existing folder
+	if [ -w "${OUTDIR}" ]; then
+		echo -e "Using existing output folder '$OUTDIR'"
+	else
+		echo -e "ERROR: Output folder '$OUTDIR' is not writable"
+		exit 1
+	fi
+fi
+
+if [ ! -d "${OUTDIR}/features" ]; then
+	echo "Creating folder '${OUTDIR}/features'"
+	mkdir "${OUTDIR}/features"
+fi
+
+if [ ! -d "${OUTDIR}/plugins" ]; then
+	echo "Creating folder '${OUTDIR}/plugins'"
+	mkdir "${OUTDIR}/plugins"
+fi
+
+
+OUTFILE="${OUTDIR}/.eclipseextension"
+# If outfile exists, check that it is writable and then attempt to zero it
+if [[ ( -f "${OUTFILE}" ) ]]; then
+	if [ -w "${OUTFILE}" ]; then
+		echo -e "Zeroing file '$OUTFILE'"
+		echo -n "" > "${OUTFILE}"
+	else
+		echo -e "Unable to write to file '$OUTFILE'"
+		exit 1
+	fi
+else
+# If outfile does not exist, above checks assure us that OUTDIR is writable, so simply touch the output file
+	echo "Creating file '$OUTFILE'"
+	touch "${OUTFILE}"
+fi
+
+echo -e "Creating file '$OUTFILE'"
+if [[ "$PRODUCT" == "SDP70" ]]; then 
+	echo "name=IBM Software Development Platform" >> "${OUTFILE}"
+	echo "id=ibm.software.development.platform" >> "${OUTFILE}"
+	echo "version=7.0.0" >> "${OUTFILE}"
+else
+	echo "name=Eclipse Platform" >> "${OUTFILE}"
+	echo "id=org.eclipse.platform" >> "${OUTFILE}"
+	echo "version=3.4.0" >> "${OUTFILE}"
+fi

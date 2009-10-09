@@ -1,0 +1,99 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent: 
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+prompt_dependencies=( 'mbe' 'colors' )
+
+function prompt_load
+{
+	# Load module dependencies
+	mbe_loadModules "${prompt_dependencies[@]}"
+	# Set module name
+	local module="prompt"
+	# Load preferences
+	source "${MODULES_DIR}/${module}/${module}.prefs"
+	prompt_configure
+	return 0
+}
+
+function prompt_unload
+{
+	return 0
+}
+
+function prompt_setpath
+{
+	local module="prompt"
+	return 0
+}
+
+function prompt_command
+{
+	local module="prompt"
+	# XTerm supports a titlebar
+	local titlebartext
+	case $TERM in
+		"xterm" | "vt100" ) titlebartext="${PROMPT_TITLEBARTEXT}";;
+	esac
+
+	if [ -n "${titlebartext}" ]; then
+		# Escape sequence to start writing to the terminal window titlebar
+		local titlebar_start='\[\e]0;'
+		# Escape sequence to finish writing to the terminal window titlebar
+		local titlebar_end=" \a"
+
+		if [ "${PROMPT_WEATHER_ENABLE}" -eq "1" ]; then
+			if [ -f "${PROMPT_WEATHER_COMMAND}" ]; then
+				local weather="$( ${PROMPT_WEATHER_COMMAND} )"
+				titlebartext="${titlebartext} ${weather}"
+			fi
+		fi
+
+		# Prepend the titlebar variables to generate PS1
+		PS1="${titlebar_start}${titlebartext}${titlebar_end}${PROMPT_BASE}"
+	fi
+		
+	# Conditionally, prepend TABCOLOR (only for use with Konsole) to PS1
+	#TABCOLOR='\e[28;COLORt (COLOR: 0-16,777,215)'
+	PROMPT_TABCOLOR='\e[28;8t'
+	if [[ "${PROMPT_TABCOLOR_ENABLE}" == 1 ]]; then
+		PS1="${PROMPT_TABCOLOR}${PS1}"
+	fi
+}
+
+function prompt_configure
+{
+	local module="prompt"
+	local username_color
+	if [ "$(${IDPROG_USERID})" -eq 0 ]; then
+		username_color="${PROMPT_ROOTUSER_COLOR}"
+	else
+		username_color="${PROMPT_NONROOTUSER_COLOR}"
+	fi
+
+	# Change the shell prompt to my liking
+	if [ -z "$LOGIN_SHELL" ]; then
+		case "${PROMPT_INPUT_COLOR}" in
+			"colors_white" ) PROMPT_BASE="${username_color}${PROMPT_BASE_WHITE}";;
+			"colors_black" ) PROMPT_BASE="${username_color}${PROMPT_BASE_BLACK}";;
+			* ) PROMPT_BASE="${PROMPT_BASE_OTHER}"
+		esac
+	fi
+
+	PS1=${PROMPT_BASE}
+}

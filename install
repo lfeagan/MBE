@@ -1,0 +1,134 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+# Installs bash RC files under a target directory, by default $HOME
+
+# (1) Backup the existing files (if they exist)
+# (2) Copy in the new files
+
+function usage ()
+{
+	echo "Usage: install [-b] [-B]"
+	echo "  -b disable backup file creation"
+	echo "  -B enable backup file creation (default)"
+	echo "  -d print debug information"
+}
+
+target="${HOME}"
+print_usage=0
+dobackup=1
+debug=0
+
+while getopts ":hbBt:id" option
+do
+ case $option in
+  b  ) dobackup=0;;
+  B  ) dobackup=1;;
+  t  ) target=$OPTARG;;
+  d  ) debug=1;;
+  h  ) print_usage=1;;
+  \? ) print_usage=1;;
+  *  ) print_usage=1;;
+ esac
+done
+# reset OPTIND to 1
+OPTIND=1
+
+if [ "$print_usage" == 1 ]; then
+	usage
+	exit 1
+fi
+
+
+# Confirm target installation location
+confirmed=0
+while [ "$confirmed" == 0 ]; do
+	echo "Installing to $target"
+	echo "Are you sure you want to do this? [y/n]"
+	read input
+	if [[ "$input" == y* ]]; then
+		confirmed=1
+	elif [[ "$input" == n* ]]; then
+		exit
+	fi
+done
+
+# Define installation component targets
+MBE_DIR="${target}/.mbe"
+MBE_MODULES_DIR="${MBE_DIR}/modules"
+MBE_BACKUP_DIR="${MBE_DIR}/backup"
+
+# Create folder $MBE_DIR if it does not yet exist
+if [ ! -d "${MBE_DIR}" ]; then
+	echo -e "Creating MBE directory ${MBE_DIR}"
+	[ $debug -eq 0 ] && mkdir -p "${MBE_DIR}"
+fi
+# Create folder $MBE_DIR/modules if it does not yet exist
+if [ ! -d "${MBE_MODULES_DIR}" ]; then
+	echo -e "Creating MBE modules directory ${MBE_MODULES_DIR}"
+	[ $debug -eq 0 ] && mkdir "${MBE_MODULES_DIR}"
+fi
+
+# Perform backup of files if requested
+if [ $dobackup -eq 1 ]; then
+	if [ ! -d "${MBE_BACKUP_DIR}" ]; then
+		echo "Creating backup directory ${MBE_BACKUP_DIR}"
+		[ $debug -eq 0 ] && mkdir -p "${MBE_BACKUP_DIR}"
+	fi
+
+	function backupfile ()
+	{
+		file=$1
+		if [ -n "$file" ]; then
+			if [ -f "${file}" ]; then
+				echo -e "Found existing $file. Backing up to ${MBE_BACKUP_DIR}"
+				[ $debug -eq 0 ] && mv "${file}" "${MBE_BACKUP_DIR}"
+			fi
+		else
+			echo "ERROR: Attempted backup of file $sourcefile failed"
+			return 1
+		fi
+	}
+
+	backupfile "${target}/.bashrc"
+	backupfile "${target}/.bash_aliases"
+	backupfile "${target}/.bash_prefs"
+	backupfile "${target}/.bash_profile"
+fi
+
+copydir="${0%/*}"
+echo "Copying files from $copydir"
+
+echo -e "Copying \"${copydir}/bashrc\" to \"${target}/.bashrc\""
+[ $debug -eq 0 ] && cp "${copydir}/bashrc" "${target}/.bashrc"
+
+echo -e "Copying \"${copydir}/bash_aliases\" to \"${target}/.bash_aliases\""
+[ $debug -eq 0 ] && cp "${copydir}/bash_aliases" "${target}/.bash_aliases"
+
+echo -e "Copying \"${copydir}/bash_profile\" to \"${target}/.bash_profile\""
+[ $debug -eq 0 ] && cp "${copydir}/bash_profile" "${target}/.bash_profile"
+
+echo -e "Copying \"${copydir}/bash_prefs\" to \"${target}/.bash_prefs\""
+[ $debug -eq 0 ] && cp "${copydir}/bash_prefs" "${target}/.bash_prefs"
+
+# Copy contents of modules folder
+echo -e "Copying modules from \"${copydir}/modules/*\" to \"${MBE_MODULES_DIR}\""
+[ $debug -eq 0 ] && rsync -r -C ${copydir}/modules/ "${MBE_MODULES_DIR}"
+
+echo "Installation completed successfully"
+

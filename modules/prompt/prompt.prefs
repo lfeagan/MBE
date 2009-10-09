@@ -1,0 +1,51 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent: 
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+# The function to be invoked before outputting PS1 after every command invocation
+export PROMPT_COMMAND=prompt_command
+
+# The color of the command portion of the prompt. Can be either 'colors_white' or 'rbg_black'. Choose opposite of the shell background color.
+export PROMPT_INPUT_COLOR="colors_white"
+
+# The color to be used when coloring the initial username portion for the non-root users and root
+export PROMPT_NONROOTUSER_COLOR="${colors_cyan}"
+export PROMPT_ROOTUSER_COLOR="${colors_firebrick}"
+
+# PROMPT_BASE forms the basis of the prompt. Minimially specifies PS1.
+# A very useful prompt with lots of information encoded.
+# username@hostname: date time history fullpath newline prompt
+# \u       \h        \d   \t   \!      \w       \n      \$
+PROMPT_BASE_WHITE="${username_color}\u${colors_blue}@${colors_green}\h: ${colors_blue}\d \t {\!} ${colors_red}\w\n${colors_std}\\\$ "
+PROMPT_BASE_BLACK="${username_color}\u${colors_navy}@${colors_forest}\h: ${colors_navy}\d \t {\!} ${colors_firebrick}\w\n${colors_black}\\\$ "
+PROMPT_BASE_OTHER="\[\]\h:\w $ \[\]"
+# The "standard" (read: not very useful) PS1 on most *NIXes. Commented out by default.
+#PROMPT_BASE_WHITE='\[\]\h:\w $ \[\]'
+#PROMPT_BASE_BLACK='\[\]\h:\w $ \[\]'
+
+export PROMPT_TITLEBARTEXT=""
+#export PROMPT_TITLEBARTEXT="\h:\w" # Works safely without causing InstallShield to fail.
+#export PROMPT_TITLEBARTEXT="\u@\h:\w" # May cause InstallShield to fail with spurious unicode error.
+
+export PROMPT_TABCOLOR_ENABLE="0" # KDE's Konsole supports colorized tabs
+export PROMPT_WEATHER_ENABLE="0"
+export PROMPT_WEATHER_COMMAND="${HOME}/bin/getweather"
+if [ ! -x "$PROMPT_WEATHER_COMMAND" ]; then
+	export PROMPT_WEATHER_ENABLE="0"
+fi
+

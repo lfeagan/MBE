@@ -1,0 +1,99 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+perl_dependencies=( 'mbe' )
+perl_functions=( 'perl_load' 'perl_unload' 'perl_setpath' 'perl_usage' )
+
+perl_load ()
+{
+	DEBUG echo "perl_load: enter"
+	local module="perl"
+
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "perl_load: leave"
+}
+
+perl_unload ()
+{
+	local func
+	for func in "${perl_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+perl_setpath ()
+{
+	# Reference path elements
+	#/opt/tools/Linux/64/ppc64/perl/5.8.8/lib/site_perl/5.8.8/ppc64-linux-thread-multi
+	#/opt/tools/Linux/64/ppc64/perl/5.8.8/lib/site_perl/5.8.8/ppc64/linux-thread-multi/DBD
+	#/opt/tools/Linux/64/ppc64/perl/src/perl-5.8.8/lib/
+
+	# Determine if TOOLSPATH exists
+	if [ ! -d "${TOOLSPATH}" ]; then
+		return
+	fi
+
+	# Perl
+	if [ -e ${TOOLSPATH}/perl/5.8.8 ]; then
+		PATH="${TOOLSPATH}/perl/5.8.8/bin:${PATH}" 
+		MANPATH="${TOOLSPATH}/perl/5.8.8/man:${MANPATH}"
+	fi
+
+	# Determine the version of Perl to use
+	# If PERL_VERSION has been defined, attempt to use that version.
+	# If the default PERL_VERSION of 5.8.8 is used, do not export PERL_VERSION.
+	if [ -z "$PERL_VERSION" ]; then
+		if [ -d "${TOOLSPATH}/perl" ]; then
+			if [ -d "${TOOLSPATH}/perl/5.8.8" ]; then
+				local PERL_VERSION="5.8.8"
+			fi
+		fi
+	fi
+
+	local PERL_LIB_PATH="${TOOLSPATH}/perl/${PERL_VERSION}"
+	# Check that the Perl version exists
+	if [ -d "${PERL_PATH}/lib" ]; then
+		PERL5LIB="${PERL_PATH}/lib:${PERL5LIB}"
+	fi
+
+	# Check for a site
+	local PERL_SITE_PATH="lib/site_perl/${PERL_VERSION}/${CPUTYPE}/${OSTYPE}-thread-multi"
+	if [ -d "${PERL_SITE_PATH}" ]; then
+			PERL5LIB="${PERL_SITE_PATH}:${PERL5LIB}"
+
+			# Check for DBD
+			if [ -d "${PERL_SITE_PATH}/DBD" ]; then
+				PERL5LIB="${PERL_SITE_PATH}/DBD:$PERL5LIB"
+			fi
+	fi
+
+		# export environment variables
+		if [ -z "${PERL5LIB}" ]; then
+			export PERL5LIB
+		fi
+}
+
+perl_usage ()
+{
+
+}

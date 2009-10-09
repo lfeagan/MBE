@@ -1,0 +1,61 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+opengl_dependencies=( 'mbe' )
+opengl_functions=( 'opengl_load' 'opengl_unload' 'opengl_setpath' 'opengl_usage' )
+
+opengl_load ()
+{
+	DEBUG echo "opengl_load: enter"
+	local module="opengl"
+
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "opengl_load: leave"
+}
+
+opengl_unload ()
+{
+	local func
+	for func in "${opengl_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+opengl_setpath ()
+{
+	# OpenGL
+	if [ -e /usr/include/GL ]; then
+		OGL_INC_LOC=-I/usr/include/GL
+		OGL_LIB_LOC=-L/usr/lib64
+		X_LIB_LOC=
+	fi
+
+	export OGL_INC_LOC=-I/usr/X11R6/include
+	export OGL_LIB_LOC=-L/usr/X11R6/lib
+	export X_LIB_LOC=-L/usr/X11R6/lib
+}
+
+opengl_usage ()
+{
+
+}

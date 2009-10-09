@@ -1,0 +1,270 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+# Customized based on the Eclipse Mutli-User Install Guide at:
+# http://help.eclipse.org/help32/index.jsp?topic=/org.eclipse.platform.doc.isv/reference/misc/multi_user_installs.html
+
+eclipse_dependencies=( 'mbe' 'platform' 'java' )
+eclipse_functions=(eclipse_load eclipse_unload eclipse_setpath eclipse_setmozpath eclipse_usage eclipse_env eclipse_config eclipse_listVersions eclipse_run rsx_run teamconcert_run )
+
+# Environment Variables:
+# ECLIPSE_PRODUCT
+# ECLIPSE_PRODUCT_VERSION
+# ECLIPSE_PRODUCT_SUBDIR
+# ECLIPSE_JAVA_CREATOR
+# ECLIPSE_JAVA_VERSION
+# ECLIPSE_JAVA_BITS
+
+eclipse_load ()
+{
+	DEBUG echo "eclipse_load: enter"
+	# Load module dependencies
+	mbe_loadModules "${eclipse_dependencies[@]}"
+
+	local module="eclipse"
+	# Load preferences file
+	source "${MODULES_DIR}/${module}/${module}.prefs"
+
+	# Specify the default Eclipse product to be used
+	ECLIPSE_PRODUCT=${ECLIPSE_PRODUCT:=Eclipse}
+	ECLIPSE_PRODUCT_VERSION=${ECLIPSE_PRODUCT_VERSION:=3.5.0}
+	
+	# Specify the default Java to be used when running Eclipse
+	ECLIPSE_JAVA_CREATOR=${ECLIPSE_JAVA_CREATOR:=IBM}
+	ECLIPSE_JAVA_VERSION=${ECLIPSE_JAVA_VERSION:=1.6.0}
+	ECLIPSE_JAVA_BITS=${ECLIPSE_JAVA_BITS:=32}
+
+	DEBUG echo "eclipse_load: leave"
+	return 0
+
+}
+
+eclipse_unload ()
+{
+	local module="eclipse"
+	local func
+	for func in "${eclipse_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+eclipse_setpath ()
+{
+	local module="eclipse"
+
+	eclipse_setmozpath
+
+	#eclipse_config
+}
+
+# Define the directories where the required Mozilla libraries may be found
+# 32-bit Eclipse + 32-bit Firefox ==> 32-bit XUL
+# 32-bit Eclipse + 64-bit Firefox ==> 32-bit XUL ***
+# 64-bit Eclipse + 64-bit Firefox ==> 64-bit XUL
+eclipse_setmozpath()
+{
+	# Build list of library directories to search
+	# Uses sub-shells for globbing directories
+	local LIB_DIRS=("/usr/lib/mozilla" "/usr/lib/firefox" $(echo "/usr/lib/xulrunner*") "/usr/lib/mozilla-firefox" $(echo "/usr/lib/thunderbird*") )
+	# The libraries to search for
+	local LIBS=("libgtkembedmoz.so" "libxul.so")
+
+	# Set path for the Mozilla SWT binding
+	#MOZILLA_FIVE_HOME=${MOZILLA_FIVE_HOME%*/}
+
+	# Search through the directories for the libraries until the first hit is found
+	for LIB_DIR in "${LIB_DIRS[@]}"; do
+		#echo $LIB_DIR
+		if [ -d "${LIB_DIR}" ]; then
+			for LIB in "${LIBS[@]}"; do
+				if [ -e "${LIB_DIR}/${LIB}" ]; then
+					export MOZILLA_FIVE_HOME="${LIB_DIR}"
+				fi
+			done
+		fi
+	done
+
+	if [ -z "$MOZILLA_FIVE_HOME" ]; then
+		echo "Unable to locate appropriate library for integrated Mozilla browser support"
+	fi
+
+	# Libraries from the search take precedence
+	LD_LIBRARY_PATH=$MOZILLA_FIVE_HOME${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+}
+
+eclipse_usage ()
+{
+	local module="eclipse"
+
+}
+
+eclipse_env ()
+{
+	echo "ECLIPSE_HOME=${ECLIPSE_HOME}"
+	echo "--------------------------------------------------------------------------------"
+	echo "ECLIPSE_PRODUCT=${ECLIPSE_PRODUCT}"
+	echo "ECLIPSE_PRODUCT_VERSION=${ECLIPSE_PRODUCT_VERSION}"
+	echo "ECLIPSE_JAVA_CREATOR=${ECLIPSE_JAVA_CREATOR}"
+	echo "ECLIPSE_JAVA_VERSION=${ECLIPSE_JAVA_VERSION}"
+	echo "ECLIPSE_JAVA_BITS=${ECLIPSE_JAVA_BITS}"
+}
+
+eclipse_config ()
+{
+	local module="eclipse"
+
+	usage ()
+	{
+		echo "Usage: eclipse_config [-p <product>] [-v <version>] [-b <bits>]"
+		echo "	Configures a reasonable environment and executes the Eclipse version specified."
+	}
+
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "p:v:c:j:b:h" option
+	do
+		case $option in
+			p  ) ECLIPSE_PRODUCT=$OPTARG;;
+			v  ) ECLIPSE_PRODUCT_VERSION=$OPTARG;;
+			c  ) ECLIPSE_JAVA_CREATOR=$OPTARG;;
+			j  ) ECLIPSE_JAVA_VERSION=$OPTARG;;
+			b  ) ECLIPSE_JAVA_BITS=$OPTARG;;
+			h  ) print_usage="1";;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	ECLIPSE_SUBDIR="${ECLIPSE_PRODUCT}/${ECLIPSE_PRODUCT_VERSION}" # The path under TOOLSPATH where the product can be found
+
+	# Define ECLIPSE_HOME
+	if [[ "${ECLIPSE_JAVA_BITS}" == "32" ]]; then
+		ECLIPSE_TOOLSPATH="${TOOLSPATH32}"
+	elif [[ "${ECLIPSE_JAVA_BITS}" == "64" ]]; then
+		ECLIPSE_TOOLSPATH="${TOOLSPATH}"
+	else
+		echo "JAVA_BITS of ${ECLIPSE_JAVA_BITS} is not understood"
+		return 1
+	fi
+	ECLIPSE_HOME="${ECLIPSE_TOOLSPATH}/${ECLIPSE_SUBDIR}"
+
+	# Define ECLIPSE_USERHOME
+	ECLIPSE_USERHOME="@user.home/eclipse/${ECLIPSE_SUBDIR}/user"
+	ECLIPSE_CONFHOME="@user.home/eclipse/${ECLIPSE_SUBDIR}/conf"
+	ECLIPSE_DATAHOME="@user.home/eclipse/${ECLIPSE_SUBDIR}/workspace"
+
+	#ECLIPSE_HOMEARGS="-user ${ECLIPSE_USERHOME} -configuration ${ECLIPSE_CONFHOME} -data ${ECLIPSE_DATAHOME}" 
+	ECLIPSE_HOMEARGS="-data ${ECLIPSE_DATAHOME}" 
+
+	# Define ECLIPSE_WORKSPACE
+	#ECLIPSE_WORKSPACE="$HOME/.eclipse-${HOSTTYPE}"
+	
+	# Export key variables
+	export ECLIPSE_HOME ECLIPSE_USERHOME ECLIPSE_CONFHOME ECLIPSE_DATAHOME ECLIPSE_HOMEARGS
+	export ECLIPSE_ARGS="-vm ${JAVA_HOME}/bin/java ${ECLIPSE_HOMEARGS} -Dosgi.locking=none -Xnojit -vmargs -Xmx512M"
+
+	# Check that ECLIPSE_HOME exists and is a directory
+	if [ ! -d "$ECLIPSE_HOME" ]; then
+		echo "ERROR: ${ECLIPSE_PRODUCT} does not exist at ${ECLIPSE_HOME}"
+		ECLIPSE_HOME=""
+		return 1
+	fi
+}
+
+eclipse_listVersions ()
+{
+	local versions
+
+	usage ()
+	{
+		echo "Usage: eclipse_listVersions [-p <product>] [-b <bits>]"
+		echo " Searches and lists the available Eclipse versions for a particular product."
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "p:b:h" option
+	do
+		case $option in
+			p  ) SEARCH_PRODUCT=$OPTARG;;
+			b  ) SEARCH_BITS=$OPTARG;;
+			h  ) print_usage="1";;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	SEARCH_PRODUCT=${SEARCH_PRODUCT:=${ECLIPSE_PRODUCT}}
+	SEARCH_BITS=${SEARCH_BITS:=${ECLIPSE_JAVA_BITS}}
+
+	if [[ "${SEARCH_BITS}" == "32" ]]; then
+		SEARCH_PATH="${TOOLSPATH32}/${SEARCH_PRODUCT}"
+	elif [[ "${SEARCH_BITS}" == "64" ]]; then
+		SEARCH_PATH="${TOOLSPATH}/${SEARCH_PRODUCT}"
+	else 
+		echo "JAVA_BITS of ${SEARCH_BITS} is not understood"
+		return 1
+	fi
+
+	declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' -printf "%f\n" | sort) )
+
+	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
+
+	echo "${versions[@]}"
+}
+
+# eclipse_run
+# The following environment variable(s) may be used:
+#  ECLIPSE_PRODUCT, PRODUCT_VERSION, ECLIPSE_SUBDIR, JAVA_CREATOR, JAVA_VERSION, JAVA_BITS
+eclipse_run()
+{
+	echo ${ECLIPSE_HOME}
+	if [ ! -d "${ECLIPSE_HOME}" ]; then
+		echo "Unable to run: No Eclipse home configured"
+	else
+		java_config -c "${ECLIPSE_JAVA_CREATOR}" -v "${ECLIPSE_JAVA_VERSION}" -b "${ECLIPSE_JAVA_BITS}"
+
+		# Pre-execution debug statements
+		echo "JAVA_HOME=${JAVA_HOME}"
+		echo "ECLIPSE_HOME=${ECLIPSE_HOME}"
+		echo "ECLIPSE_ARGS=${ECLIPSE_ARGS}"
+
+		#-user "${ECLIPSE_USERHOME}" \
+		#-configuration "${ECLIPSE_CONFHOME}" \
+
+		pushd .
+	  cd "$ECLIPSE_HOME"
+		./eclipse -vm "${JAVA_HOME}/bin/java" \
+		-data "${ECLIPSE_DATAHOME}" \
+		-Dosgi.locking=none -Xnojit \
+		-vmargs -Xmx512M
+		popd
+	fi
+}
+
+rsx_run()
+{
+	eclipse_config -p "${RSx_PRODUCT}" -v "${RSx_PRODUCT_VERSION}" -c "${RSx_JAVA_CREATOR}" -j "${RSx_JAVA_VERSION}" -b "${RSx_JAVA_BITS}"
+	eclipse_run
+}
+
+teamconcert_run()
+{
+	echo "not yet implemented"
+}

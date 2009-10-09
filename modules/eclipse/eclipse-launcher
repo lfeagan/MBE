@@ -1,0 +1,68 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+# Customized based on the Eclipse Mutli-User Install Guide at:
+# http://help.eclipse.org/help32/index.jsp?topic=/org.eclipse.platform.doc.isv/reference/misc/multi_user_installs.html
+
+if [ -e "~/.bashrc" ]; then
+ source "~/.bashrc"
+fi
+
+# Define TOOLSPATH,JAVA_HOME based on the OSTYPE, HOSTTYPE, and HOSTNAME
+if [ "$OSTYPE" == 'linux' ]; then
+	if [ "$HOSTTYPE" == 'ppc64' ]; then
+	# !!! On ppc64 hosts, Eclipse is only supported with a 32-bit JVM !!!
+	TOOLSPATH="$TOOLSPATH32"
+	fi
+fi
+
+# Define JAVA_HOME
+JAVA_HOME="${TOOLSPATH}/java/latest"
+
+# Define ECLIPSE_HOME
+# If $1 is not set, then the user wants to...
+if [ -z "$1" ]; then
+ # ...run the latest version
+ ECLIPSE_HOME="${TOOLSPATH}/eclipse/latest"
+ if [[ -e "${ECLIPSE_HOME}" ]]; then
+  ECLIPSE_VER="$(readlink ${ECLIPSE_HOME})"
+ fi
+else # If $1 has been set, the user is attempting to run a specific version of Eclipse
+ ECLIPSE_VER="$1"
+fi
+ECLIPSE_HOME="${TOOLSPATH}/eclipse/${ECLIPSE_VER}"
+
+# Define ECLIPSE_WORKSPACE
+#ECLIPSE_WORKSPACE="$HOME/.eclipse-${HOSTTYPE}"
+
+# Export key variables
+export JAVA_HOME
+export ECLIPSE_HOME
+
+if [ -e "$ECLIPSE_HOME" ]; then
+  pushd .
+  cd "$ECLIPSE_HOME"
+   ./eclipse -vm "${JAVA_HOME}/bin/java" \
+   -user @user.home/eclipse/${ECLIPSE_VER}/user -configuration @user.home/eclipse/${ECLIPSE_VER}/conf -data @user.home/eclipse/${ECLIPSE_VER}/workspace \
+   -Dosgi.locking=none -Xnojit \
+   -vmargs -Xmx256M
+  popd
+else
+  echo "ERROR: Location ${ECLIPSE_HOME} does not exist"
+fi

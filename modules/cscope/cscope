@@ -1,0 +1,56 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+csope_dependencies=( 'mbe' )
+csope_functions=( 'csope_load' 'csope_unload' 'csope_setpath' 'csope_usage' )
+
+csope_load ()
+{
+	DEBUG echo "csope_load: enter"
+	local module="csope"
+
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "csope_load: leave"
+}
+
+csope_unload ()
+{
+	local func
+	for func in "${csope_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+csope_setpath ()
+{
+	# CSCOPE Declarations
+	export CSCOPE_EDITOR="${EDITOR}"
+	export INCLUDEDIRS="" # Colon-separated list of directories to search for #include files
+	export SOURCEDIRS="" # Colon-separated list of directories to search for additional source files
+	export VPATH="" # Colon-separated list of directories to search. If not set, cscope searches only in the current directory.
+}
+
+csope_usage ()
+{
+
+}

@@ -1,0 +1,118 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent: 
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+############################################################
+# Module: colors
+# Description:
+# 	Defines various human-friendly names to refer to shell 
+# 	color escape-sequences.
+############################################################
+
+colors_functions=( 'colors_load' 'colors_unload' 'colors_setpath' 'colors_define' 'colors_undefine' )
+
+function colors_load
+{
+	DEBUG echo "colors_load: enter"
+	local module="colors"
+	# Load preferences
+	
+	# Configure module
+	colors_define
+	DEBUG echo "colors_load: leave"
+}
+
+function colors_unload
+{
+	colors_undefine
+	local func
+	for func in "${colors_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+function colors_setpath
+{
+	local module="colors"
+}
+
+function colors_define
+{
+	# color_name='\[\033[ modifier; color_code m\]'
+	# Modifiers
+	# 0 = default          1 = bold
+	# 4 = underlined       5 = flashing text
+	# 7 = reverse field
+	colors_restore='\[\033[00m\]'
+	colors_black='\[\033[00;30m\]'
+	colors_firebrick='\[\033[00;31m\]'
+	colors_red='\[\033[01;31m\]'
+	colors_forest='\[\033[00;32m\]'
+	colors_green='\[\033[01;32m\]'
+	colors_brown='\[\033[00;33m\]'
+	colors_yellow='\[\033[01;33m\]'
+	colors_navy='\[\033[00;34m\]'
+	colors_blue='\[\033[01;34m\]'
+	colors_purple='\[\033[00;35m\]'
+	colors_magenta='\[\033[01;35m\]'
+	colors_cadet='\[\033[00;36m\]'
+	colors_cyan='\[\033[01;36m\]'
+	colors_gray='\[\033[00;37m\]'
+	colors_white='\[\033[01;37m\]'
+	colors_std="${colors_white}"
+	colors_red_back='\[\033[00;41m\]'
+	colors_green_back='\[\033[00;42m\]'
+	colors_orange_back='\[\033[00;43m\]'
+	colors_blue_back='\[\033[00;44m\]'
+	colors_purple_back='\[\033[00;45m\]'
+	colors_cyan_back='\[\033[00;46m\]'
+	colors_grey_back='\[\033[00;47m\]'
+}
+
+############################
+# ##### UNSET colors ##### #
+############################
+function colors_undefine
+{
+ unset colors_restore     \
+       colors_black       \
+       colors_firebrick   \
+       colors_red         \
+       colors_forest      \
+       colors_green       \
+       colors_brown       \
+       colors_yellow      \
+       colors_navy        \
+       colors_blue        \
+       colors_purple      \
+       colors_magenta     \
+       colors_cadet       \
+       colors_cyan        \
+       colors_gray        \
+       colors_white       \
+       colors_std         \
+       colors_usr         \
+			 colors_red_back    \
+			 colors_green_back  \
+			 colors_orange_back \
+			 colors_blue_back   \
+			 colors_purple_back \
+			 colors_cyan_back   \
+			 colors_grey_back
+}

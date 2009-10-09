@@ -1,0 +1,241 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+# Sun Java JDK/JRE
+
+java_functions=( "java_load" "java_unload" "java_setpath" "java_usage" "java_listCreators" "java_isValidCreator" "java_listVersions" "java_isValidVersion" "java_env" )
+java_dependencies=( "mbe" "platform" )
+
+function java_load ()
+{
+	# Load module dependencies
+	mbe_loadModules "${java_dependencies[@]}"
+	local module="java"
+	# Load preferences
+	source "${MODULES_DIR}/${module}/${module}.prefs"
+	export JAVA_BITS="${JAVA_BITS:-32}"
+	return 0
+}
+
+function java_unload ()
+{
+	local module="java"
+	local func
+	for func in "${java_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+function java_setpath ()
+{
+	# Configure JAVA_HOME, PATH, MANPATH, LD_LIBRARY_PATH
+	local module="java"
+	JAVA_HOME=$(java_buildjavahomestring ${JAVA_BITS} ${JAVA_CREATOR} ${JAVA_VERSION})
+
+	if [ -e "${JAVA_HOME}" ]; then
+		PATH="${JAVA_HOME}/bin:${PATH}"
+		MANPATH="${JAVA_HOME}/man:$MANPATH"
+		LD_LIBRARY_PATH="${JAVA_HOME}/lib:${LD_LIBRARY_PATH}"
+		export JAVA_HOME
+	fi
+}
+
+function java_usage ()
+{
+	local module="java"
+
+}
+
+function java_buildjavahomestring ()
+{
+	# Takes three arguments, JAVA_BITS, JAVA_CREATOR, and JAVA_VERSION and
+	# creates the string to be used for JAVA_HOME
+	if [[ -n "${1}" && -n "${2}" && -n "${3}" ]]; then
+		local bits="${1}"
+		local creator="${2}"
+		local version="${3}"
+		local maybe_java_home
+		if [[ "${bits}" == 32 ]]; then
+			maybe_java_home="${TOOLSPATH32}"
+		elif [[ "${bits}" == 64 ]]; then
+			maybe_java_home="${TOOLSPATH}"
+		else
+			echo ""
+			return 1
+		fi
+		java_isValidCreator ${creator}
+		if [[ "$?" == 1 ]]; then
+			java_isValidVersion ${creator} ${version}
+			if [[ "$?" == 1 ]]; then
+				maybe_java_home="${maybe_java_home}/java/${creator}/${version}"
+				if [[ -d "${maybe_java_home}" ]]; then
+					echo "${maybe_java_home}"
+				fi
+			fi
+		fi
+	fi
+	echo ""
+	return 1
+}
+
+function java_config ()
+{
+	function usage ()
+	{
+		echo "java_config -c <Creator> -v <Version> -b <Bits>"
+	}
+	# Process arguments
+	# -b Bits
+	# -c Creator
+	# -h Print usage
+	# -n Do not call buildpath
+	# -q Quiet; do not print any messages
+	# -v Version
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset bits creator version
+	print_usage=0
+	suppress_buildpath=0
+	quiet=0
+	while getopts "b:c:hnqv:" option
+	do
+		case $option in
+			b  ) bits=$OPTARG;;
+		  c  ) creator=$OPTARG;;
+			h  ) print_usage=1;;
+			n  ) suppress_buildpath=1;;
+			q  ) quiet=1;;
+			v  ) version=$OPTARG;;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	# Verify that requested change will succeed
+	local maybe_java_home="$(java_buildjavahomestring ${bits} ${creator} ${version})"
+	DEBUG echo "maybe_java_home=${maybe_java_home}"
+	if [ -n "${maybe_java_home}" ]; then
+		JAVA_BITS="${bits}"
+		JAVA_CREATOR="${creator}"
+		JAVA_VERSION="${version}"
+		JAVA_HOME="${maybe_java_home}"
+		export JAVA_BITS JAVA_CREATOR JAVA_VERSION JAVA_HOME
+
+		# Export variables
+		if [[ "${suppress_buildpath}" != "1" ]]; then
+			mbe_buildpath
+		fi
+	fi
+}
+
+function java_listCreators ()
+{
+	function usage ()
+	{
+		echo "Usage: java_listCreators"
+	}
+	local searchpath
+	if [[ "${JAVA_BITS}" == 32 ]]; then
+		searchpath="${TOOLSPATH32}/java"
+	else
+		searchpath="${TOOLSPATH}/java"
+	fi
+	# FIXME: redirecting stderr to devnull should likely have an actual if statement to guard against
+	local creators=( $(find "${searchpath}" -mindepth 1 -maxdepth 1 -regex '.*/*' -printf "%f\n" 2>/dev/null | sort) )
+	echo "${creators[*]}"
+}
+
+function java_isValidCreator ()
+{
+	function usage ()
+	{
+		echo "Usage: java_isValidCreator CREATOR"
+	}
+	local creators=( $(java_listCreators) )
+	for creator in "${creators[@]}"; do
+		if [[ "${1}" == "${creator}" ]]; then
+			return 1
+		fi
+	done
+	return 0
+}
+
+function java_listVersions ()
+{
+	function usage ()
+	{
+		echo "Usage: java_listVersions CREATOR"
+	}
+
+	# Process arguments
+	# First argument is the creator name
+	if [ -z "${1}" ]; then
+		usage
+	else
+		local creator="${1:-IBM}" # Default if creator is not set is IBM
+		local searchpath
+		if [[ "${JAVA_BITS}" == 32 ]]; then
+			searchpath="${TOOLSPATH32}/java/${creator}"
+		else
+			searchpath="${TOOLSPATH}/java/${creator}"
+		fi
+		local versions=( $(find "${searchpath}" -maxdepth 1 -regex '.*/*[0-9].[0-9]*' -printf "%f\n" 2>/dev/null | sort) )
+		echo "${versions[*]}"
+	fi
+}
+
+function java_isValidVersion ()
+{
+	function usage ()
+	{
+		echo "Usage: java_isValidVersion CREATOR VERSION"
+	}
+	# Process arguments
+	# First argument is the creator name
+	if [[ -n "${1}" && -n "${2}" ]]; then
+		java_isValidCreator ${1}
+		if [[ "$?" == 1 ]]; then
+			local versions=( $(java_listVersions ${1}) )
+			for version in "${versions[@]}"; do
+				if [[ "${2}" == "${version}" ]]; then
+					return 1
+				fi
+			done
+			return 0
+		fi
+		return 0
+	fi
+	return 0
+}
+
+function java_env ()
+{
+	echo "JAVA_HOME=${JAVA_HOME}"
+	echo "------------------------------------------------------------"
+	echo "JAVA_CREATOR=${JAVA_CREATOR}"
+	echo "JAVA_VERSION=${JAVA_VERSION}"
+	echo "JAVA_BITS=${JAVA_BITS}"
+}

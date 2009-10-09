@@ -1,0 +1,66 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+intelcc_dependencies=( 'mbe' )
+intelcc_functions=( 'intelcc_load' 'intelcc_unload' 'intelcc_setpath' 'intelcc_usage' )
+
+intelcc_load ()
+{
+	DEBUG echo "intelcc_load: enter"
+	local module="intelcc"
+
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "intelcc_load: leave"
+}
+
+intelcc_unload ()
+{
+	local func
+	for func in "${intelcc_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+intelcc_setpath ()
+{
+	# For the Intel Compiler
+	if [ -e /opt/intel_cc_80 ]; then
+		ICC=/opt/intel_cc_80
+		IFC=/opt/intel_fc_80
+		IDB=/opt/intel_idb_80
+		IPPROOT=/opt/intel/ipp41/ia32_itanium
+		INCLUDE=$IPPROOT/include:$INCLUDE
+		INTL_PATH=$ICC/bin:$IFC/bin:$IDB/bin:$IPPROOT/bin
+		INTL_LIBS=$ICC/lib:$IFC/lib:$IPPROOT/sharedlib:$IPPROOT/sharedlib/linux32
+		LD_LIBRARY_PATH=$INTL_LIBS:$CRYPH_LIBS:$LD_LIBRARY_PATH
+		MANPATH="$ICC/man":"$IFC/man":"$IDB/man":$MANPATH
+		ICCTOOLS_PATH=$INTL_PATH:$MMI_PATH:$SYM_PATH
+		PATH="$ICCTOOLS_PATH:$PATH"
+		export INTEL_LICENSE_FILE="/opt/intel/licenses"
+	fi
+}
+
+intelcc_usage ()
+{
+
+}
