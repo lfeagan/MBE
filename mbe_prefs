@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Bash Module Preferences
+export MODULES_DIR="${HOME}/.mbe/modules"
+#export MODULES_LOAD=("mbe" "platform" "colors" "prompt" "ifxtools" "misc" "developer" "eclipse" "java" )
+export MODULES_LOAD=("mbe" "platform" "colors" "prompt" "developer" "eclipse" "java" )
+# Loaded modules are stored in MODULES_LOADED
+
+# Bash User Preferences & Over-rides
+export SECURE_HOSTS=(t42p server1 lfeagan lfeagan2 ps3-1 ps3-2) # umask 0022
+export SECURE_HOSTS_UMASK="0022"
+export DEV_HOSTS=(dmc6000g seker vulpix raka.lenexa.ibm.com) # umask 0000
+export DEV_HOSTS_UMASK="0000"
+export INSECURE_HOSTS_UMASK="0077"
+export USER_PAGERS=("less" "more")
+export USER_EDITORS=("vim" "vi" "emacs")
+export USER_PATHS=( )
+export USER_LD_LIBRARY_PATHS=( )
+export USER_MANPATHS=( )
+export TOOLSPATH_BASE="/opt/tools"
+# Prompt Configuration
+#export USER_PS1=""

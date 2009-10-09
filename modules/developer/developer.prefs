@@ -18,4 +18,4 @@
 #------------------------------------------------------------------------------
 
 # To remove a feature from usage, simply comment out the routine below.
-developer_features=(cscope gcc icscope2 ibmxlc intelcc opengl perl scite sunstudio vim )
+developer_features=( )
