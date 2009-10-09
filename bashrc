@@ -40,7 +40,7 @@ source "${HOME}/.mbe_prefs"
 # ##### MANUAL MODULE LOAD ##### #
 ##################################
 # Define the storage location for the modules
-# export MODULES_DIR="${HOME}/.bash/modules"
+# export MODULES_DIR="${HOME}/.mbe/modules"
 # Specify the modules to be loaded
 # export MODULES_LOAD=("mbe" "platform" )
 
