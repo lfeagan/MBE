@@ -148,12 +148,18 @@ function mbe_updatembe
 	svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk ${HOME}/.mbe/update
     local retval="$?"
     if [[ "$retval" == "0" ]]; then
-        ${outdir}/bash/trunk/install
+        ${outdir}/.mbe/trunk/install
         rm -rf ${outdir}
     else
         echo "ERROR:  Failed to checkout bash files for updating."
     fi
     popd
+}
+
+function mbe_checkout
+{
+	local TARGETDIR="${HOME}/svn/mbe-sf.net"
+	svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk "${TARGETDIR}"
 }
 
 function mbe_checkModulesDir
@@ -171,7 +177,7 @@ function mbe_checkModulesDir
 		#	export MODULES_DIR="${MODULES_DIR%/*/*}"
 		#	echo "MODULES_DIR=$MODULES_DIR"
 	#else # On systems without readlink we must rely on a static definition.
-		export MODULES_DIR="${HOME}/bash/modules"
+		export MODULES_DIR="${HOME}/.mbe/modules"
 	  #echo "MODULES_DIR=$MODULES_DIR"
 	fi
 
