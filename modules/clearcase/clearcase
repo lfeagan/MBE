@@ -52,5 +52,5 @@ clearcase_setpath ()
 
 clearcase_usage ()
 {
-
+	echo "no usage info"
 }

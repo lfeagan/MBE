@@ -51,5 +51,5 @@ scite_setpath ()
 
 scite_usage ()
 {
-
+	echo "no usage info"
 }

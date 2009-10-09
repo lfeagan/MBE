@@ -55,5 +55,5 @@ gcc_setpath ()
 
 gcc_usage ()
 {
-
+	echo "no usage info"
 }

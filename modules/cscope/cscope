@@ -52,5 +52,5 @@ csope_setpath ()
 
 csope_usage ()
 {
-
+	echo "no usage info"
 }

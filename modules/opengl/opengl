@@ -57,5 +57,5 @@ opengl_setpath ()
 
 opengl_usage ()
 {
-
+	echo "no usage info"
 }

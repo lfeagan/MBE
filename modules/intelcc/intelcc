@@ -62,5 +62,5 @@ intelcc_setpath ()
 
 intelcc_usage ()
 {
-
+	echo "no usage info"
 }

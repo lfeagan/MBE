@@ -57,5 +57,5 @@ homebin_setpath ()
 
 homebin_usage ()
 {
-
+	echo "no usage info"
 }

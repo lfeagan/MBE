@@ -60,5 +60,5 @@ brlcad_setpath ()
 
 brlcad_usage ()
 {
-
+	echo "no usage info"
 }

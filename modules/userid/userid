@@ -17,25 +17,53 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-userid_dependencies=( 'mbe' 'platform' )
-userid_functions=( )
+###############################################################################
+# Module: userid
+# Description:
+# 	Defines ...
+# 	nextline
+###############################################################################
+
+#
+# Template for new module creation.
+# Substitute the new module name for 'userid'
+# %s/userid/newname/gc
+
+userid_dependencies=( 'mbe' )
+userid_functions=( 'userid_load' 'userid_unload' 'userid_setpath' 'userid_usage' 'ur' )
 
 userid_load ()
 {
+	DEBUG echo "userid_load: enter"
+	local module="userid"
 
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "userid_load: leave"
 }
 
 userid_unload ()
 {
-
+	local func
+	for func in "${userid_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
 }
 
 userid_setpath ()
 {
-
+	DEBUG echo -n ""
 }
 
 userid_usage ()
 {
+	echo "no usage info"
+}
 
+ur ()
+{
+	userid root $@
 }

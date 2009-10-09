@@ -64,5 +64,5 @@ usrlocalbin_setpath ()
 
 usrlocalbin_usage ()
 {
-
+	echo "no usage info"
 }

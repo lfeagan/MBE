@@ -52,5 +52,5 @@ ibmxlc_setpath ()
 
 ibmxlc_usage ()
 {
-
+	echo "no usage info"
 }

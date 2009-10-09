@@ -36,24 +36,13 @@
 ##################################
 source "${HOME}/.mbe_prefs"
 
-#########################
-# ###### MODULES ###### #
-#########################
-# - mbe
-# - platform
-# - colors
-# - prompt
-# - ifxtools
-# - developer
-# - misc
-
 ##################################
 # ##### MANUAL MODULE LOAD ##### #
 ##################################
 # Define the storage location for the modules
 # export MODULES_DIR="${HOME}/.bash/modules"
 # Specify the modules to be loaded
-# export MODULES_LOAD=("mbe" "platform" "ifxtools")
+# export MODULES_LOAD=("mbe" "platform" )
 
 # Bootstrap by manually loading the mbe module, the others can be done automatically
 . "${MODULES_DIR}/mbe/mbe"
@@ -67,48 +56,48 @@ mbe_loadModules "${MODULES_LOAD[@]}"
 
 export RETVAL
 
-localhostIsDev=0
 localhostIsSecure=0
-if [ -z "${DEV_HOSTS[*]}" ]; then
-	DEV_HOSTS=( )
-fi
+localhostIsShared=0
 if [ -z "${SECURE_HOSTS[*]}" ]; then
 	SECURE_HOSTS=( )
 fi
+if [ -z "${SHARED_HOSTS[*]}" ]; then
+	SHARED_HOSTS=( )
+fi
 
-isLocalhostDev ()
+isLocalhostSecure ()
 {
-	for host in "${DEV_HOSTS[@]}"; do
+	for host in "${SECURE_HOSTS[@]}"; do
 		if [[ "$host" == "$HOSTNAME" || "$host" == "localhost" ]]; then
-			localhostIsDev=1
+			localhostIsSecure=1
 			break
 		fi
 	done
 	return 1;
 }
-isLocalhostSecure ()
+isLocalhostShared ()
 {
-	for host in "${SECURE_HOSTS[@]}"; do
+	for host in "${SHARED_HOSTS[@]}"; do
 	if [[ "$host" == "$HOSTNAME" || "$host" == "localhost" ]]; then
-		localhostIsSecure=1
+		localhostIsShared=1
 		break
 	fi
 	done
 	return 1;
 }
 
-isLocalhostDev
 isLocalhostSecure
+isLocalhostShared
 
-# Informix development systems are the most permissive umask, typically 0x000
+# Secure development systems are the most permissive umask, typically 0x000
 # Thus why we check it first. The ideal strategy may be to sort the list, bash
 # associative arrays, introduced in 4.0, would make this easier.
-if [ $localhostIsDev -eq 1 ]; then
-	umask "${DEV_HOSTS_UMASK}"
+if [ $localhostIsSecure -eq 1 ]; then
+	umask "${SECURE_HOSTS_UMASK}"
 else 
-	# umask for private (secure) systems
-	if [ $localhostIsSecure -eq 1 ]; then
-		umask "${SECURE_HOSTS_UMASK}"
+	# umask for shared, but safe, systems
+	if [ $localhostIsShared -eq 1 ]; then
+		umask "${SHARED_HOSTS_UMASK}"
 	else
 		# umask for public/shared systems
 		umask "${INSECURE_HOSTS_UMASK}"

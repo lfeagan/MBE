@@ -2,21 +2,28 @@
 
 # Bash Module Preferences
 export MODULES_DIR="${HOME}/.mbe/modules"
-#export MODULES_LOAD=("mbe" "platform" "colors" "prompt" "ifxtools" "misc" "developer" "eclipse" "java" )
-export MODULES_LOAD=("mbe" "platform" "colors" "prompt" "developer" "eclipse" "java" )
+export MODULES_LOAD=("mbe" "platform" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" )
 # Loaded modules are stored in MODULES_LOADED
 
 # Bash User Preferences & Over-rides
-export SECURE_HOSTS=(t42p server1 lfeagan lfeagan2 ps3-1 ps3-2) # umask 0022
-export SECURE_HOSTS_UMASK="0022"
-export DEV_HOSTS=(dmc6000g seker vulpix raka.lenexa.ibm.com) # umask 0000
-export DEV_HOSTS_UMASK="0000"
+# Do no allow others to read from or write to our files on insecure hosts
 export INSECURE_HOSTS_UMASK="0077"
+# Allow others to read from (but not write to) our files on shared hosts
+export SHARED_HOSTS_UMASK="0022"
+export SHARED_HOSTS=( myHost ) # umask 0022
+# Allow others to read from and write to our files on secure hosts
+export SECURE_HOSTS_UMASK="0000"
+export SECURE_HOSTS=( ) # umask 0000
+# Define the pagers to be searched for in order of preference, will set PAGER
 export USER_PAGERS=("less" "more")
+# Define the editors to search for in order of preference, will set EDITOR
 export USER_EDITORS=("vim" "vi" "emacs")
+# Additional directories to be added to the PATH
+# Specify as array entries
 export USER_PATHS=( )
 export USER_LD_LIBRARY_PATHS=( )
 export USER_MANPATHS=( )
+# The base location where the tools can be found
 export TOOLSPATH_BASE="/opt/tools"
 # Prompt Configuration
 #export USER_PS1=""

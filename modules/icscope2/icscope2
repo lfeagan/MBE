@@ -52,5 +52,5 @@ icscope2_setpath ()
 
 icscope2_usage ()
 {
-
+	echo "no usage info"
 }

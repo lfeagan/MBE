@@ -52,5 +52,5 @@ vim_setpath ()
 
 vim_usage ()
 {
-
+	echo "no usage info"
 }

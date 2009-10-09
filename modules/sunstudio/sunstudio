@@ -65,5 +65,5 @@ sunstudio_setpath ()
 
 sunstudio_usage ()
 {
-
+	echo "no usage info"
 }

@@ -17,12 +17,51 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-misc_functions=( ${misc_functions[@]} 'misc_rar_setpath' )
+###############################################################################
+# Module: rar
+# Description:
+# 	Defines ...
+# 	nextline
+###############################################################################
 
-function misc_rar_setpath
+#
+# Template for new module creation.
+# Substitute the new module name for 'rar'
+# %s/rar/newname/gc
+
+rar_dependencies=( 'mbe' )
+rar_functions=( 'rar_load' 'rar_unload' 'rar_setpath' 'rar_usage' )
+
+rar_load ()
+{
+	DEBUG echo "rar_load: enter"
+	local module="rar"
+
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "rar_load: leave"
+}
+
+rar_unload ()
+{
+	local func
+	for func in "${rar_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+rar_setpath ()
 {
 	# RAR Tooling, 32-bit only at present
 	if [ -x "${TOOLSPATH32}/rar/rar" ]; then
 		PATH="${TOOLSPATH32}/rar:${PATH}"
 	fi
+}
+
+rar_usage ()
+{
+	echo "no usage info"
 }

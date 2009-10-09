@@ -57,5 +57,5 @@ openwin_setpath ()
 
 openwin_usage ()
 {
-
+	echo "no usage info"
 }

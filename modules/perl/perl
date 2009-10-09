@@ -95,5 +95,5 @@ perl_setpath ()
 
 perl_usage ()
 {
-
+	echo "no usage info"
 }

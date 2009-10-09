@@ -61,5 +61,5 @@ sbin_setpath ()
 
 sbin_usage ()
 {
-
+	echo "no usage info"
 }
