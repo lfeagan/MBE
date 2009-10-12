@@ -295,6 +295,54 @@ function mbe_listAllModules
 	fi
 }
 
+function mbe_editModule
+{
+	# $1 is the name of the module to be edited
+	if [ -z "$1" ]; then
+		echo "ERROR: Must provide one argument, the module to be edited"
+		return 1
+	fi
+
+	local module="${1}"
+	local modulepath="${MODULES_DIR}/${module}/${module}"
+
+	if [ ! -f "${modulepath}" ]; then
+		echo -e "ERROR: Cannot find module ${module} at \"${modulepath}\""
+		return 1
+	else
+		if [ ! -w "${modulepath}" ]; then
+			echo -e "ERROR: Cannot write to module ${module} at \"${modulepath}\""
+			return 1	
+		fi
+	fi
+
+
+	${EDITOR} "${modulepath}"
+}
+
+function mbe_editModulePrefs
+{
+	# $1 is the name of the module to be edited
+	if [ -z "$1" ]; then
+		echo "ERROR: Must provide one argument, the module to be edited"
+		return 1
+	fi
+
+	local module="${1}"
+	local moduleprefspath="${MODULES_DIR}/${module}/${module}.prefs"
+
+	if [ ! -f "${moduleprefspath}" ]; then
+		echo -e "ERROR: Cannot find module ${module} at \"${moduleprefspath}\""
+		return 1
+	else 
+		if [ ! -w "${moduleprefspath}" ]; then
+			echo -e "ERROR: Cannot write to module ${module} at \"${moduleprefspath}\""
+			return 1	
+		fi
+	fi
+
+	${EDITOR} "${moduleprefspath}"
+}
 
 ##################################
 # ##### PATH CONFIGURATION ##### #
