@@ -51,9 +51,9 @@ netclient_unload ()
 netclient_setpath ()
 {
 	# AT&T NetClient
-	local testpath="/opt/agns/bin"
-	if [ -f "$testpath" ]; then
-		PATH="${testpath}":"${PATH}"
+	local netclientbindir="/opt/agns/bin"
+	if [ -f "$netclientbindir" ]; then
+		PATH="${netclientbindir}":"${PATH}"
 	fi
 }
 
