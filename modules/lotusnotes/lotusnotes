@@ -1,0 +1,141 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+###############################################################################
+# Module: lotusnotes
+# Description:
+# 	Defines ...
+# 	nextline
+###############################################################################
+
+lotusnotes_dependencies=( 'mbe' )
+lotusnotes_functions=( 'lotusnotes_load' 'lotusnotes_unload' 'lotusnotes_setpath' 'lotusnotes_usage' 'lotusnotes_run' 'lotusnotes_backupUserData' )
+
+lotusnotes_load ()
+{
+	DEBUG echo "lotusnotes_load: enter"
+	local module="lotusnotes"
+
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "lotusnotes_load: leave"
+}
+
+lotusnotes_unload ()
+{
+	local func
+	for func in "${lotusnotes_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+lotusnotes_setpath ()
+{
+	local notesdir="/opt/ibm/lotus/notes"
+	local notesbin="${notesdir}/notes"
+
+	if [ -d "${notesdir}" ]; then
+		if [ -x "${notesbin}" ]; then
+			PATH="${notesdir}:${PATH}"
+		fi
+	fi	
+}
+
+lotusnotes_usage ()
+{
+	echo "adds /opt/ibm/lotus/notes to PATH"
+}
+
+lotusnotes_run ()
+{
+	/opt/ibm/lotus/notes/framework/../notes
+}
+
+
+lotusnotes_backupUserData ()
+{
+	
+	# Files to backup
+	# bookmark.nsf - Contains your saved bookmarks and Welcome Page information.
+	# busytime.nsf - Contains your local free time information.
+	# desktop6.ndk - This is your Workspace that maps to your bookmarks. (Notes < 8.0.2)
+	# desktop8.ndk - This is your Workspace that maps to your bookmarks. (Notes > 8.5)
+	# headline.nsf - Contains your Database Subscriptions information.
+	# install.log - Contains the configuration information based on the options available when you install Notes. This file is used for comparison when you upgrade to new versions of Notes.
+	# internet.nsf - Contains information from your newsgroup subscriptions (NNTP).
+	# journal.nsf - Personal journal entries
+	# names.nsf - Contains your contacts, connections, locations, and Personal Address Book information.
+	# notes.ini - Contains the information you provide when you set up Notes, including the options you select in User Preferences. May also contain information created by your administrator. This file gets deleted when you uninstall Notes.
+	# perweb.nsf - This is your Personal Web Navigator database that contains Web browser information.
+	# user.dic - Contains all of the words you have added to your personal dictionary through the "Add to Dictionary" option in the Spell Checker.
+	# *.nsf - Local databases that you create are stored in the Data directory.
+	# ${USER}.ID - Your identifier (or *.id)
+	#
+	# Additionally, any archives or local replicas
+	# as_LFeagan.nsf - archive
+	
+	# Reference(s)
+	# http://www-12.lotus.com/ldd/doc/domino_notes/Rnext/help6_client.nsf/f4b82fbb75e942a6852566ac0037f284/e1886dca0780dd6785256c1c00380fbe?OpenDocument
+	
+	LOTUSNOTES_ID="LFEAGAN"
+
+	# Configure Lotus Notes data folder as source
+	LOTUSNOTES_DATA="${HOME}/lotus/notes/data"
+	if [ ! -d "${LOTUSNOTES_DATA}" ]; then
+		echo "ERROR: ${LOTUSNOTES_DATA} does not exist"
+		exit 1
+	fi
+	
+	# Create backup destination if it does not already exist
+	LOTUSNOTES_BACKUP="${HOME}/lotus-notes-data-backup"
+	if [ ! -d "${LOTUSNOTES_BACKUP}" ]; then
+		mkdir "${LOTUSNOTES_BACKUP}"
+	fi
+	
+	function copyIfExists ()
+	{
+		SRC="$1"
+		DST="$2"
+	
+		#echo "SRC=${SRC}"
+		#echo "DST=${DST}"
+	
+		# Check that SRC exists
+		if [ -e "${SRC}" ]; then
+			# If SRC is a directory, perfom a recursive copy of the contents to DST
+			if [ -d "${SRC}" ]; then
+				cp -r "${SRC}" "${DST}"
+			elif [ -f "${SRC}" ]; then
+				cp "${SRC}" "${DST}"
+			else
+				echo "ERROR:  ${SRC} exists but is neither a file nor a directory"
+				exit 1
+			fi
+		else
+			echo "WARNING:  ${SRC} does not exist"
+		fi
+	}
+
+
+	MERGEDIRECTIVE="merge $(mbe_getModulePath lotusnotes)/lotusnotes.rsync"
+	rsync -avh --dry-run -f "${MERGEDIRECTIVE}" --prune-empty-dirs "${LOTUSNOTES_DATA}/" "${LOTUSNOTES_BACKUP}"
+}
