@@ -295,6 +295,18 @@ function mbe_listAllModules
 	fi
 }
 
+function mbe_getModulePath
+{
+	# $1 is the name of the module to get the path for
+	if [ -z "$1" ]; then
+		echo "ERROR: Must provide one argument, the module to be edited"
+		return 1
+	fi
+
+	local module="${1}"
+	echo "${MODULES_DIR}/${module}"
+}
+
 function mbe_editModule
 {
 	# $1 is the name of the module to be edited
