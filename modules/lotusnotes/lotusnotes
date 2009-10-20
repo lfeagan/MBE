@@ -136,6 +136,6 @@ lotusnotes_backupUserData ()
 	}
 
 
-	MERGEDIRECTIVE="merge $(mbe_getModulePath lotusnotes)/lotusnotes.rsync"
-	rsync -avh --dry-run -f "${MERGEDIRECTIVE}" --prune-empty-dirs "${LOTUSNOTES_DATA}/" "${LOTUSNOTES_BACKUP}"
+	local MERGEDIRECTIVE="merge $(mbe_getModulePath lotusnotes)/lotusnotes.rsync"
+	rsync -avh -f "${MERGEDIRECTIVE}" --prune-empty-dirs "${LOTUSNOTES_DATA}/" "${LOTUSNOTES_BACKUP}"
 }
