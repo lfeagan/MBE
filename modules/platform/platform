@@ -148,6 +148,13 @@ function platform_config ()
 	if [[ "$KERNELNAME" == "AIX" ]]; then
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=`/usr/bin/getconf KERNEL_BITMODE`
+	elif [[ "$KERNELNAME" == "CYGWIN_NT-5.1" ]]; then
+		CPUTYPE="$(uname -m)"
+		if [[ "${CPUTYPE}" == i*86 ]]; then
+			KERNELBITS="32"
+		else
+			KERNELBITS="64"
+		fi
 	elif [[ "$KERNELNAME" == "Darwin" ]]; then
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=64
@@ -223,6 +230,14 @@ function platform_platformpath
 		elif [[ "$KERNEL_BITS" == "32" ]]; then
 			PLATFORMPATH="AIX/32/powerpc"
 			PLATFORMPATH32="$PLATFORMPATH"
+		fi
+	elif [[ "$KERNELNAME" == "CYGWIN_NT-5.1" ]]; then
+		if [[ "$CPUTYPE" == i*86 ]]; then
+			PLATFORMPATH="Windows/32/i686"
+			PLATFORMPATH32="${PLATFORMPATH}"
+		else
+			PLATFORMPATH="Windows/64/x86_64"
+			PLATFORMPATH32="Windows/32/i686"
 		fi
 	else
 		echo "ERROR: Unknown platform"
