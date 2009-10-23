@@ -23,7 +23,7 @@ eclipse_load ()
 
 	local module="eclipse"
 	# Load preferences file
-	source "${MODULES_DIR}/${module}/${module}.prefs"
+	source "${MODULES_DIR}/${module}/${module}.conf"
 
 	# Specify the default Eclipse product to be used
 	ECLIPSE_PRODUCT=${ECLIPSE_PRODUCT:=Eclipse}

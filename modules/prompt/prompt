@@ -26,7 +26,7 @@ function prompt_load
 	# Set module name
 	local module="prompt"
 	# Load preferences
-	source "${MODULES_DIR}/${module}/${module}.prefs"
+	source "${MODULES_DIR}/${module}/${module}.conf"
 	prompt_configure
 	return 0
 }

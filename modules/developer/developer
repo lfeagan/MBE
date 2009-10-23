@@ -34,7 +34,7 @@ function developer_load
 	mbe_loadModules "${developer_dependencies[@]}"
 	local module="developer"
 	# Load preferences file
-	source "${MODULES_DIR}/${module}/${module}.prefs"
+	source "${MODULES_DIR}/${module}/${module}.conf"
 	# Source the features specified in preferences file
 	DEBUG echo "developer_load: developer_features=${developer_features[@]}"
 	local feature

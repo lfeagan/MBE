@@ -28,7 +28,7 @@ function java_load ()
 	mbe_loadModules "${java_dependencies[@]}"
 	local module="java"
 	# Load preferences
-	source "${MODULES_DIR}/${module}/${module}.prefs"
+	source "${MODULES_DIR}/${module}/${module}.conf"
 	export JAVA_BITS="${JAVA_BITS:-32}"
 	return 0
 }

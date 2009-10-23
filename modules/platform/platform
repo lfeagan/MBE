@@ -40,7 +40,7 @@ function platform_load
 {
 	local module="platform"
 	# Load preferences file
-	#source "${MODULES_DIR}/${module}/${module}.prefs"
+	#source "${MODULES_DIR}/${module}/${module}.conf"
 	# Define exports that cannot change after module load
 	platform_config
 	platform_platformpath

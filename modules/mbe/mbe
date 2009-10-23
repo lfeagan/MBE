@@ -27,7 +27,7 @@ function mbe_load
 {
 	local module="mbe"
 	# Load preferences file
-	source "${MODULES_DIR}/${module}/${module}.prefs"
+	source "${MODULES_DIR}/${module}/${module}.conf"
 	# Load the features specified in preferences file
 	for feature in "${mbe_features[@]}"; do
 		source "${MODULES_DIR}/${module}/${feature}"
@@ -143,7 +143,7 @@ function mbe_envpathsearch
 ############################################################
 function mbe_updatembe
 {
-    pushd $HOME
+	pushd $HOME
 	local outdir="mbe-update"
 	svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk ${HOME}/.mbe/update
     local retval="$?"
@@ -160,6 +160,56 @@ function mbe_checkout
 {
 	local TARGETDIR="${HOME}/svn/mbe-sf.net"
 	svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk "${TARGETDIR}"
+}
+
+function mbe_createModuleConfBackups
+{
+	local ts=$(date '+%Y.%m.%d_%H:%M')
+	local modules=( $(mbe_listAllModules) )
+	local module
+	for module in "${modules[@]}"; do
+		local modulePath="$(mbe_getModulePath ${module})"
+		if [ -f "${modulePath}/${module}.conf" ]; then
+			echo "Creating backup of ${module}.conf to ${module}.conf.${ts}"
+			cp "${modulePath}/${module}.conf" "${modulePath}/${module}.conf.${ts}"
+		fi
+	done
+}
+
+function mbe_removeModuleConfBackups
+{
+	local modules=( $(mbe_listAllModules) )
+	local backupConfs=( $(find "${MODULES_DIR}" -regex '.*[a-z0-9A-Z]+\.conf\..*' -printf "%p\n") )
+
+	if (( ${#backupConfs[*]} == 0 )); then
+		echo "No preferences are available for removal"
+	else
+		echo "The following preference files will be removed:"
+		local pref
+		for pref in "${backupConfs[@]}"; do
+			echo "${pref}"
+		done
+
+		local validInput=0
+		local removalConfirmation
+		while (( validInput == 0 ));
+		do
+			echo -n "Confirm that you want to remove all of these files [yes/no] and press [ENTER]: "
+			read removalConfirmation
+	
+			if [[ "${removalConfirmation}" == "yes" ]]; then
+				validInput=1
+				local pref
+				for pref in "${backupConfs[@]}"; do
+					rm "${pref}"
+				done
+			elif [[ "${removalConfirmation}" == "no" ]]; then
+				validInput=1
+			else
+				echo -e "Unknown input received. Please enter \"yes\" or \"no\"."
+			fi
+		done
+	fi
 }
 
 function mbe_checkModulesDir
@@ -272,7 +322,10 @@ function mbe_isModuleLoaded
 
 function mbe_listLoadedModules
 {
-	echo "${MODULES_LOADED[@]}"
+	local module
+	for module in "${MODULES_LOADED[@]}"; do
+		echo -e "${module}"
+	done
 }
 
 function mbe_listAllModules
@@ -288,9 +341,9 @@ function mbe_listAllModules
 		local module
 		for module in "${modules[@]}"; do
 			module="${module##/*/}"
-			echo -ne "$module "
+			echo -e "$module "
 		done
-		echo -ne "\n"
+		#echo -ne "\n"
 		#popd > /dev/null
 	fi
 }
@@ -332,7 +385,7 @@ function mbe_editModule
 	${EDITOR} "${modulepath}"
 }
 
-function mbe_editModulePrefs
+function mbe_editModuleConf
 {
 	# $1 is the name of the module to be edited
 	if [ -z "$1" ]; then
@@ -341,19 +394,19 @@ function mbe_editModulePrefs
 	fi
 
 	local module="${1}"
-	local moduleprefspath="${MODULES_DIR}/${module}/${module}.prefs"
+	local moduleconfpath="${MODULES_DIR}/${module}/${module}.conf"
 
-	if [ ! -f "${moduleprefspath}" ]; then
-		echo -e "ERROR: Cannot find module ${module} at \"${moduleprefspath}\""
+	if [ ! -f "${moduleconfpath}" ]; then
+		echo -e "ERROR: Cannot find module ${module} at \"${moduleconfpath}\""
 		return 1
 	else 
-		if [ ! -w "${moduleprefspath}" ]; then
-			echo -e "ERROR: Cannot write to module ${module} at \"${moduleprefspath}\""
+		if [ ! -w "${moduleconfpath}" ]; then
+			echo -e "ERROR: Cannot write to module ${module} at \"${moduleconfpath}\""
 			return 1	
 		fi
 	fi
 
-	${EDITOR} "${moduleprefspath}"
+	${EDITOR} "${moduleconfpath}"
 }
 
 ##################################
@@ -421,6 +474,7 @@ function mbe_buildpath
 	MANPATH="${ORIG_MANPATH}"
 	PATH="${ORIG_PATH}"
 
+	local module
 	for module in "${MODULES_LOADED[@]}"; do
 		DEBUG echo "mbe_buildpath: ${module}_setpath"
 		${module}_setpath
