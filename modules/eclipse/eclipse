@@ -247,20 +247,20 @@ eclipse_run()
 
 		#-user "${ECLIPSE_USERHOME}" \
 		#-configuration "${ECLIPSE_CONFHOME}" \
-
+		# Add -Xnojit if you are getting errors
 		pushd .
 	  cd "$ECLIPSE_HOME"
 		./eclipse -vm "${JAVA_HOME}/bin/java" \
 		-data "${ECLIPSE_DATAHOME}" \
-		-Dosgi.locking=none -Xnojit \
+		-Dosgi.locking=none \
 		-vmargs -Xmx512M
 		popd
 	fi
 }
 
-rsx_run()
+sdp_run()
 {
-	eclipse_config -p "${RSx_PRODUCT}" -v "${RSx_PRODUCT_VERSION}" -c "${RSx_JAVA_CREATOR}" -j "${RSx_JAVA_VERSION}" -b "${RSx_JAVA_BITS}"
+	eclipse_config -p "${SDP_PRODUCT}" -v "${SDP_PRODUCT_VERSION}" -c "${SDP_JAVA_CREATOR}" -j "${SDP_JAVA_VERSION}" -b "${SDP_JAVA_BITS}"
 	eclipse_run
 }
 
