@@ -22,6 +22,8 @@
 java_functions=( "java_load" "java_unload" "java_setpath" "java_usage" "java_listCreators" "java_isValidCreator" "java_listVersions" "java_isValidVersion" "java_env" )
 java_dependencies=( "mbe" "platform" )
 
+java_javadir="Java"
+
 function java_load ()
 {
 	# Load module dependencies
@@ -84,7 +86,7 @@ function java_buildjavahomestring ()
 		if [[ "$?" == 1 ]]; then
 			java_isValidVersion ${creator} ${version}
 			if [[ "$?" == 1 ]]; then
-				maybe_java_home="${maybe_java_home}/java/${creator}/${version}"
+				maybe_java_home="${maybe_java_home}/${java_javadir}/${creator}/${version}"
 				if [[ -d "${maybe_java_home}" ]]; then
 					echo "${maybe_java_home}"
 				fi
@@ -159,9 +161,9 @@ function java_listCreators ()
 	}
 	local searchpath
 	if [[ "${JAVA_BITS}" == 32 ]]; then
-		searchpath="${TOOLSPATH32}/java"
+		searchpath="${TOOLSPATH32}/${java_javadir}"
 	else
-		searchpath="${TOOLSPATH}/java"
+		searchpath="${TOOLSPATH}/${java_javadir}"
 	fi
 	# FIXME: redirecting stderr to devnull should likely have an actual if statement to guard against
 	local creators=( $(find "${searchpath}" -mindepth 1 -maxdepth 1 -regex '.*/*' -printf "%f\n" 2>/dev/null | sort) )
@@ -198,9 +200,9 @@ function java_listVersions ()
 		local creator="${1:-IBM}" # Default if creator is not set is IBM
 		local searchpath
 		if [[ "${JAVA_BITS}" == 32 ]]; then
-			searchpath="${TOOLSPATH32}/java/${creator}"
+			searchpath="${TOOLSPATH32}/${java_javadir}/${creator}"
 		else
-			searchpath="${TOOLSPATH}/java/${creator}"
+			searchpath="${TOOLSPATH}/${java_javadir}/${creator}"
 		fi
 		local versions=( $(find "${searchpath}" -maxdepth 1 -regex '.*/*[0-9].[0-9]*' -printf "%f\n" 2>/dev/null | sort) )
 		echo "${versions[*]}"
