@@ -5,7 +5,7 @@
 # http://help.eclipse.org/help32/index.jsp?topic=/org.eclipse.platform.doc.isv/reference/misc/multi_user_installs.html
 
 eclipse_dependencies=( 'mbe' 'platform' 'java' )
-eclipse_functions=(eclipse_load eclipse_unload eclipse_setpath eclipse_setmozpath eclipse_usage eclipse_env eclipse_config eclipse_listVersions eclipse_run rsx_run teamconcert_run )
+eclipse_functions=(eclipse_load eclipse_unload eclipse_setpath eclipse_setmozpath eclipse_usage eclipse_env eclipse_config eclipse_listVersions eclipse_run sdp_run teamconcert_run )
 
 # Environment Variables:
 # ECLIPSE_PRODUCT
@@ -247,12 +247,13 @@ eclipse_run()
 
 		#-user "${ECLIPSE_USERHOME}" \
 		#-configuration "${ECLIPSE_CONFHOME}" \
-		# Add -Xnojit if you are getting errors
+		# Linux/PPC64 Issue Fixes
+		# If using IBM 1.5 VM on Linux GTK PPC and typing in an editor crashes, add "-Xnojit"
+		# If Eclipse fails to create a lock file with the reason "No lock available", add "-Dosgi.locking=none"
 		pushd .
 	  cd "$ECLIPSE_HOME"
 		./eclipse -vm "${JAVA_HOME}/bin/java" \
 		-data "${ECLIPSE_DATAHOME}" \
-		-Dosgi.locking=none \
 		-vmargs -Xmx512M
 		popd
 	fi
