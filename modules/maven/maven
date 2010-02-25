@@ -1,0 +1,165 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+maven_dependencies=( 'mbe' 'platform' 'java' )
+maven_functions=(maven_load maven_unload maven_setpath maven_usage maven_env maven_config maven_listVersions )
+
+# Environment Variables:
+# MAVEN_PRODUCT
+# MAVEN_PRODUCT_VERSION
+# MAVEN_PRODUCT_SUBDIR
+# MAVEN_JAVA_CREATOR
+# MAVEN_JAVA_VERSION
+# MAVEN_JAVA_BITS
+
+maven_load ()
+{
+	DEBUG echo "maven_load: enter"
+	# Load module dependencies
+	mbe_loadModules "${maven_dependencies[@]}"
+
+	local module="maven"
+	# Load preferences file
+	source "${MODULES_DIR}/${module}/${module}.conf"
+
+	# Specify the default Eclipse product to be used
+	MAVEN_PRODUCT=${MAVEN_PRODUCT:=apache-maven}
+	MAVEN_PRODUCT_VERSION=${MAVEN_PRODUCT_VERSION:=2.2.1}
+	
+	# Specify the default Java to be used when running Eclipse
+	MAVEN_JAVA_CREATOR=${MAVEN_JAVA_CREATOR:=IBM}
+	MAVEN_JAVA_VERSION=${MAVEN_JAVA_VERSION:=1.5.0}
+	MAVEN_JAVA_BITS=${MAVEN_JAVA_BITS:=32}
+
+	DEBUG echo "maven_load: leave"
+	return 0
+
+}
+
+maven_unload ()
+{
+	local module="maven"
+	local func
+	for func in "${maven_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+maven_setpath ()
+{
+	local module="maven"
+
+	if [ -e "${MAVEN_HOME}" ]; then
+		PATH="${MAVEN_HOME}/bin:${PATH}"
+		#CLASSPATH="${MAVEN_HOME}/lib:${CLASSPATH}"
+		export MAVEN_OPTS="-Xms128m -Xmx512m"
+		export JAVA_HOME
+	fi
+}
+
+maven_usage ()
+{
+	local module="maven"
+}
+
+maven_env ()
+{
+	echo "MAVEN_HOME=${MAVEN_HOME}"
+	echo "--------------------------------------------------------------------------------"
+	echo "MAVEN_PRODUCT=${MAVEN_PRODUCT}"
+	echo "MAVEN_PRODUCT_VERSION=${MAVEN_PRODUCT_VERSION}"
+	echo "MAVEN_JAVA_CREATOR=${MAVEN_JAVA_CREATOR}"
+	echo "MAVEN_JAVA_VERSION=${MAVEN_JAVA_VERSION}"
+	echo "MAVEN_JAVA_BITS=${MAVEN_JAVA_BITS}"
+}
+
+maven_config ()
+{
+	local module="maven"
+
+	usage ()
+	{
+		echo "Usage: maven_config [-p <product>] [-v <version>] [-c <java_creator>] [-j <java_version>] [-b <java_bits>]"
+		echo "	Configures a reasonable environment and executes the Eclipse version specified."
+	}
+
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "p:v:c:j:b:h" option
+	do
+		case $option in
+			p  ) MAVEN_PRODUCT=$OPTARG;;
+			v  ) MAVEN_PRODUCT_VERSION=$OPTARG;;
+			c  ) MAVEN_JAVA_CREATOR=$OPTARG;;
+			j  ) MAVEN_JAVA_VERSION=$OPTARG;;
+			b  ) MAVEN_JAVA_BITS=$OPTARG;;
+			h  ) print_usage="1";;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	MAVEN_SUBDIR="${MAVEN_PRODUCT}/${MAVEN_PRODUCT_VERSION}" # The path under TOOLSPATH where the product can be found
+
+	# Define MAVEN_HOME
+	MAVEN_TOOLSPATH="${TOOLSPATHGENERIC}"
+	MAVEN_HOME="${MAVEN_TOOLSPATH}/${MAVEN_SUBDIR}"
+
+	# Export key variables
+	export MAVEN_HOME
+
+	# Check that MAVEN_HOME exists and is a directory
+	if [ ! -d "$MAVEN_HOME" ]; then
+		echo "ERROR: ${MAVEN_PRODUCT} does not exist at ${MAVEN_HOME}"
+		MAVEN_HOME=""
+		return 1
+	fi
+}
+
+maven_listVersions ()
+{
+	local versions
+
+	usage ()
+	{
+		echo "Usage: maven_listVersions [-p <product>]"
+		echo " Searches and lists the available Eclipse versions for a particular product."
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "p:b:h" option
+	do
+		case $option in
+			p  ) SEARCH_PRODUCT=$OPTARG;;
+			h  ) print_usage="1";;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	SEARCH_PRODUCT=${SEARCH_PRODUCT:=${MAVEN_PRODUCT}}
+	SEARCH_PATH="${TOOLSPATHGENERIC}/${SEARCH_PRODUCT}"
+
+	declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' -printf "%f\n" | sort) )
+
+	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
+
+	echo "${versions[@]}"
+}
