@@ -251,4 +251,6 @@ function platform_toolspath
 {
 	export TOOLSPATH="${TOOLSPATH_BASE}/${PLATFORMPATH}"
 	export TOOLSPATH32="${TOOLSPATH_BASE}/${PLATFORMPATH32}"
+	export GENERIC_ARCH="generic"
+	export TOOLSPATHGENERIC="${TOOLSPATH_BASE}/${GENERIC_ARCH}"
 }
