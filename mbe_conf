@@ -10,7 +10,7 @@ export MODULES_LOAD=("mbe" "platform" "colors" "prompt" "eclipse" "java" "homebi
 export INSECURE_HOSTS_UMASK="0077"
 # Allow others to read from (but not write to) our files on shared hosts
 export SHARED_HOSTS_UMASK="0022"
-export SHARED_HOSTS=( myHost ) # umask 0022
+export SHARED_HOSTS=( localhost ) # umask 0022
 # Allow others to read from and write to our files on secure hosts
 export SECURE_HOSTS_UMASK="0000"
 export SECURE_HOSTS=( ) # umask 0000

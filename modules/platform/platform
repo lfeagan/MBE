@@ -239,6 +239,19 @@ function platform_platformpath
 			PLATFORMPATH="Windows/64/x86_64"
 			PLATFORMPATH32="Windows/32/i686"
 		fi
+	elif [[ "$KERNELNAME" == "Darwin" ]]; then
+		if [[ "$CPUTYPE" == i*86 || "$CPUTYPE" == "x86_64" ]]; then
+			if [[ "$KERNEL_BITS" == 32 ]]; then
+				PLATFORMPATH="Darwin/32/i386"
+				PLATFORMPATH32="${PLATFORMPATH}"
+			elif [[ "$KERNELBITS" == 64 ]]; then
+				PLATFORMPATH="Darwin/64/x86_64"
+				PLATFORMPATH32="Darwin/32/i386"
+			else
+				echo "ERROR: Unsupported ${KERNEL_BITS} bit kernel detected"
+				return 1
+			fi
+		fi
 	else
 		echo "ERROR: Unknown platform"
 		return 1
