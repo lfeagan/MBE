@@ -22,7 +22,7 @@
 java_functions=( "java_load" "java_unload" "java_setpath" "java_usage" "java_listCreators" "java_isValidCreator" "java_listVersions" "java_isValidVersion" "java_env" "java_buildjavahomestring" "java_config" )
 java_dependencies=( "mbe" "platform" )
 
-declare java_javadir="Java"
+export java_javadir="Java"
 
 function java_load ()
 {
@@ -135,6 +135,11 @@ function java_config ()
 		usage
 		return 0
 	fi
+
+	# If a field is unassigned, use the current value as the default (eg no change if unspecified)
+	bits="${bits-$JAVA_BITS}"
+	creator="${creator-$JAVA_CREATOR}"
+	version="${version-$JAVA_VERSION}"
 
 	# Verify that requested change will succeed
 	local maybe_java_home="$(java_buildjavahomestring ${bits} ${creator} ${version})"
