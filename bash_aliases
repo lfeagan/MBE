@@ -287,12 +287,12 @@ function psu () { ps  ux $@; }
 function lpsa () { ps aux $@ | p; }
 function lpsu () { ps  ux $@ | p; }
 
-function dub () { du -sclb $@; }
-function duk () { du -sclk $@; }
+function dub () { du -scb $@; }
+function duk () { du -sck $@; }
 function duks () { duk $@ 2>/dev/null | sort -n -k1,1; }
-function dum () { du -sclm $@; }
-function dums () { du -sclm $@ 2>/dev/null | sort -n -k1,1; }
-function duh () { du -sclh $@; }
+function dum () { du -scm $@; }
+function dums () { du -scm $@ 2>/dev/null | sort -n -k1,1; }
+function duh () { du -sch $@; }
 #duh () { dh -h --max-depth=1 $@; }
 
 function dfk () { df -PTak $@; }
