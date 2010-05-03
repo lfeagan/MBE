@@ -85,8 +85,10 @@ eclipse_setmozpath()
 		fi
 	done
 
-	if [ -z "$MOZILLA_FIVE_HOME" ]; then
-		echo "Unable to locate appropriate library for integrated Mozilla browser support"
+	if [[ "${KERNELNAME}" == "Linux" ]]; then
+		if [ -z "$MOZILLA_FIVE_HOME" ]; then
+			echo "Unable to locate appropriate library for integrated Mozilla browser support"
+		fi
 	fi
 
 	# Libraries from the search take precedence
