@@ -33,6 +33,9 @@ function mbe_load
 		source "${MODULES_DIR}/${module}/${feature}"
 		${module}_${feature}_load
 	done
+
+	export MBE_LOGFILE_NAME="${MBE_LOGFILE_NAME-mbe.log}"
+	export MBE_LOGFILE="${MBE_DIR}/${MBE_LOGFILE_NAME}"
 	return
 }
 
@@ -70,6 +73,28 @@ function mbe_usage
 function DEBUG
 {
    [ "$_DEBUG" == "on" ] &&  $@ || :
+}
+
+############################################################
+# mbe_log_info
+# Description:
+#  Adds the 'mbe_log_info' function, used to log
+#  informational messages to the MBE log file.
+############################################################
+function mbe_log_info
+{
+	echo -ne "INFO: ${@}\n" >> "${MBE_LOGFILE}"
+}
+
+############################################################
+# mbe_log_error
+# Description:
+#  Adds the 'mbe_log_error' function, used to log
+#  informational messages to the MBE log file.
+############################################################
+function mbe_log_error
+{
+	echo -ne "ERROR: ${@}\n" >> "${MBE_LOGFILE}"
 }
 
 ############################################################
