@@ -34,7 +34,11 @@
 ##################################
 # ###### LOAD PREFERENCES ###### #
 ##################################
-source "${HOME}/.mbe_conf"
+export MODULES_DIR="${HOME}/.mbe/modules"
+export MODULES_LOAD=("mbe" "platform" "utils" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "maven" )
+# Loaded modules are stored in MODULES_LOADED
+
+source "${MODULES_DIR}/mbe/mbe.conf"
 
 ##################################
 # ##### MANUAL MODULE LOAD ##### #

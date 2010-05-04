@@ -108,7 +108,6 @@ if [ $dobackup -eq 1 ]; then
 	backupfile "${target}/.bashrc"
 	backupfile "${target}/.bash_aliases"
 	backupfile "${target}/.bash_profile"
-	backupfile "${target}/.mbe_conf"
 fi
 
 copydir="${0%/*}"
@@ -122,9 +121,6 @@ echo -e "Copying \"${copydir}/bash_aliases\" to \"${target}/.bash_aliases\""
 
 echo -e "Copying \"${copydir}/bash_profile\" to \"${target}/.bash_profile\""
 [ $debug -eq 0 ] && cp "${copydir}/bash_profile" "${target}/.bash_profile"
-
-echo -e "Copying \"${copydir}/mbe_conf\" to \"${target}/.mbe_conf\""
-[ $debug -eq 0 ] && cp "${copydir}/mbe_conf" "${target}/.mbe_conf"
 
 # Copy contents of modules folder
 echo -e "Copying modules from \"${copydir}/modules/*\" to \"${MBE_MODULES_DIR}\""
