@@ -87,7 +87,7 @@ eclipse_setmozpath()
 
 	if [[ "${KERNELNAME}" == "Linux" ]]; then
 		if [ -z "$MOZILLA_FIVE_HOME" ]; then
-			echo "Unable to locate appropriate library for integrated Mozilla browser support"
+			mbe_log_info "Unable to locate appropriate library for integrated Mozilla browser support"
 		fi
 	fi
 
