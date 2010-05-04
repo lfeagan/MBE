@@ -4,7 +4,7 @@
 # Customized based on the Eclipse Mutli-User Install Guide at:
 # http://help.eclipse.org/help32/index.jsp?topic=/org.eclipse.platform.doc.isv/reference/misc/multi_user_installs.html
 
-eclipse_dependencies=( 'mbe' 'platform' 'java' )
+eclipse_dependencies=( 'mbe' 'platform' 'utils' 'java' )
 eclipse_functions=(eclipse_load eclipse_unload eclipse_setpath eclipse_setmozpath eclipse_usage eclipse_env eclipse_config eclipse_listVersions eclipse_run sdp_run teamconcert_run )
 
 # Environment Variables:
@@ -226,7 +226,7 @@ eclipse_listVersions ()
 	fi
 
 	#declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' -printf "%f\n" | sort) )
-	declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' | sed -E 's/\/.*\///g' | sort) )
+	declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' | trimdirs | sort) )
 
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 

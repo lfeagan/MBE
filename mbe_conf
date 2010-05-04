@@ -2,7 +2,7 @@
 
 # Bash Module Preferences
 export MODULES_DIR="${HOME}/.mbe/modules"
-export MODULES_LOAD=("mbe" "platform" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" )
+export MODULES_LOAD=("mbe" "platform" "utils" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "maven" )
 # Loaded modules are stored in MODULES_LOADED
 
 # Bash User Preferences & Over-rides

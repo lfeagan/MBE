@@ -1,7 +1,7 @@
 #!/bin/bash
 # vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
 
-maven_dependencies=( 'mbe' 'platform' 'java' )
+maven_dependencies=( 'mbe' 'platform' 'utils' 'java' )
 maven_functions=(maven_load maven_unload maven_setpath maven_usage maven_env maven_config maven_listVersions )
 
 # Environment Variables:
@@ -157,7 +157,7 @@ maven_listVersions ()
 	SEARCH_PRODUCT=${SEARCH_PRODUCT:=${MAVEN_PRODUCT}}
 	SEARCH_PATH="${TOOLSPATHGENERIC}/${SEARCH_PRODUCT}"
 
-	declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' -printf "%f\n" | sort) )
+	declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' | trimdirs | sort) )
 
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 
