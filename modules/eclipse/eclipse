@@ -146,6 +146,7 @@ eclipse_config ()
 		return 0
 	fi
 
+	ECLIPSE_WORKDIR="${ECLIPSE_WORKDIR-Workspaces}"
 	ECLIPSE_SUBDIR="${ECLIPSE_PRODUCT}/${ECLIPSE_PRODUCT_VERSION}" # The path under TOOLSPATH where the product can be found
 
 	# Define ECLIPSE_HOME
@@ -160,9 +161,9 @@ eclipse_config ()
 	ECLIPSE_HOME="${ECLIPSE_TOOLSPATH}/${ECLIPSE_SUBDIR}"
 
 	# Define ECLIPSE_USERHOME
-	ECLIPSE_USERHOME="@user.home/eclipse/${ECLIPSE_SUBDIR}/user"
-	ECLIPSE_CONFHOME="@user.home/eclipse/${ECLIPSE_SUBDIR}/conf"
-	ECLIPSE_DATAHOME="@user.home/eclipse/${ECLIPSE_SUBDIR}/workspace"
+	ECLIPSE_USERHOME="@user.home/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/user"
+	ECLIPSE_CONFHOME="@user.home/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/conf"
+	ECLIPSE_DATAHOME="@user.home/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/workspace"
 
 	#ECLIPSE_HOMEARGS="-user ${ECLIPSE_USERHOME} -configuration ${ECLIPSE_CONFHOME} -data ${ECLIPSE_DATAHOME}" 
 	ECLIPSE_HOMEARGS="-data ${ECLIPSE_DATAHOME}" 
@@ -224,7 +225,8 @@ eclipse_listVersions ()
 		return 1
 	fi
 
-	declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' -printf "%f\n" | sort) )
+	#declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' -printf "%f\n" | sort) )
+	declare -a versions=( $(find ${SEARCH_PATH} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+.*' | sed -E 's/\/.*\///g' | sort) )
 
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 
