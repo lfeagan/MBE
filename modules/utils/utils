@@ -66,8 +66,17 @@ utils_usage ()
 trimdirs ()
 {
 	if (( $BSDARGS )); then
-		sed -E 's/\/.*\///g'
+		sed -E 's/.*\///g'
 	else
-		sed -r 's/\/.*\///g'
+		sed -r 's/.*\///g'
+	fi
+}
+
+find_eregex ()
+{
+	if (( $BSDARGS )); then
+		find -E "${@}"
+	else
+		find --regextype "posix-extended" "${@}"
 	fi
 }
