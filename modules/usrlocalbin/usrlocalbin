@@ -58,8 +58,14 @@ usrlocalbin_setpath ()
 				PATH="${i}:${PATH}"
 			fi
 		done
-		MANPATH="/usr/local/man:/usr/man:${MANPATH}"
 	fi
+
+	USRLOCALBIN_MANPATHS=( '/usr/man' '/usr/local/man' '/usr/share/man' '/opt/local/share/man' )
+	for i in "${USRLOCALBIN_MANPATHS[@]}"; do
+		if [ -d "${i}" ]; then
+			MANPATH="${i}:${MANPATH}"
+		fi
+	done
 }
 
 usrlocalbin_usage ()
