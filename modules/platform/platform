@@ -28,13 +28,16 @@
 #  Consequently, uname and other tools are used in
 #  an attempt to create a more portable concept of
 #  platform naming.
-# Exports: KERNELNAME, KERNELBITS, CPUTYPE
+# Exports: KERNELNAME, KERNELBITS, CPUTYPE,
+#   TOOLSPATH, TOOLSPATH32, TOOLSPATHGENERIC,
+#   BSDARGS
 # 
 ############################################################
 
 platform_dependencies=( 'mbe' )
 platform_functions=( 'platform_load' 'platform_unload' 'platform_setpath' \
-		'platform_config' 'platform_platformpath' 'platform_toolspath' 'platform_desc' )
+		'platform_config' 'platform_platformpath' 'platform_toolspath' 'platform_desc'
+		'cdtools' 'cdtools32' 'cdtoolsgeneric' )
 
 function platform_load
 {
@@ -144,10 +147,15 @@ function platform_config ()
 
 	# If passed three arguments, forcibly sets KERNELNAME, KERNELBITS, and CPUTYPE
 
+	# BSD Arguments defaults to 0 (false)
+	BSDARGS=0
+
+	# Given a KERNELNAME, can reliably determine how to figure out CPUTYPE and KERNELBITS
 	KERNELNAME=`uname -s`
 	if [[ "$KERNELNAME" == "AIX" ]]; then
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=`/usr/bin/getconf KERNEL_BITMODE`
+		BSDARGS=0
 	elif [[ "$KERNELNAME" == "CYGWIN_NT-5.1" ]]; then
 		CPUTYPE="$(uname -m)"
 		if [[ "${CPUTYPE}" == i*86 ]]; then
@@ -155,9 +163,11 @@ function platform_config ()
 		else
 			KERNELBITS="64"
 		fi
+		BSDARGS=0
 	elif [[ "$KERNELNAME" == "Darwin" ]]; then
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=64
+		BSDARGS=1
 	elif [[ "$KERNELNAME" == "HP-UX" ]]; then
 		# Possibilities
 		# `uname -m` = "9000/800" --> PA-RISC, "ia64" --> Itanium
@@ -169,9 +179,11 @@ function platform_config ()
 		  CPUTYPE="pa"
 		fi
 		KERNELBITS=`/usr/bin/getconf KERNEL_BITS`
+		BSDARGS=1
 	elif [[ "$KERNELNAME" == "IRIX64" ]]; then
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=64
+		BSDARGS=0
 	elif [[ "$KERNELNAME" == "Linux" ]]; then
 		CPUTYPE=`/bin/uname -p`
 		# On Ubuntu/Debian systems, reports "unknown", try again with -m for machine type
@@ -181,24 +193,27 @@ function platform_config ()
 		if [[ "$CPUTYPE" == "athlon" ]]; then
 			CPUTYPE="i686"
 		fi
+		# On ppc64, always reports 32 even if kernel is 64-bit. Consider using `uname -r` or file on the running kernel
 		if [[ "$CPUTYPE" == "ppc64" ]]; then
 		  KERNELBITS=64
 		else
 			KERNELBITS=`/usr/bin/getconf LONG_BIT`
 		fi
-		# On ppc64, always reports 32 even if kernel is 64-bit. Consider using `uname -r` or file on the running kernel
+		BSDARGS=0
 	elif [[ "$KERNELNAME" == "SunOS" ]]; then
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=`isainfo -b`
+		BSDARGS=0
 	elif [[ "$KERNELNAME" == "OSF1" ]]; then
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=64
+		BSDARGS=0
 	else
 		#echo "Unrecognized OS: $KERNELNAME"
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=64
 	fi
-	export CPUTYPE KERNELNAME KERNELBITS
+	export CPUTYPE KERNELNAME KERNELBITS BSDARGS
 }
 
 function platform_desc
@@ -206,6 +221,7 @@ function platform_desc
 	echo "KERNELNAME=$KERNELNAME"
 	echo "KERNELBITS=$KERNELBITS"
 	echo "CPUTYPE=$CPUTYPE"
+	echo "BSDARGS=$BSDARGS"
 }
 
 function platform_platformpath
@@ -267,3 +283,7 @@ function platform_toolspath
 	export GENERIC_ARCH="generic"
 	export TOOLSPATHGENERIC="${TOOLSPATH_BASE}/${GENERIC_ARCH}"
 }
+
+function cdtools () { cd "${TOOLSPATH}"; }
+function cdtools32 () { cd "${TOOLSPATH32}"; }
+function cdtoolsgeneric () { cd "${TOOLSPATHGENERIC}"; }

@@ -86,7 +86,6 @@ function cls () { clear; ls $@; }
 function cll () { clear; ll $@; }
 function dir () { ls --color=auto --format=vertical; }
 function vdir () { ls --color=auto --format=long; }
-function cdtools () { cd ${TOOLSPATH}; }
 
 # Save the real which for a rainy day
 if [ -z "$whichbin" ]; then
