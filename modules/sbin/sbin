@@ -51,7 +51,7 @@ sbin_unload ()
 sbin_setpath ()
 {
 	# Adds in sbin paths as there are many useful sysadminly tools there
-	sbin_paths=("/sbin" "/usr/sbin" "/usr/local/sbin")
+	sbin_paths=("/sbin" "/usr/sbin" "/usr/local/sbin" "/opt/local/sbin")
 	for i in "${sbin_paths[@]}"; do
 	if [ -d "${i}" ]; then
 		PATH="${i}:${PATH}"

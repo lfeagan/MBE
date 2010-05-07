@@ -50,15 +50,13 @@ usrlocalbin_unload ()
 
 usrlocalbin_setpath ()
 {
-	# Fix Solaris not having /usr/local/bin, etc in the default PATH
-	if [[ "$OSTYPE" == solaris* || "$OSTYPE" == aix* ]]; then
-		solaris_bin_paths=("/usr/xpg4/bin" "/usr/xpg6/bin" "/usr/local/bin" "/opt/freeware/bin")
-		for i in "${solaris_bin_paths[@]}"; do
-			if [ -d "${i}" ]; then
-				PATH="${i}:${PATH}"
-			fi
-		done
-	fi
+	# Fix Solaris and others not having /usr/local/bin, etc in the default PATH
+	bin_paths=("/usr/xpg4/bin" "/usr/xpg6/bin" "/usr/local/bin" "/opt/freeware/bin" "/opt/local/bin" )
+	for i in "${bin_paths[@]}"; do
+		if [ -d "${i}" ]; then
+			PATH="${i}:${PATH}"
+		fi
+	done
 
 	USRLOCALBIN_MANPATHS=( '/usr/man' '/usr/local/man' '/usr/share/man' '/opt/local/share/man' )
 	for i in "${USRLOCALBIN_MANPATHS[@]}"; do
