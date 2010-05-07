@@ -399,7 +399,7 @@ function find-large ()
    echo search_path = "$search_path" 
    echo min_size = "$min_size"
 
-   find "$search_path" -type f -size +"$min_size" -exec ls -l {} \; | sort -n -k 5,5 | awk '{print $5 ": " $8 }'
+   find "$search_path" -type f -size +"$min_size" -exec ls -l '{}' \; | sort -n -k5,1 | awk '{print $5 ": " $9 }'
   fi
  echo "Search complete"
 }
