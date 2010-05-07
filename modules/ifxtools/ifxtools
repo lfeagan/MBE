@@ -1,0 +1,1039 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent: 
+
+##############################################################################
+# Module: ifxtools
+# Description:
+#  Tools for retrieving, configuring, and using Informix products
+##############################################################################
+
+ifxtools_dependencies=( 'mbe' 'platform' )
+ifxtools_functions=( 'ifxtools_load' 'ifxtools_unload' 'ifxtools_setpath' \
+		'ifxmkrepo' 'ifxlist' 'ifxcd' 'ifxchrepobase' 'ifxenv' 'ifxtools_log' 'ifxtestvobsconfig' \
+		'idslist' 'idscheckout' 'idsconfig' 'idsup' 'idsupi' 'idsdown' 'idscd' 'idstools_gui' 'idsddd' \
+		'csdklist' 'csdkconfig' )
+
+function ifxtools_load
+{
+	# Load module dependencies
+	mbe_loadModules "${ifxtools_dependencies[@]}"
+	local module="ifxtools"
+	# Load preferences
+	source "${MODULES_DIR}/${module}/${module}.prefs"
+	return 0
+}
+
+function ifxtools_unload
+{
+	local func
+	for func in "${ifxtools_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+function ifxtools_setpath
+{
+	local module="ifxtools"
+	# /informix_repo will often be a sym-link to a large storage area
+	# If IFX_REPO_BASE_ARCHIVE is not yet defined, set it to the default value
+	if [ -z "${IFX_REPO_BASE_ARCHIVE}" ]; then
+		export IFX_REPO_BASE_ARCHIVE="/informix_repo"
+		DEBUG echo "ifxtools_setpath: base was not yet set"
+	fi
+	export IFX_REPO_ARCHIVE="${IFX_REPO_BASE_ARCHIVE}/${PLATFORMPATH}"
+
+	# If IFX_REPO_BASE_WORKING is not yet defined, set it to the default value of ~/informix_repo
+	if [ -z "${IFX_REPO_BASE_WORKING}" ]; then
+		export IFX_REPO_BASE_WORKING="~/informix_repo"
+		DEBUG echo "ifxtools_setpath: base was not yet set"
+	fi
+	export IFX_REPO_WORKING="${IFX_REPO_BASE_WORKING}/${PLATFORMPATH}"
+
+	if [[ $IFX_DOIDS -eq 1 ]]; then
+		DEBUG echo "ifxtools_setpath: IFX_DOIDS is set"
+		export INFORMIXDIR="${IDS_PATH}"
+		export ONCONFIG="onconfig.${IFX_SERVERNAME}"
+		export INFORMIXSERVER="${IFX_SERVERNAME}"
+		export INFORMIXSQLHOSTS="${IDS_PATH}/etc/sqlhosts.${IFX_SERVERNAME}"
+		PATH="${IDS_PATH}/bin:${PATH}"
+		LD_LIBRARY_PATH="${IDS_PATH}/lib:${LD_LIBRARY_PATH}"
+		# If CSDK has also been installed in this folder, include it as well
+		if [ -e "${IDS_PATH}/lib/esql" ]; then 
+			LD_LIBRARY_PATH="${IDS_PATH}/lib/esql:${LD_LIBRARY_PATH}"
+		fi
+	elif [[ $IFX_DOCSDK -eq 1 ]]; then
+		DEBUG echo "ifxtools_setpath: IFX_DOCSDK is set"
+		export INFORMIXDIR=${CSDK_PATH}
+		export INFORMIXSERVER="${IFX_SERVERNAME}"
+		export INFORMIXSQLHOSTS="${CSDK_PATH}/etc/sqlhosts.${IFX_SERVERNAME}"
+		PATH="${CSDK_PATH}/bin:${PATH}"
+		LD_LIBRARY_PATH="${CSDK_PATH}/lib:${CSDK_PATH}/lib/esql:${LD_LIBRARY_PATH}"
+	else
+		DEBUG echo "ifxtools_setpath: Neither IFX_DOIDS or IFX_DOCSDK are set. Unsetting variables" 
+		unset -v INFORMIXDIR ONCONFIG INFORMIXSERVER INFORMIXSQLHOSTS
+		return 1
+	fi
+}
+
+function ifxtools_log
+{
+	if [[ "$IFXTOOLS_LOG" == "on" ]]; then
+		if [[ ! -f "$IFXTOOLS_LOGFILE" ]]; then
+			touch "${IFXTOOLS_LOGFILE}"
+		fi
+		echo "${USER}@${HOSTNAME} $(timestamp) $@" >> "${IFXTOOLS_LOGFILE}"
+	fi
+}
+
+# Informix Functions
+# IFX Variables: IFX_REPO_ARCHIVE, IFX_REPO, IFX_SERVERNAME, IFX_DOIDS, IFX_DOCSDK
+# IDS Path Variables: IDS_PATH, IDS_VERSION, IDS_FIXPACK, IDS_BUILDNUM
+# CSDK Path Variables: CSDK_PATH, CSDK_VERSION, CSDK_FIXPACK
+
+function ifxmkrepo
+{
+	local module="ifxtools"
+	# Used to build the base Informix repository directory structure
+	usage ()
+	{
+		echo "Usage: ifxmkrepo [-t <target directory>]"
+		echo "  Creates the base Informix repository directory structure beneath the current directory (default)"
+		echo "  or beneath a target directory (-t)."
+	}
+
+	declare -i error=0
+
+	# Define local variable defaults
+	local target="$PWD"
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "t:h" option
+	do
+		case $option in
+			t  ) target=$OPTARG;;
+			h  ) print_usage="1";;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	# Check for target directory existence and writability
+	if [[ ! -d "${target}" || ! -w "${target}" ]]; then
+		echo "ERROR: target directory \"${target}\" does not exist or is not writable"
+		return 1
+	fi
+
+	# Begin directory creation process
+	dirs=( $(cat ${MODULES_DIR}/${module}/informix_repo.dirs) )
+	for dir in "${dirs[@]}"; do
+		mkdir -p "${target}/${dir}"
+	done
+
+	# Make all directories world readable, writable, cd-able
+	chmod -R a+rwX "${target}"
+
+	ifxtools_log ifxmkrepo $@ 
+}
+
+function idstools_gui
+{
+	local module="ifxtools"
+	current_menu_id=0
+	current_menu_display ()
+	{
+		tput clear
+		case $current_menu_id in
+			0 ) main_menu;;
+			1 ) idsversions_menu;;
+			2 ) idsfixpacks_menu;;
+		esac
+	}
+
+	# Creates a menu system for interactively usage
+	main_menu_id=0
+	main_menu ()
+	{
+		echo "idstools"
+		echo " 1 Retrieve IDS"
+		echo " 2 Configuration"
+		echo " q Quit"
+		echo ""
+		echo "Select item: "
+	}
+
+	idsversions_menu_id=1
+	idsversions_menu ()
+	{
+		echo "Available IDS Versions"
+		echo "${versions[*]}"
+		echo "m Main Menu"
+		echo "q Quit"
+	}
+
+	idsfixpacks_menu_id=2
+	idsfixpacks_menu ()
+	{
+		fixpacks=($(idslist -a -m -v $version))
+		echo "Available IDS Fixpacks for Version $version"
+		echo "${versions[*]}"
+		echo "m Main Menu"
+		echo "q Quit"
+	}
+
+	tput setb 1
+	tput clear
+
+	QUIT=0
+	while [ $QUIT -lt 1 ]; do
+		if [ "$current_menu_id" -eq "$main_menu_id" ]; then
+			tput clear
+			main_menu
+			tput cup 5 13
+			tput el
+			read SEL
+		
+			if [ "$SEL" == "q" ]; then
+				QUIT=1
+				continue
+			elif [ $SEL -eq 1 ]; then
+				current_menu_id=$idsversions_menu_id
+			elif [ $SEL -eq 2 ]; then
+				current_menu_id=$idsfixpacks_menu_id
+			else
+				continue
+			fi
+			tput cup 10 20
+			tput el
+			case $SEL in
+				*) echo "You selected $SEL";;
+			esac
+		elif [ "$current_menu_id" -eq "$idsversions_menu_id" ]; then
+			versions=($(idslist -a -m))
+			idsversions_menu
+			tput ll
+			echo "Version: "
+			tput el
+			read version
+
+			tput cup 10 20
+			tput el
+			echo "You selected version $version"
+
+			version_exists=0
+			# Scan through the list of available versions and set a flag if the version argument is found
+			for version in "${versions[@]}"; do
+				if [ "$version_arg" == "$i" ]; then
+					version_exists=1
+					break
+				fi
+			done
+
+			if [ "$version_exists" -eq 1 ]; then
+				current_menu_id=$idsfixpacks_menu_id
+			fi
+		else
+			current_menu_id=$main_menu_id
+		fi
+	done
+
+	if [ $TERM ~ "linux" ]; then
+		tput setb 0 # reset background to black
+	fi
+	tput reset
+	tput clear
+}
+
+function csdkconfig
+{
+	local module="ifxtools"
+	# Used for (re)configuring the CSDK installation pointed to
+	usage ()
+	{
+		echo "Usage: csdkconfig -v <CSDK_VERSION> -f <CSDK_FIXPACK> -s <SERVERNAME>"
+	}
+
+	declare -i error=0
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "v:f:s:h" option
+	do
+		case $option in
+			v  ) CSDK_VERSION=$OPTARG;;
+			f  ) CSDK_FIXPACK=$OPTARG;;
+			s  ) IFX_SERVERNAME=$OPTARG;;
+			h  ) print_usage=1;;
+			\? ) print_usage=1;;
+			*  ) print_usage=1;;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	IFX_REPO="${IFX_REPO_WORKING}"
+
+	# check that all necessary variables are set to complete the request
+	# check IFX_REPO
+	if [ -z "${IFX_REPO}" ]; then
+		echo "ERROR: IFX_REPO is not set."
+		((error++))
+	fi
+	# check IFX_SERVERNAME
+	if [ -z "${IFX_SERVERNAME}" ]; then
+		echo "ERROR: IFX_SERVERNAME is not set."
+		((error++))
+	fi
+	# check CSDK_VERSION
+	if [ -z "${CSDK_VERSION}" ]; then 
+		echo "ERROR: CSDK_VERSION is not set."
+		((error++))
+	fi
+	# check CSDK_FIXPACK
+	if [ -z "${CSDK_FIXPACK}" ]; then 
+		echo "ERROR: CSDK_FIXPACK is not set."
+		((error++))
+	fi
+	# read the error counter
+	if [ $error -ge 1 ]; then
+		echo "Encountered $error errors. Exiting."
+		return
+	fi
+
+	CSDK_PATH="${IFX_REPO}/CSDK/${CSDK_VERSION}_${CSDK_FIXPACK}"
+	
+	if [[ -d "${CSDK_PATH}" ]]; then
+		export CSDK_PATH CSDK_VERSION CSDK_FIXPACK IFX_SERVERNAME
+		export IFX_DOCSDK=1
+		export IFX_DOIDS=0
+		ifxtools_log csdkconfig $@
+		mbe_buildpath
+	else
+		echo "ERROR: ${CSDK_PATH} does not exist"
+	fi
+}
+
+#OLDIFS="${IFS}"
+#IFS=`echo -ne "\n\b"`
+
+function ifxlist
+{
+	local module="ifxtools"
+	usage ()
+	{
+		echo "Usage: ifxlist [-a] [-p <PRODUCT>] [-v <VERSION>] [-f <FIXPACK>]"
+		echo "  Descrption: Lists all of the available CSDK versions & builds for this platform in IFX_REPO"
+		echo "  Arguments:"
+		echo "    -a Use IFX_REPO_ARCHIVE as the repository to list"
+		echo "    -p What Informix product to produce the listing for"
+		echo "    -v What version of IDS to produce the listing for"
+		echo "    -f What fixpack of IDS to produce the listing for"
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	unset product
+	unset version
+	unset fixpack
+	while getopts "p:v:f:ah" option
+	do
+		case $option in
+			p  ) product=$OPTARG;;
+			v  ) version=$OPTARG;;
+			f  ) fixpack=$OPTARG;;
+			a  ) use_archive=1;;
+			h  ) print_usage=1;;
+			\? ) print_usage=1;;
+			*  ) print_usage=1;;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	if [[ "$use_archive" == 1 ]]; then
+		#echo "Using archive: ${IFX_REPO_ARCHIVE}"
+		IFX_REPO="${IFX_REPO_ARCHIVE}"
+	else
+		IFX_REPO="${IFX_REPO_WORKING}"
+	fi
+
+	# If no version argument is provided, list all folders under $IFX_REPO, and then all builds available for each version, recursively 
+
+	#read -r -a versions <<< $(ls -1 ${IFX_REPO}/CSDK)
+	#versions=( ${IFX_REPO}/${product}/* )
+	local versions=( $(find ${IFX_REPO}/${product} -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq) )
+
+	local version_exists=0
+	# If no version argument was provided, list the available versions
+	if [[ -z "${version}" ]]; then
+		echo "Available versions are: ${versions[@]}"
+		return 0
+	else
+		# A version argument was provided, check that the version exists
+		# Scan through the list of available versions and set a flag if the version argument is found
+		for i in "${versions[@]}"; do
+			if [ "$version" == "$i" ]; then
+				version_exists=1
+				break
+			fi
+		done
+		
+		if [ $version_exists -eq 0 ]; then
+			echo "ERROR: ${product} version ${version} does not exist at \"${IFX_REPO}/${product}\""
+			echo "Available versions are: ${versions[@]}"
+			return 1
+		else
+			# Alter the array of available versions to limit to the user-specified version
+			versions=( "$version" )
+		fi
+	fi
+
+	local fixpacks=( $(find ${IFX_REPO}/${product} -maxdepth 1 -name "${version}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq) )
+	
+	local fixpack_exists=0
+	# If no fixpack argument was provided, list the available fixpacks
+	if [[ -z "${fixpack}" ]]; then
+		echo "Available fixpacks for ${product} ${version} are: ${fixpacks[@]}"
+		return 0
+	else
+		# A fixpack argument was provided, check that the fixpack exists
+		# Scan through the list of available fixpacks and set a flag if the fixpack argument is found
+		for i in "${fixpacks[@]}"; do
+			if [ "$fixpack" == "$i" ]; then
+				fixpack_exists=1
+				break
+			fi
+		done
+		
+		if [ $fixpack_exists -eq 0 ]; then
+			echo "ERROR: ${product} fixpack ${fixpack} does not exist at \"${IFX_REPO}/${product}\""
+			echo "Available fixpacks are: ${fixpacks[@]}"
+			return 1
+		else
+			# Alter the array of available fixpacks to limit to the user-specified fixpack
+			fixpacks=( "$fixpack" )
+		fi
+	fi
+
+	local builds=( $(find ${IFX_REPO}/${product} -maxdepth 1 -name "${version}_${fixpack}_*" -printf "%f\n") )
+	for build in "${builds[@]}"; do 
+		echo "${build}"
+	done
+
+	# Log successful invocation
+	ifxtools_log csdklist $@
+
+}
+
+function csdklist
+{
+	local module="ifxtools"
+	usage ()
+	{
+		echo "Usage: csdklist [-a] [-m] [-v <VERSION>] [-f <FIXPACK>]"
+		echo "  Descrption: Lists all of the available CSDK versions & builds for this platform in IFX_REPO"
+		echo "  Arguments:"
+		echo "    -a Use IFX_REPO_ARCHIVE as the repository to list"
+		echo "    -v What version of IDS to produce the listing for"
+		echo "    -f What fixpack of IDS to produce the listing for"
+		echo "    -m Machine-friendly output"
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	unset version_arg
+	unset fixpack_arg
+	while getopts "v:ah" option
+	do
+		case $option in
+			v  ) version_arg=$OPTARG;;
+			f  ) fixpack_arg=$OPTARG;;
+			a  ) use_archive=1;;
+			h  ) print_usage=1;;
+			\? ) print_usage=1;;
+			*  ) print_usage=1;;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	if [[ "$use_archive" == 1 ]]; then
+		#echo "Using archive: ${IFX_REPO_ARCHIVE}"
+		IFX_REPO="${IFX_REPO_ARCHIVE}"
+	else
+		IFX_REPO="${IFX_REPO_WORKING}"
+	fi
+
+	# If no version argument is provided, list all folders under $IFX_REPO, and then all builds available for each version, recursively 
+
+	#read -r -a versions <<< $(ls -1 ${IFX_REPO}/CSDK)
+	#versions=( ${IFX_REPO}/CSDK/* )
+	local versions=( $(find ${IFX_REPO}/CSDK -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq) )
+
+	local version_exists=0
+	# If no version argument was provided, list the available versions
+	if [[ -z "${version_arg}" ]]; then
+		echo "Available versions are: ${versions[@]}"
+		return 0
+	else
+		# A version argument was provided, check that the version exists
+		# Scan through the list of available versions and set a flag if the version argument is found
+		for i in "${versions[@]}"; do
+			if [ "$version_arg" == "$i" ]; then
+				version_exists=1
+				break
+			fi
+		done
+		
+		if [ $version_exists -eq 0 ]; then
+			echo "ERROR: CSDK version ${version_arg} does not exist at \"${IFX_REPO}/CSDK\""
+			echo "Available versions are: ${versions[@]}"
+			return 1
+		else
+			# Alter the array of available versions to limit to the user-specified version
+			versions=( "$version_arg" )
+		fi
+	fi
+
+	local fixpacks=( $(find ${IFX_REPO}/CSDK -maxdepth 1 -name "${version_arg}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq) )
+	
+	local fixpack_exists=0
+	# If no fixpack argument was provided, list the available fixpacks
+	if [[ -z "${fixpack_arg}" ]]; then
+		echo "Available fixpacks for CSDK ${version_arg} are: ${fixpacks[@]}"
+		return 0
+	else
+		# A fixpack argument was provided, check that the fixpack exists
+		# Scan through the list of available fixpacks and set a flag if the fixpack argument is found
+		for i in "${fixpacks[@]}"; do
+			if [ "$fixpack_arg" == "$i" ]; then
+				fixpack_exists=1
+				break
+			fi
+		done
+		
+		if [ $fixpack_exists -eq 0 ]; then
+			echo "ERROR: CSDK fixpack ${fixpack_arg} does not exist at \"${IFX_REPO}/CSDK\""
+			echo "Available fixpacks are: ${fixpacks[@]}"
+			return 1
+		else
+			# Alter the array of available fixpacks to limit to the user-specified fixpack
+			fixpacks=( "$fixpack_arg" )
+		fi
+	fi
+
+	local builds=( $(find ${IFX_REPO}/CSDK -maxdepth 1 -name "${version_arg}_${fixpack_arg}_*" -printf "%f\n") )
+	for build in "${builds[@]}"; do 
+		echo "${build}"
+	done
+
+	# Log successful invocation
+	ifxtools_log csdklist $@
+}
+
+function idslist
+{
+	local module="ifxtools"
+	usage ()
+	{
+		echo "Usage: idslist [-a] [-m] [-v <VERSION>] [-f <FIXPACK>]"
+		echo "  Descrption: Lists all of the available IDS versions & builds for this platform in IFX_REPO"
+		echo "  Arguments:"
+		echo "    -a Use IFX_REPO_ARCHIVE as the repository to list"
+		echo "    -v What version of IDS to produce the listing for"
+		echo "    -f What fixpack of IDS to produce the listing for"
+		echo "    -m Machine-friendly output"
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset version_arg
+	unset fixpack_arg
+	use_archive=0
+	machine_friendly=0
+	unset print_usage
+	while getopts "v:f:amh" option
+	do
+		case $option in
+			v  ) version_arg=$OPTARG;;
+			f  ) fixpack_arg=$OPTARG;;
+			a  ) use_archive=1;;
+			m  ) machine_friendly=1;;
+			h  ) print_usage=1;;
+			\? ) print_usage=1;;
+			*  ) print_usage=1;;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	if [[ "$use_archive" == 1 ]]; then
+		#echo "Using archive: ${IFX_REPO_ARCHIVE}"
+		IFX_REPO="${IFX_REPO_ARCHIVE}"
+	else
+		IFX_REPO="${IFX_REPO_WORKING}"
+	fi
+
+	# If no version argument is provided, list all folders under $IFX_REPO, and then all builds available for each version, recursively 
+
+	#read -r -a versions <<< $(ls -1 ${IFX_REPO}/IDS | cut -d'_' -f1 | sort | uniq)
+	#read -r -a versions <<< $(find ${IFX_REPO}/IDS -maxdepth 1 -regex '.*/*[0-9][0-9]*' -printf "%f\n" | cut -d'_' -f1 | sort | uniq)
+	versions=( $(find ${IFX_REPO}/IDS -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq) )
+
+	local version_exists=0
+	# If no version argument was provided, list the available versions
+	if [[ -z "${version_arg}" ]]; then
+		if [ $machine_friendly -eq 0 ]; then
+			echo "Available versions are: ${versions[@]}"
+		else
+			echo "${versions[*]}"
+		fi
+		return 0
+	else
+		# A version argument was provided, check that the version exists
+		# Scan through the list of available versions and set a flag if the version argument is found
+		for i in "${versions[@]}"; do
+			if [ "$version_arg" == "$i" ]; then
+				version_exists=1
+				break
+			fi
+		done
+		
+		if [ $version_exists -eq 0 ]; then
+			echo "ERROR: IDS version ${version_arg} does not exist at \"${IFX_REPO}/IDS\""
+			echo "Available versions are: ${versions[@]}"
+			return 1
+		else
+			# Alter the array of available versions to limit to the user-specified version
+			versions=( "$version_arg" )
+		fi
+	fi
+
+	local fixpacks=( $(find ${IFX_REPO}/IDS -maxdepth 1 -name "${version_arg}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq) )
+	
+	local fixpack_exists=0
+	# If no fixpack argument was provided, list the available fixpacks
+	if [[ -z "${fixpack_arg}" ]]; then
+		if [ $machine_friendly -eq 0 ]; then
+			echo "Available fixpacks for IDS ${version_arg} are: ${fixpacks[@]}"
+		else
+			echo "${fixpacks[*]}"
+		fi
+		return 0
+	else
+		# A fixpack argument was provided, check that the fixpack exists
+		# Scan through the list of available fixpacks and set a flag if the fixpack argument is found
+		for i in "${fixpacks[@]}"; do
+			if [ "$fixpack_arg" == "$i" ]; then
+				fixpack_exists=1
+				break
+			fi
+		done
+		
+		if [ $fixpack_exists -eq 0 ]; then
+			echo "ERROR: IDS fixpack ${fixpack_arg} does not exist at \"${IFX_REPO}/IDS\""
+			echo "Available fixpacks are: ${fixpacks[@]}"
+			return 1
+		else
+			# Alter the array of available fixpacks to limit to the user-specified fixpack
+			fixpacks=( "$fixpack_arg" )
+		fi
+	fi
+
+	local builds=( $(find ${IFX_REPO}/IDS -maxdepth 1 -name "${version_arg}_${fixpack_arg}_*" -printf "%f\n") )
+	for build in "${builds[@]}"; do 
+		echo "${build}"
+	done
+
+	# Log successful invocation
+	ifxtools_log idslist $@
+
+#	for version in "${versions[@]}"; do
+#		echo "${version}"
+#		echo "-------------------------------------------------------------------------------"
+#		builds=( $(find ${IFX_REPO}/IDS/ -maxdepth 1 -name "${version}*" -printf "%f\n") )
+#		for build in "${builds[@]}"; do
+#			if [[ "${build}" != "archive" ]]; then
+#				echo "${build}"
+#			fi
+#		done
+#	done
+}
+
+function idscheckout
+{
+	local module="ifxtools"
+	# Checkout an IDS from the repository
+	# -v Version to be copied
+	# -f Fixpack to be copied
+	# -b Build number to be copied
+	# -l Use sym-links where possible to reduce bandwidth (Default)
+	# -c Copy all file contents
+
+	usage ()
+	{
+		echo "Usage: idscheckout -v <IDS_VERSION> -f <IDS_FIXPACK> -b <IDS_BUILDNUM>"
+		echo " Checkout an available version+fixpack+build of IDS for this platform from IFX_REPO_ARCHIVE"
+		echo " Arguments:"
+		echo "  -v IDS version to be checked out"
+		echo "  -f IDS fixpack to be checked out"
+		echo "  -b IDS build number to be checked out"
+		echo "  -c Copy all contents, rather than sym-linking much of the content"
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	unset version_arg
+	local version fixpack buildnum copyout
+	copyout="0"
+	while getopts "v:f:b:ch" option
+	do
+		case $option in
+			v  ) version=$OPTARG;;
+			f  ) fixpack=$OPTARG;;
+			b  ) buildnum=$OPTARG;;
+			c  ) copyout="1";;
+			h  ) print_usage=1;;
+			\? ) print_usage=1;;
+			*  ) print_usage=1;;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	source="${IFX_REPO_ARCHIVE}/IDS/${version}_${fixpack}_${buildnum}"
+	rsyncsource="${IFX_REPO_RSYNC_HOST}::${IFX_REPO_RSYNC_MODULE}/${PLATFORMPATH}/IDS/${version}_${fixpack}_${buildnum}"
+	target="${IFX_REPO_WORKING}/IDS/${version}_${fixpack}_${buildnum}"
+
+	if [[ ! -r "${source}" && ${copyout} == 0 ]]; then
+		echo "Unable to read from source directory ${source}"
+		return 1
+	fi
+
+	# Copy contents in their entirety or use symbolic-links
+	if [[ "${copyout}" == "0" ]]; then
+		# Create target directory if it does not exist
+		if [ ! -d "${target}" ]; then
+			DEBUG echo "Creating target directory ${target}"
+			userid informix mkdir -p "${target}"
+		fi
+
+		# From the top-level Informix installation files and directories, all can by sym-linked to without
+		# creating problems other than the etc and tmp directories
+		cp_dirs=(etc tmp)
+		local ln_dirs=( $(find ${source} -mindepth 1 -maxdepth 1 ! -name 'tmp' ! -name 'etc' -printf "%f\n" | sort ) )
+		#echo "ln_dirs=${ln_dirs[@]}"
+	
+		# Create symbolic links for directories that are not writable
+		for dir in "${ln_dirs[@]}"; do
+			DEBUG echo "ln -s ${source}/${dir} ${target}"
+			userid informix ln -s "${source}/${dir}" "${target}"
+		done
+	
+		# Use rsync to copy writable directories 
+		for dir in "${cp_dirs[@]}"; do
+			DEBUG echo "rsync -a ${source}/${dir} ${target}"
+			userid root rsync -a "${source}/${dir}" "${target}"
+		done
+		ifxtools_log idscheckout source=${source} target=${target} $@
+	else
+		DEBUG echo "rsync -a \"${rsyncsource}/\" ${target}"
+		userid root rsync -a "${rsyncsource}/" "${target}"
+		ifxtools_log idscheckout source=${rsyncsource} target=${target} $@
+	fi
+}
+
+function idsconfig
+{
+	local module="ifxtools"
+	# Used for (re)configuring the IDS installation pointed to
+	usage ()
+	{
+		echo "Usage: idsconfig -v <VERSION> -f <FIXPACK> -b <_BUILD NUMBER> -s <SERVERNAME>"
+	}
+
+	declare -i error=0
+
+	# When used as a function, do not call exit as it will exit the shell instead
+	OPTERROR=33
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	print_usage="0"
+	while getopts "v:f:b:s:hl" option
+	do
+		case $option in
+			v  ) IDS_VERSION=$OPTARG;;
+			f  ) IDS_FIXPACK=$OPTARG;;
+			b  ) IDS_BUILDNUM=$OPTARG;;
+			s  ) IFX_SERVERNAME=$OPTARG;;
+			h  ) print_usage=1;;
+			\? ) print_usage=1;;
+			*  ) print_usage=1;;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	# If 'raka' is given as the servername, we know what we have to do
+	#if [[ "${IFX_SERVERNAME}" == "rt" ]]; then
+	#	echo -n "Configuring for rt: "
+	#	IDS_VERSION="11.10"
+	#	IDS_BUILDNUM="rt"
+	#if [[ "${IFX_SERVERNAME}" == "idssl" ]]; then
+	#	echo -n "Configuring for idssl: "
+	#	IDS_VERSION="11.10"
+	#	IDS_BUILDNUM="idssl"
+	#	fi
+	#echo "IDS_VERSION=${IDS_VERSION} FIXPACK=${IDS_FIXPACK} IDS_BUILDNUM=${IDS_BUILDNUM}"
+
+	IFX_REPO="${IFX_REPO_WORKING}"
+
+	# check that all necessary variables are set to complete the request
+	# check ifx_repo
+	if [ -z "${IFX_REPO}" ]; then
+		echo "ERROR: IFX_REPO is not set"
+		((error++))
+	fi
+	# check IFX_SERVERNAME
+	if [ -z "${IFX_SERVERNAME}" ]; then
+		echo "ERROR: IFX_SERVERNAME is not set."
+		((error++))
+	fi
+	# If IDS_VERSION has not been defined, set it to "11.11", the latest as of this update
+	# This really should use a function to determine the latest version present in the repository
+	if [[ -z "${IDS_VERSION}" ]]; then
+		echo "ERROR: IDS_VERSION is not set."
+		((error++))
+	fi
+	# check IDS_FIXPACK
+	if [[ -z "${IDS_FIXPACK}" ]]; then
+		echo "ERROR: IDS_FIXPACK is not set."
+		((error++))
+	fi
+	# check IDS_BUILDNUM 
+	if [[ -z "${IDS_BUILDNUM}" ]]; then
+		echo "ERROR: IDS_BUILDNUM is not set."
+		((error++))
+	fi
+	# read the error counter
+	if [ $error -ge 1 ]; then
+		echo "Encountered $error errors. Exiting."
+		return
+	fi
+
+	# Define IDS_PATH algorithmically 
+	IDS_PATH="${IFX_REPO}/IDS/${IDS_VERSION}_${IDS_FIXPACK}_${IDS_BUILDNUM}"
+
+	# If IDS_PATH exists, continue setting things up
+	if [ -e "$IDS_PATH" ]; then
+		export IDS_PATH IDS_VERSION IDS_FIXPACK IDS_BUILDNUM IFX_SERVERNAME
+		export IFX_DOCSDK=0
+		export IFX_DOIDS=1
+		ifxtools_log idsconfig $@
+		mbe_buildpath
+	else # Otherwise, cleanup things
+		echo "ERROR: Directory ${IDS_PATH} does not exist"
+	fi
+}
+
+#---------------------------------------------
+# ----- Informix Related Aliases -------------
+#---------------------------------------------
+function    ur               { userid root $@; }
+function    ui               { userid informix $@; }
+
+function    ifxchrepobase ()
+{
+	local module="ifxtools"
+	# Used for (re)configuring the public/private Informix repository base being pointed to
+	usage ()
+	{
+		echo "Usage: ifxchrepobase [-a <IFX_REPO_BASE_ARCHIVE>] [-w <IFX_REPO_BASE_WORKING>]"
+	}
+
+	declare -i error=0
+
+	# When used as a function, do not call exit as it will exit the shell instead
+	OPTERROR=33
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "a:w:h" option
+	do
+		case $option in
+			a  ) IFX_REPO_BASE_ARCHIVE=$OPTARG;;
+			w  ) IFX_REPO_BASE_WORKING=$OPTARG;;
+			h  ) print_usage=1;;
+			\? ) print_usage=1;;
+			*  ) print_usage=1;;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	# Change the repository base location
+	if [ ! -e "${IFX_REPO_BASE_ARCHIVE}" ]; then
+		echo "ERROR: ${IFX_REPO_BASE_ARCHIVE} does not exist."
+		return 1
+	elif [ ! -e "${IFX_REPO_BASE_WORKING}" ]; then
+		echo "ERROR: ${IFX_REPO_BASE_ARCHIVE} does not exist."
+		return 1
+	fi
+
+	mbe_buildpath
+	ifxtools_log ifxchrepobase $@
+}
+
+function    ifxenv ()
+{ 
+	local module="ifxtools"
+	#env | grep -E 'IDS|CSDK|INFORMIX|ONCONFIG' | sort;
+	echo "--------------------------------------------"
+	echo "INFORMIXDIR=$INFORMIXDIR"
+	echo "INFORMIXSERVER=$INFORMIXSERVER"
+	echo "ONCONFIG=$ONCONFIG"
+	echo "INFORMIXSQLHOSTS=$INFORMIXSQLHOSTS"
+	echo "---------------------------------------------"
+	echo "IFX_REPO_BASE_ARCHIVE=$IFX_REPO_BASE_ARCHIVE"
+	echo "IFX_REPO_BASE_WORKING=$IFX_REPO_BASE_WORKING"
+	echo "IFX_REPO=$IFX_REPO <-- May be deprecated in future"
+	echo "IFX_SERVERNAME=$IFX_SERVERNAME"
+	echo "IFX_DOIDS=$IFX_DOIDS"
+	echo "IFX_DOCSDK=$IFX_DOCSDK"
+	echo "IDS_VERSION=$IDS_VERSION"
+	echo "IDS_FIXPACK=$IDS_FIXPACK"
+	echo "IDS_BUILDNUM=$IDS_BUILDNUM"
+	echo "IDS_PATH=$IDS_PATH"
+	echo "CSDK_VERSION=$CSDK_VERSION"
+	echo "CSDK_FIXPACK=$CSDK_FIXPACK"
+	echo "CSDK_PATH=$CSDK_PATH"
+	echo "---------------------------------------------"
+	echo "PATH=$PATH"
+	echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+	echo "PLATFORMPATH=$PLATFORMPATH"
+}
+
+function    ifxcd ()
+{
+	local module="ifxtools"
+	# Allows easy cd'ing to $INFORMIX
+	cd ${IFX_REPO_WORKING}
+}
+
+function    idscd ()
+{
+	local module="ifxtools"
+	# Allows easy cd'ing to IDS installs found in the repository
+	# Takes one argument, optionally, that indicates the IDS version to cd to.
+	# If no argument is present, simply goes to $INFORMIXDIR after checking if $INFORMIXDIR is set
+	
+	IFX_REPO="${IFX_REPO_WORKING}"
+	
+	if [ -z "$1" ]; then
+		if [ -z "$INFORMIXDIR" ]; then
+			echo -ne "ERROR: \$INFORMIXDIR is not set\n"
+		else 
+			cd $INFORMIXDIR
+		fi
+	else
+		if [ -z "$IFX_REPO" ]; then
+			echo -ne "ERROR: \$IFX_REPO is not set\n"
+		else
+			cd "${IFX_REPO}/IDS/${1}"
+		fi
+	fi
+}
+
+function    tcd              { cd $TESTNODE; }
+function    qcd              { cd $TESTLOC; }
+function    ops              { ps -ef | grep oninit; }
+function    mps              { ps -ef | awk "/oninit/ && \$3==1"; }
+alias tailmsg='tailog'
+alias tailbar='tailog `ovar BAR_ACT_LOG`'
+alias taildeb='tailog `ovar BAR_DEBUG_LOG`'
+alias tailam='tailog `avar MSG`'
+alias tailres='tailog online1.res'
+function    ovi              { userid root ${EDITOR} ${INFORMIXDIR}/etc/${ONCONFIG}; }
+function    svi              { userid root ${EDITOR} ${INFORMIXSQLHOSTS}; }
+function    avi              { userid root ${EDITOR} ${AC_CONFIG:-$INFORMIXDIR/etc/ac_config.std}; }
+
+# ----- IDS-specific -------------------------
+function    idsup            { userid informix oninit -vy; }
+function    idsupi           { userid informix oninit -ivy; }
+function    idsdown          { userid informix onmode -ky; }
+function    idsddd           { userid root ddd -gdb -command=$HOME/.gdbinit $INFORMIXDIR/bin/oninit; }
+
+# ----- CSDK-specific ------------------------
+
+# ----- Regression Tester Only ---------------
+function    rtcd             { cd "/usr3/tools/genarch/rt"; }
+function    rtcdusr          { cd "/usr3/user_files/rt/"; }
+
+# For Informix test machines
+function ifxtestvobsconfig ()
+{
+  export INFORMIXDIR=/vobs/tristarm/sqldist
+  export ONCONFIG=onconfig.lfeagan
+  export INFORMIXSERVER=lfeagan_190
+  export INFORMIXSQLHOSTS=$INFORMIXDIR/etc/sqlhosts.std
+  export LD_LIBRARY_PATH=$INFORMIXDIR/lib:$INFORMIXDIR/lib/esql:$LD_LIBRARY_PATH
+  export PATH=$INFORMIXDIR/bin:$INFORMIXDIR/lib/esql:$PATH
+
+  if [ "$OSTYPE" == 'linux' ]; then
+   IFX_BASE=/usr2/lfeagan
+  else
+   IFX_BASE=/user2/lfeagan
+  fi
+
+  export TESTNODE=$IFX_BASE/qatools
+  export TESTLOC=/vobs/eng_tests
+  export PATH=${TESTNODE}/bin:$PATH
+  export QACONFIG=qaconfig.lfeagan
+  export USERFUNCDIR=$IFX_BASE/work
+  export MACHINE=linux86_64
+  export QAPASSWORDFILE=/vobs/ifmx_qa/QApasswordFile
+  export OSNAME=linux86-64
+}
+

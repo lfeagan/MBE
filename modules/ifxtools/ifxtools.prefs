@@ -1,0 +1,9 @@
+#!/bin/bash
+
+export IFX_REPO_BASE_ARCHIVE="/informix_repo"
+export IFX_REPO_BASE_WORKING="${HOME}/informix_repo"
+export IFX_REPO_NFSV4_HOST="raka.lenexa.ibm.com"
+export IFX_REPO_RSYNC_HOST="raka.lenexa.ibm.com"
+export IFX_REPO_RSYNC_MODULE="informix_repo"
+export IFXTOOLS_LOG="on"
+export IFXTOOLS_LOGFILE="${MODULES_DIR}/${module}/ifxtools.log"
