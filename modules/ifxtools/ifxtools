@@ -876,7 +876,6 @@ function idsconfig
 #---------------------------------------------
 # ----- Informix Related Aliases -------------
 #---------------------------------------------
-function    ur               { userid root $@; }
 function    ui               { userid informix $@; }
 
 function    ifxchrepobase ()
