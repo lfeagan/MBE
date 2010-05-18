@@ -19,7 +19,7 @@ function ifxtools_load
 	mbe_loadModules "${ifxtools_dependencies[@]}"
 	local module="ifxtools"
 	# Load preferences
-	source "${MODULES_DIR}/${module}/${module}.prefs"
+	source "${MODULES_DIR}/${module}/${module}.conf"
 	return 0
 }
 
