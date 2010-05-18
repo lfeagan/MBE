@@ -407,61 +407,6 @@ function find-large ()
 ##############################################
 # ##### APPLICATION-SPECIFIC FUNCTIONS ##### #
 ##############################################
-
-#---------------------------------------------
-# ------ ClearCase Tools Related -------------
-#---------------------------------------------
-if [ -e /usr/atria/bin/cleartool ]; then 
- function   ct               { cleartool $@; }
- function   csv              { cleartool setview $@; }
- function   prediff          { cleartool diff -diff -pre $@; }
- function   myviews          { cleartool lsview $@ |grep ${USER}; }
- function codir ()
- {
-  usage="Usage: codir [-p <path to checkout under>] [-c <checkout comment>] [-i] [-d]"
-  checkout_path=`pwd`
-  xargs_interactive=0
-  debug=0
-
-  while getopts ":p:c:id" option
-  do
-    case $option in
-      p  ) checkout_path=$OPTARG ;;
-      c  ) checkout_comment="${OPTARG}";;
-      i  ) xargs_interactive=1;;
-      d  ) debug=1;;
-      h  ) echo $usage;;
-      \? ) echo $usage
-           OPTIND=1
-           return;;
-      *  ) echo $usage
-           OPTIND=1
-           return;;
-    esac
-  done
-  # reset OPTIND to 1
-  OPTIND=1
-
-  if [ $xargs_interactive -eq 0 ]; then
-    xargs_args="-i"
-  else
-    xargs_args="-pi"
-  fi
-
-  if [ $debug -eq 1 ]; then
-    echo "checkout_path=$checkout_path"
-    echo "checkout_comment=$checkout_comment"
-    echo "xargs_args=$xargs_args"
-  fi
-
-  if [ -z "$checkout_comment" ]; then
-    find "$checkout_path" | xargs "$xargs_args" cleartool -nc {}
-  else
-    find "$checkout_path" | xargs "$xargs_args" cleartool -c "$checkout_comment" {}
-  fi
- }
-fi
-
 function searchpath ()
 {
  # Copy PATH so we can strip off elements from it
