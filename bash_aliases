@@ -94,7 +94,11 @@ fi
 function ewhich ()
 {
 	if [[ "$OSTYPE" == linux* ]]; then
-		(alias; declare -f) | $(echo $whichbin) --tty-only --read-alias --read-functions --show-tilde --show-dot $@
+		if [[ "$OSDISTRIBUTOR" == "Ubuntu" ]]; then
+			$(echo $whichbin) $@
+		else
+			(alias; declare -f) | $(echo $whichbin) --tty-only --read-alias --read-functions --show-tilde --show-dot $@
+		fi
 	else
 		$(echo $whichbin) $@
 	fi
