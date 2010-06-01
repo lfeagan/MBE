@@ -276,6 +276,26 @@ function platform_platformpath
 	export PLATFORMPATH32
 }
 
+function platform_distributor
+{
+	if [[ "$OSTYPE" == linux* ]]; then
+		which lsb_release &>/dev/null
+		if [[ "$?" == 1 ]]; then
+			echo "lsb_release tool not found in PATH"
+			if [ -x "/usr/bin/lsb_release" ]; then
+				echo "lsb_release found at /usr/bin/lsb_release. Please add /usr/bin to PATH"
+			fi
+			return 1
+		else
+			OSDISTRIBUTOR=$(lsb_release -i | awk -F: '{distributor=$2; gsub(/^[ \t]+|[ \t]+$/,"",$2); print $2}')
+		fi
+	else
+		OSDISTRIBUTOR="Unknown"
+	fi
+	export OSDISTRIBUTOR
+	echo $OSDISTRIBUTOR
+}
+
 function platform_toolspath
 {
 	export TOOLSPATH="${TOOLSPATH_BASE}/${PLATFORMPATH}"
