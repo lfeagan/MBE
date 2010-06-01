@@ -91,7 +91,7 @@ function vdir () { ls --color=auto --format=long; }
 if [ -z "$whichbin" ]; then
 	whichbin="$(which which)"
 fi
-function which ()
+function ewhich ()
 {
 	if [[ "$OSTYPE" == linux* ]]; then
 		(alias; declare -f) | $(echo $whichbin) --tty-only --read-alias --read-functions --show-tilde --show-dot $@
@@ -117,21 +117,21 @@ function which ()
 #	fi
 #}
 #
-#function whichvi ()
-#{
-#	local usage="Usage: whichvi <executable file>"
-#	if [ -n "$1" ]; then
-#		local path="$($whichbin $1)"
-#		DEBUG echo "path=$path"
-#		if [[ -n "$path" ]]; then
-#			vi $path
-#		else
-#			echo -e "Error: Command '${1} not found"
-#		fi
-#	else
-#		echo "$usage"
-#	fi
-#}
+function whichvi ()
+{
+	local usage="Usage: whichvi <executable file>"
+	if [ -n "$1" ]; then
+		local path="$($whichbin $1)"
+		DEBUG echo "path=$path"
+		if [[ -n "$path" ]]; then
+			vi $path
+		else
+			echo -e "Error: Command '${1} not found"
+		fi
+	else
+		echo "$usage"
+	fi
+}
 
 function filereplace ()
 {
