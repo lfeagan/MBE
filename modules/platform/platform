@@ -63,6 +63,7 @@ function platform_setpath
 {
 	local module="platform"
 	platform_toolspath
+	platform_distributor
 }
 
 function platform_isValidPlatform ()
@@ -288,12 +289,14 @@ function platform_distributor
 			return 1
 		else
 			OSDISTRIBUTOR=$(lsb_release -i | awk -F: '{distributor=$2; gsub(/^[ \t]+|[ \t]+$/,"",$2); print $2}')
+			OSRELEASE=$(lsb_release -r | awk -F: '{release=$2; gsub(/^[ \t]+|[ \t]+$/,"",$2); print $2}')
 		fi
 	else
 		OSDISTRIBUTOR="Unknown"
+		OSRELEASE="Unknown"
 	fi
-	export OSDISTRIBUTOR
-	echo $OSDISTRIBUTOR
+	export OSDISTRIBUTOR OSRELEASE
+	#echo $OSDISTRIBUTOR $OSRELEASE
 }
 
 function platform_toolspath
