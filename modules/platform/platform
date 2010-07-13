@@ -209,6 +209,16 @@ function platform_config ()
 		CPUTYPE=`/usr/bin/uname -p`
 		KERNELBITS=64
 		BSDARGS=0
+	elif [[ "$KERNELNAME" == "Windows_NT" ]]; then
+		CPUTYPE=`uname -p`
+		if [[ "${CPUTYPE}" == "586" ]]; then
+			CPUTYPE="i686"
+			KERNELBITS=32
+		elif [[ "${CPUTYPE}" == "8664" ]]; then
+			CPUTYPE="x86_64"
+			KERNELBITS=64
+		fi
+		BSDARGS=0
 	else
 		#echo "Unrecognized OS: $KERNELNAME"
 		CPUTYPE=`/usr/bin/uname -p`
@@ -228,18 +238,7 @@ function platform_desc
 function platform_platformpath
 {
 	# Defines the 64- and 32-bit PLATFORMPATH variables
-	if [[ "$KERNELNAME" == Linux ]]; then
-		if [[ "$CPUTYPE" == ppc64* ]]; then
-			PLATFORMPATH="Linux/64/ppc64"
-			PLATFORMPATH32="Linux/32/ppc32"
-		elif [[ "$CPUTYPE" == i386* || "$CPUTYPE" == 'i686' ]]; then
-			PLATFORMPATH="Linux/32/i686"
-			PLATFORMPATH32="${PLATFORMPATH}"
-		elif [[ "$CPUTYPE" == x86_64* ]]; then
-			PLATFORMPATH="Linux/64/x86_64"
-			PLATFORMPATH32="Linux/32/i686"
-		fi
-	elif [[ "$KERNELNAME" == AIX ]]; then
+	if [[ "$KERNELNAME" == AIX ]]; then
 		# if KERNEL_BITS has not been defined, assume the machine is 64-bit
 		if [[ -z "$KERNEL_BITS"  || "$KERNEL_BITS" == "64" ]]; then
 			PLATFORMPATH="AIX/64/powerpc"
@@ -268,6 +267,25 @@ function platform_platformpath
 				echo "ERROR: Unsupported ${KERNEL_BITS} bit kernel detected"
 				return 1
 			fi
+		fi
+	elif [[ "$KERNELNAME" == Linux ]]; then
+		if [[ "$CPUTYPE" == ppc64* ]]; then
+			PLATFORMPATH="Linux/64/ppc64"
+			PLATFORMPATH32="Linux/32/ppc32"
+		elif [[ "$CPUTYPE" == i386* || "$CPUTYPE" == 'i686' ]]; then
+			PLATFORMPATH="Linux/32/i686"
+			PLATFORMPATH32="${PLATFORMPATH}"
+		elif [[ "$CPUTYPE" == x86_64* ]]; then
+			PLATFORMPATH="Linux/64/x86_64"
+			PLATFORMPATH32="Linux/32/i686"
+		fi
+	elif [[ "$KERNELNAME" == "Windows_NT" ]]; then
+		if [[ -z "$KERNEL_BITS"  || "$KERNEL_BITS" == "64" ]]; then
+			PLATFORMPATH="Windows/64/x86_64"
+			PLATFORMPATH32="Windows/32/i686"
+		elif [[ "$KERNEL_BITS" == "32" ]]; then
+			PLATFORMPATH="Windows/32/i686"
+			PLATFORMPATH32="$PLATFORMPATH"
 		fi
 	else
 		echo "ERROR: Unknown platform"
