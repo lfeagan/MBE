@@ -39,7 +39,7 @@ platform_functions=( 'platform_load' 'platform_unload' 'platform_setpath' \
 		'platform_config' 'platform_platformpath' 'platform_toolspath' 'platform_desc'
 		'cdtools' 'cdtools32' 'cdtoolsgeneric' )
 
-function platform_load
+platform_load
 {
 	local module="platform"
 	# Load preferences file
@@ -49,7 +49,7 @@ function platform_load
 	platform_platformpath
 }
 
-function platform_unload
+platform_unload
 {
 	local module="platform"
 	local func
@@ -59,14 +59,14 @@ function platform_unload
 	return 0
 }
 
-function platform_setpath
+platform_setpath
 {
 	local module="platform"
 	platform_toolspath
 	platform_distributor
 }
 
-function platform_isValidPlatform ()
+platform_isValidPlatform ()
 {
 	# KERNELNAME; KERNELBITS; CPUTYPE
 	# AIX;        32,64;      powerpc
@@ -98,7 +98,7 @@ function platform_isValidPlatform ()
 	fi
 }
 
-function platform_mkdirs ()
+platform_mkdirs ()
 {
 	local PLATFORM_KERNELNAME=( "AIX" "HP-UX" "IRIX64" "Darwin" "Linux" "SunOS" "OSF1" )
 	local PLATFORM_AIX_KERNELBITS=( "32" "64" )
@@ -141,7 +141,7 @@ function platform_mkdirs ()
 	
 }
 
-function platform_config ()
+platform_config ()
 {
 	# Configures the CPUTYPE and KERNELBITS variables
 	# CPUTYPE is based on uname -p for nearly all KERNELNAME/OSTYPE
@@ -227,7 +227,7 @@ function platform_config ()
 	export CPUTYPE KERNELNAME KERNELBITS BSDARGS
 }
 
-function platform_desc
+platform_desc
 {
 	echo "KERNELNAME=$KERNELNAME"
 	echo "KERNELBITS=$KERNELBITS"
@@ -235,7 +235,7 @@ function platform_desc
 	echo "BSDARGS=$BSDARGS"
 }
 
-function platform_platformpath
+platform_platformpath
 {
 	# Defines the 64- and 32-bit PLATFORMPATH variables
 	if [[ "$KERNELNAME" == AIX ]]; then
@@ -295,7 +295,7 @@ function platform_platformpath
 	export PLATFORMPATH32
 }
 
-function platform_distributor
+platform_distributor
 {
 	if [[ "$OSTYPE" == linux* ]]; then
 		which lsb_release &>/dev/null
@@ -317,7 +317,7 @@ function platform_distributor
 	#echo $OSDISTRIBUTOR $OSRELEASE
 }
 
-function platform_toolspath
+platform_toolspath
 {
 	export TOOLSPATH="${TOOLSPATH_BASE}/${PLATFORMPATH}"
 	export TOOLSPATH32="${TOOLSPATH_BASE}/${PLATFORMPATH32}"
@@ -325,6 +325,6 @@ function platform_toolspath
 	export TOOLSPATHGENERIC="${TOOLSPATH_BASE}/${GENERIC_ARCH}"
 }
 
-function cdtools () { cd "${TOOLSPATH}"; }
-function cdtools32 () { cd "${TOOLSPATH32}"; }
-function cdtoolsgeneric () { cd "${TOOLSPATHGENERIC}"; }
+cdtools () { cd "${TOOLSPATH}"; }
+cdtools32 () { cd "${TOOLSPATH32}"; }
+cdtoolsgeneric () { cd "${TOOLSPATHGENERIC}"; }

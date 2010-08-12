@@ -19,7 +19,7 @@
 
 prompt_dependencies=( 'mbe' 'colors' )
 
-function prompt_load
+prompt_load
 {
 	# Load module dependencies
 	mbe_loadModules "${prompt_dependencies[@]}"
@@ -31,18 +31,18 @@ function prompt_load
 	return 0
 }
 
-function prompt_unload
+prompt_unload
 {
 	return 0
 }
 
-function prompt_setpath
+prompt_setpath
 {
 	local module="prompt"
 	return 0
 }
 
-function prompt_command
+prompt_command
 {
 	local module="prompt"
 	# XTerm supports a titlebar
@@ -76,7 +76,7 @@ function prompt_command
 	fi
 }
 
-function prompt_configure
+prompt_configure
 {
 	local module="prompt"
 	local username_color

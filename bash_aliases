@@ -35,31 +35,31 @@ alias wget='wget -c --tries=100'
 # ##### SIMPLE FUNCTIONS ##### #
 ################################
 
-function acm () { autoconf; automake; }
-function mcm () { make clean; make; }
+acm () { autoconf; automake; }
+mcm () { make clean; make; }
 
-function rmd () { rm -fr $@; }
+rmd () { rm -fr $@; }
 
-function x () { exit    $@; }
-function z () { suspend $@; }
-function j () { jobs -l $@; }
+x () { exit    $@; }
+z () { suspend $@; }
+j () { jobs -l $@; }
 
-function osr () { shutdown -r now; }
-function osh () { shutdown -h now; }
+osr () { shutdown -r now; }
+osh () { shutdown -h now; }
 
-function p () { ${PAGER}  $@; }
-function e () { ${EDITOR} $@; }
+p () { ${PAGER}  $@; }
+e () { ${EDITOR} $@; }
 
-function c () { clear; }
-function h () { history $@; }
-function hc () { history -c; }
-function hcc () { hc;c; }
+c () { clear; }
+h () { history $@; }
+hc () { history -c; }
+hcc () { hc;c; }
 
-function cx () { hc;x; }
+cx () { hc;x; }
 
-function .. () { cd ..; }
-function ... () { cd ../..; }
-function .... () { cd ../../..; }
+.. () { cd ..; }
+... () { cd ../..; }
+.... () { cd ../../..; }
 
 # For linux, always use color with 'ls'
 # For solaris et al, do not use color as it is usually unsupported
@@ -67,31 +67,31 @@ if [[ "$OSTYPE" == linux* ]]; then
   alias ls='ls --color=auto'
 fi
 
-function addkey () { ssh-agent sh -c 'ssh-add < /dev/null && bash'; }
-function xtermb () { xterm -fg 'white' -bg 'black'; }
-function ew () { ${EDITOR} `which $@`; }
+addkey () { ssh-agent sh -c 'ssh-add < /dev/null && bash'; }
+xtermb () { xterm -fg 'white' -bg 'black'; }
+ew () { ${EDITOR} `which $@`; }
 
 # Modified listing commands
 #ll () { ls --color=auto -FAql $@; }
 #lf () { ls --color=auto -FAq  $@; }
-function ll () { [[ "$OSTYPE" == linux* ]] && ls -FAql $@ || ls -FAl $@; }
-function lf () { [[ "$OSTYPE" == linux* ]] && ls -FAq $@ || ls -FA $@; }
-function la () { ls -A $@; }
-function l () { ls -CF $@; }
-function l. () { ls -d .* $@; } 
-function lk () { ls -lSrk $@; }
-function lh () { ls -lSrh $@; }
-function lt () { ls -ltr $@; }
-function cls () { clear; ls $@; }
-function cll () { clear; ll $@; }
-function dir () { ls --color=auto --format=vertical; }
-function vdir () { ls --color=auto --format=long; }
+ll () { [[ "$OSTYPE" == linux* ]] && ls -FAql $@ || ls -FAl $@; }
+lf () { [[ "$OSTYPE" == linux* ]] && ls -FAq $@ || ls -FA $@; }
+la () { ls -A $@; }
+l () { ls -CF $@; }
+l. () { ls -d .* $@; } 
+lk () { ls -lSrk $@; }
+lh () { ls -lSrh $@; }
+lt () { ls -ltr $@; }
+cls () { clear; ls $@; }
+cll () { clear; ll $@; }
+dir () { ls --color=auto --format=vertical; }
+vdir () { ls --color=auto --format=long; }
 
 # Save the real which for a rainy day
 if [ -z "$whichbin" ]; then
 	whichbin="$(which which)"
 fi
-function ewhich ()
+ewhich ()
 {
 	if [[ "$OSTYPE" == linux* ]]; then
 		if [[ "$OSDISTRIBUTOR" == "Ubuntu" ]]; then
@@ -104,7 +104,7 @@ function ewhich ()
 	fi
 }
 
-#function whichcd ()
+#whichcd ()
 #{
 #	local usage="Usage: whichcd <executable file>"
 #	if [ -n "$1" ]; then
@@ -121,7 +121,7 @@ function ewhich ()
 #	fi
 #}
 #
-function whichvi ()
+whichvi ()
 {
 	local usage="Usage: whichvi <executable file>"
 	if [ -n "$1" ]; then
@@ -137,7 +137,7 @@ function whichvi ()
 	fi
 }
 
-function filereplace ()
+filereplace ()
 {
 	#------------------------------------------------------------------------------
 	# Author: Lance Feagan
@@ -230,7 +230,7 @@ function filereplace ()
 # Mount commands
 # FUSE/SSHFS
 declare -x SSHFS_LOCALDIR="nfs-homedir"
-function msshfs ()
+msshfs ()
 {
  # Mounts your home directory from a remote system in the folder ${SSHFS_LOCALDIR}
 
@@ -263,46 +263,46 @@ function msshfs ()
 
  sshfs ${remotehost}: ${HOME}/${SSHFS_LOCALDIR};
 }
-function umsshfs ()
+umsshfs ()
 {
 	fusermount -u ${HOME}/${SSHFS_LOCALDIR};
 }
 # GSA (Austin)
-function cdgsa () { pushd .; cd /gsa/ausgsa/home/$(echo ${USER} | cut -c 1)/$(echo ${USER} | cut -c 2)/${USER}; }
+cdgsa () { pushd .; cd /gsa/ausgsa/home/$(echo ${USER} | cut -c 1)/$(echo ${USER} | cut -c 2)/${USER}; }
 # Floppy
-function mfloppy () { mount /dev/fd0 /mnt/floppy; }
-function umfloppy () { umount /mnt/floppy; }
+mfloppy () { mount /dev/fd0 /mnt/floppy; }
+umfloppy () { umount /mnt/floppy; }
 # ISO9660 DVD
-function mdvd () { mount -t iso9660 -o ro /dev/dvd /mnt/dvd; }
-function umdvd () { umount /mnt/dvd; }
+mdvd () { mount -t iso9660 -o ro /dev/dvd /mnt/dvd; }
+umdvd () { umount /mnt/dvd; }
 # ISO9660 CDROM
-function mcdrom () { mount -t iso9660 -o ro /dev/cdrom /mnt/cdrom; }
-function umcdrom () { umount /mnt/cdrom; }
+mcdrom () { mount -t iso9660 -o ro /dev/cdrom /mnt/cdrom; }
+umcdrom () { umount /mnt/cdrom; }
 # ISO9660 File Loopback
-function miso () { mount -t iso9660 -o ro,loop $@ /mnt/iso; }
-function umiso () { umount /mnt/iso; }
+miso () { mount -t iso9660 -o ro,loop $@ /mnt/iso; }
+umiso () { umount /mnt/iso; }
 
-function ff () { find . -name $@ -print; }
+ff () { find . -name $@ -print; }
 
-function psa () { ps aux $@; }
-function psu () { ps  ux $@; }
+psa () { ps aux $@; }
+psu () { ps  ux $@; }
 
-function lpsa () { ps aux $@ | p; }
-function lpsu () { ps  ux $@ | p; }
+lpsa () { ps aux $@ | p; }
+lpsu () { ps  ux $@ | p; }
 
-function dub () { du -scb $@; }
-function duk () { du -sck $@; }
-function duks () { duk $@ 2>/dev/null | sort -n -k1,1; }
-function dum () { du -scm $@; }
-function dums () { du -scm $@ 2>/dev/null | sort -n -k1,1; }
-function duh () { du -sch $@; }
+dub () { du -scb $@; }
+duk () { du -sck $@; }
+duks () { duk $@ 2>/dev/null | sort -n -k1,1; }
+dum () { du -scm $@; }
+dums () { du -scm $@ 2>/dev/null | sort -n -k1,1; }
+duh () { du -sch $@; }
 #duh () { dh -h --max-depth=1 $@; }
 
-function dfk () { df -PTak $@; }
-function dfm () { df -PTam $@; }
-function dfh () { df -PTah $@; }
-function dfi () { df -PTai $@; }
-function dflocal ()
+dfk () { df -PTak $@; }
+dfm () { df -PTam $@; }
+dfh () { df -PTah $@; }
+dfi () { df -PTai $@; }
+dflocal ()
 {
 	if [[ "$OSTYPE" == solaris ]]; then
 		df -F ufs -o i
@@ -311,25 +311,25 @@ function dflocal ()
 	fi
 }
 
-function dmsg () { dmesg | p; }
+dmsg () { dmesg | p; }
 
 # Moved 'resource' to bashrc so it can be called more easily
 #resource         { source ${HOME}/.bashrc; source ${HOME}/.bash_aliases; }
 
-function kernfs () { p /proc/filesystems; }
-function shells () { p /etc/shells; }
+kernfs () { p /proc/filesystems; }
+shells () { p /etc/shells; }
 
-function lfstab () { p /etc/fstab; }
-function lxconf () { p /etc/X11/xorg.conf; }
+lfstab () { p /etc/fstab; }
+lxconf () { p /etc/X11/xorg.conf; }
 
 if [ "`${IDPROG_USERID}`" -eq 0 ]
 then
-    function efstab () { e /etc/fstab; }
-    function exconf () { e /etc/X11/xorg.conf; }
-    function txconf () { X -probeonly; }
+    efstab () { e /etc/fstab; }
+    exconf () { e /etc/X11/xorg.conf; }
+    txconf () { X -probeonly; }
 fi
 
-function startvnc ()
+startvnc ()
 {
 	vncserver -depth 24 -geometry 1280x800 $@;
 }
@@ -340,7 +340,7 @@ function startvnc ()
 
 # Recursively retrieves the entire contents of the remote directory into a 
 # similiarly named local directory, without all of the usual wget path trash.
-function wget-dir()
+wget-dir()
 {
   #OPTARGS="--continue --tries=100 --recursive --level=inf --no-parent --page-requisites --no-host-directories"
   OPTARGS="--continue --tries=100 --recursive --level=inf --no-parent --no-directories"
@@ -363,7 +363,7 @@ function wget-dir()
 # Crawls the file system looking for large files to find candidates for deletion
 # when a system is needing more free disk space.
 # Inspired by problems with Chris Trotter's box mp-iperf
-function find-large ()
+find-large ()
 {
   # reference usage for finding large files 
   # find /var -type f -size +2000k -exec ls -l {} \; | sort -n -k 5,5
@@ -411,7 +411,7 @@ function find-large ()
 ##############################################
 # ##### APPLICATION-SPECIFIC FUNCTIONS ##### #
 ##############################################
-function searchpath ()
+searchpath ()
 {
  # Copy PATH so we can strip off elements from it
  path=$PATH
