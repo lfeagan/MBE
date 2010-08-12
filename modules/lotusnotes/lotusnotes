@@ -111,7 +111,7 @@ lotusnotes_backupUserData ()
 		mkdir "${LOTUSNOTES_BACKUP}"
 	fi
 	
-	function copyIfExists ()
+	copyIfExists ()
 	{
 		SRC="$1"
 		DST="$2"

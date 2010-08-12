@@ -27,7 +27,7 @@
 developer_dependencies=( 'mbe' 'platform' )
 developer_functions=( 'developer_load' 'developer_unload' 'developer_setpath' )
 
-function developer_load
+developer_load ()
 {
 	DEBUG echo "developer_load: enter"
 	# Load module dependencies
@@ -45,7 +45,7 @@ function developer_load
 	return 0
 }
 
-function developer_unload
+developer_unload ()
 {
 	local func
 	for func in "${developer_functions[@]}"; do
@@ -54,7 +54,7 @@ function developer_unload
 	return 0
 }
 
-function developer_setpath
+developer_setpath ()
 {
 	DEBUG echo "developer_setpath: enter"
 	local module="developer"

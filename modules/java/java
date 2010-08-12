@@ -24,7 +24,7 @@ java_functions=( "java_load" "java_unload" "java_setpath" "java_usage" "java_lis
 
 export java_javadir="Java"
 
-function java_load ()
+java_load ()
 {
 	# Load module dependencies
 	mbe_loadModules "${java_dependencies[@]}"
@@ -35,7 +35,7 @@ function java_load ()
 	return 0
 }
 
-function java_unload ()
+java_unload ()
 {
 	local module="java"
 	local func
@@ -45,7 +45,7 @@ function java_unload ()
 	return 0
 }
 
-function java_setpath ()
+java_setpath ()
 {
 	# Configure JAVA_HOME, PATH, MANPATH, LD_LIBRARY_PATH
 	local module="java"
@@ -59,13 +59,13 @@ function java_setpath ()
 	fi
 }
 
-function java_usage ()
+java_usage ()
 {
 	local module="java"
 
 }
 
-function java_buildjavahomestring ()
+java_buildjavahomestring ()
 {
 	# Takes three arguments, JAVA_BITS, JAVA_CREATOR, and JAVA_VERSION and
 	# creates the string to be used for JAVA_HOME
@@ -97,9 +97,9 @@ function java_buildjavahomestring ()
 	return 1
 }
 
-function java_config ()
+java_config ()
 {
-	function usage ()
+	usage ()
 	{
 		echo "java_config -c <Creator> -v <Version> -b <Bits>"
 	}
@@ -158,9 +158,9 @@ function java_config ()
 	fi
 }
 
-function java_listCreators ()
+java_listCreators ()
 {
-	function usage ()
+	usage ()
 	{
 		echo "Usage: java_listCreators"
 	}
@@ -175,9 +175,9 @@ function java_listCreators ()
 	echo "${creators[*]}"
 }
 
-function java_isValidCreator ()
+java_isValidCreator ()
 {
-	function usage ()
+	usage ()
 	{
 		echo "Usage: java_isValidCreator CREATOR"
 	}
@@ -190,9 +190,9 @@ function java_isValidCreator ()
 	return 0
 }
 
-function java_listVersions ()
+java_listVersions ()
 {
-	function usage ()
+	usage ()
 	{
 		echo "Usage: java_listVersions CREATOR"
 	}
@@ -214,9 +214,9 @@ function java_listVersions ()
 	fi
 }
 
-function java_isValidVersion ()
+java_isValidVersion ()
 {
-	function usage ()
+	usage ()
 	{
 		echo "Usage: java_isValidVersion CREATOR VERSION"
 	}
@@ -238,7 +238,7 @@ function java_isValidVersion ()
 	return 0
 }
 
-function java_env ()
+java_env ()
 {
 	echo "JAVA_HOME=${JAVA_HOME}"
 	echo "------------------------------------------------------------"

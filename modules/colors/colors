@@ -26,7 +26,7 @@
 
 colors_functions=( 'colors_load' 'colors_unload' 'colors_setpath' 'colors_define' 'colors_undefine' )
 
-function colors_load
+colors_load ()
 {
 	DEBUG echo "colors_load: enter"
 	local module="colors"
@@ -37,7 +37,7 @@ function colors_load
 	DEBUG echo "colors_load: leave"
 }
 
-function colors_unload
+colors_unload ()
 {
 	colors_undefine
 	local func
@@ -47,12 +47,12 @@ function colors_unload
 	return 0
 }
 
-function colors_setpath
+colors_setpath ()
 {
 	local module="colors"
 }
 
-function colors_define
+colors_define ()
 {
 	# color_name='\[\033[ modifier; color_code m\]'
 	# Modifiers
@@ -88,7 +88,7 @@ function colors_define
 ############################
 # ##### UNSET colors ##### #
 ############################
-function colors_undefine
+colors_undefine ()
 {
  unset colors_restore     \
        colors_black       \

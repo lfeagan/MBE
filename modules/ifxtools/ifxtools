@@ -13,7 +13,7 @@ ifxtools_functions=( 'ifxtools_load' 'ifxtools_unload' 'ifxtools_setpath' \
 		'idslist' 'idscheckout' 'idsconfig' 'idsup' 'idsupi' 'idsdown' 'idscd' 'idstools_gui' 'idsddd' \
 		'csdklist' 'csdkconfig' )
 
-function ifxtools_load
+ifxtools_load ()
 {
 	# Load module dependencies
 	mbe_loadModules "${ifxtools_dependencies[@]}"
@@ -23,7 +23,7 @@ function ifxtools_load
 	return 0
 }
 
-function ifxtools_unload
+ifxtools_unload ()
 {
 	local func
 	for func in "${ifxtools_functions[@]}"; do
@@ -32,7 +32,7 @@ function ifxtools_unload
 	return 0
 }
 
-function ifxtools_setpath
+ifxtools_setpath ()
 {
 	local module="ifxtools"
 	# /informix_repo will often be a sym-link to a large storage area
@@ -76,7 +76,7 @@ function ifxtools_setpath
 	fi
 }
 
-function ifxtools_log
+ifxtools_log ()
 {
 	if [[ "$IFXTOOLS_LOG" == "on" ]]; then
 		if [[ ! -f "$IFXTOOLS_LOGFILE" ]]; then
@@ -91,7 +91,7 @@ function ifxtools_log
 # IDS Path Variables: IDS_PATH, IDS_VERSION, IDS_FIXPACK, IDS_BUILDNUM
 # CSDK Path Variables: CSDK_PATH, CSDK_VERSION, CSDK_FIXPACK
 
-function ifxmkrepo
+ifxmkrepo ()
 {
 	local module="ifxtools"
 	# Used to build the base Informix repository directory structure
@@ -144,7 +144,7 @@ function ifxmkrepo
 	ifxtools_log ifxmkrepo $@ 
 }
 
-function idstools_gui
+idstools_gui ()
 {
 	local module="ifxtools"
 	current_menu_id=0
@@ -252,7 +252,7 @@ function idstools_gui
 	tput clear
 }
 
-function csdkconfig
+csdkconfig ()
 {
 	local module="ifxtools"
 	# Used for (re)configuring the CSDK installation pointed to
@@ -329,7 +329,7 @@ function csdkconfig
 #OLDIFS="${IFS}"
 #IFS=`echo -ne "\n\b"`
 
-function ifxlist
+ifxlist ()
 {
 	local module="ifxtools"
 	usage ()
@@ -440,10 +440,9 @@ function ifxlist
 
 	# Log successful invocation
 	ifxtools_log csdklist $@
-
 }
 
-function csdklist
+csdklist ()
 {
 	local module="ifxtools"
 	usage ()
@@ -554,7 +553,7 @@ function csdklist
 	ifxtools_log csdklist $@
 }
 
-function idslist
+idslist ()
 {
 	local module="ifxtools"
 	usage ()
@@ -687,7 +686,7 @@ function idslist
 #	done
 }
 
-function idscheckout
+idscheckout ()
 {
 	local module="ifxtools"
 	# Checkout an IDS from the repository
@@ -775,7 +774,7 @@ function idscheckout
 	fi
 }
 
-function idsconfig
+idsconfig ()
 {
 	local module="ifxtools"
 	# Used for (re)configuring the IDS installation pointed to
@@ -876,9 +875,9 @@ function idsconfig
 #---------------------------------------------
 # ----- Informix Related Aliases -------------
 #---------------------------------------------
-function    ui               { userid informix $@; }
+ui () { userid informix $@; }
 
-function    ifxchrepobase ()
+ifxchrepobase ()
 {
 	local module="ifxtools"
 	# Used for (re)configuring the public/private Informix repository base being pointed to
@@ -925,7 +924,7 @@ function    ifxchrepobase ()
 	ifxtools_log ifxchrepobase $@
 }
 
-function    ifxenv ()
+ifxenv ()
 { 
 	local module="ifxtools"
 	#env | grep -E 'IDS|CSDK|INFORMIX|ONCONFIG' | sort;
@@ -954,14 +953,14 @@ function    ifxenv ()
 	echo "PLATFORMPATH=$PLATFORMPATH"
 }
 
-function    ifxcd ()
+ifxcd ()
 {
 	local module="ifxtools"
 	# Allows easy cd'ing to $INFORMIX
 	cd ${IFX_REPO_WORKING}
 }
 
-function    idscd ()
+idscd ()
 {
 	local module="ifxtools"
 	# Allows easy cd'ing to IDS installs found in the repository
@@ -985,33 +984,33 @@ function    idscd ()
 	fi
 }
 
-function    tcd              { cd $TESTNODE; }
-function    qcd              { cd $TESTLOC; }
-function    ops              { ps -ef | grep oninit; }
-function    mps              { ps -ef | awk "/oninit/ && \$3==1"; }
+tcd () { cd $TESTNODE; }
+qcd () { cd $TESTLOC; }
+ops () { ps -ef | grep oninit; }
+mps () { ps -ef | awk "/oninit/ && \$3==1"; }
 alias tailmsg='tailog'
 alias tailbar='tailog `ovar BAR_ACT_LOG`'
 alias taildeb='tailog `ovar BAR_DEBUG_LOG`'
 alias tailam='tailog `avar MSG`'
 alias tailres='tailog online1.res'
-function    ovi              { userid root ${EDITOR} ${INFORMIXDIR}/etc/${ONCONFIG}; }
-function    svi              { userid root ${EDITOR} ${INFORMIXSQLHOSTS}; }
-function    avi              { userid root ${EDITOR} ${AC_CONFIG:-$INFORMIXDIR/etc/ac_config.std}; }
+ovi () { userid root ${EDITOR} ${INFORMIXDIR}/etc/${ONCONFIG}; }
+svi () { userid root ${EDITOR} ${INFORMIXSQLHOSTS}; }
+avi () { userid root ${EDITOR} ${AC_CONFIG:-$INFORMIXDIR/etc/ac_config.std}; }
 
 # ----- IDS-specific -------------------------
-function    idsup            { userid informix oninit -vy; }
-function    idsupi           { userid informix oninit -ivy; }
-function    idsdown          { userid informix onmode -ky; }
-function    idsddd           { userid root ddd -gdb -command=$HOME/.gdbinit $INFORMIXDIR/bin/oninit; }
+idsup () { userid informix oninit -vy; }
+idsupi () { userid informix oninit -ivy; }
+idsdown () { userid informix onmode -ky; }
+idsddd () { userid root ddd -gdb -command=$HOME/.gdbinit $INFORMIXDIR/bin/oninit; }
 
 # ----- CSDK-specific ------------------------
 
 # ----- Regression Tester Only ---------------
-function    rtcd             { cd "/usr3/tools/genarch/rt"; }
-function    rtcdusr          { cd "/usr3/user_files/rt/"; }
+rtcd () { cd "/usr3/tools/genarch/rt"; }
+rtcdusr () { cd "/usr3/user_files/rt/"; }
 
 # For Informix test machines
-function ifxtestvobsconfig ()
+ifxtestvobsconfig ()
 {
   export INFORMIXDIR=/vobs/tristarm/sqldist
   export ONCONFIG=onconfig.lfeagan

@@ -23,7 +23,7 @@
 #  environment, including modules, debugging, and logging.
 ############################################################
 
-function mbe_load
+mbe_load ()
 {
 	local module="mbe"
 	# Load preferences file
@@ -39,17 +39,17 @@ function mbe_load
 	return
 }
 
-function mbe_unload
+mbe_unload ()
 {
 	return 1
 }
 
-function mbe_setpath
+mbe_setpath ()
 {
 	local module="mbe"
 }
 
-function mbe_usage
+mbe_usage ()
 {
 	echo "Modular Bash Environment (MBE)"
 	echo "MBE provides a framework for loading and unloading coherent sets of functions and"
@@ -70,7 +70,7 @@ function mbe_usage
 #  execution of the code following 'DEBUG'.
 ############################################################
 #_DEBUG="on"
-function DEBUG
+DEBUG ()
 {
    [ "$_DEBUG" == "on" ] &&  $@ || :
 }
@@ -81,7 +81,7 @@ function DEBUG
 #  Adds the 'mbe_log_info' function, used to log
 #  informational messages to the MBE log file.
 ############################################################
-function mbe_log_info
+mbe_log_info ()
 {
 	echo -ne "INFO: ${@}\n" >> "${MBE_LOGFILE}"
 }
@@ -92,7 +92,7 @@ function mbe_log_info
 #  Adds the 'mbe_log_error' function, used to log
 #  informational messages to the MBE log file.
 ############################################################
-function mbe_log_error
+mbe_log_error ()
 {
 	echo -ne "ERROR: ${@}\n" >> "${MBE_LOGFILE}"
 }
@@ -103,7 +103,7 @@ function mbe_log_error
 #  Adds the 'figure out name' function, used for
 #  centralized logging.
 ############################################################
-function timestamp
+timestamp ()
 {
 	date '+%Y.%m.%d_%H:%M:%S.%N'
 }
@@ -115,7 +115,7 @@ function timestamp
 #  searches through an array of paths and sets an
 #  environment variable.
 ############################################################
-function mbe_envpathsearch
+mbe_envpathsearch ()
 {
   # $1,env_var   -->  Environment variable to be exported
   # $2,progs_len --> Length of array of programs to search for
@@ -166,7 +166,7 @@ function mbe_envpathsearch
 #  Updates the mbe environment by pulling from the update
 #  server.
 ############################################################
-function mbe_updatembe
+mbe_updatembe ()
 {
 	pushd $HOME
 	local outdir="mbe-update"
@@ -181,13 +181,13 @@ function mbe_updatembe
     popd
 }
 
-function mbe_checkout
+mbe_checkout ()
 {
 	local TARGETDIR="${HOME}/svn/mbe-sf.net"
 	svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk "${TARGETDIR}"
 }
 
-function mbe_createModuleConfBackups
+mbe_createModuleConfBackups ()
 {
 	local ts=$(date '+%Y.%m.%d_%H:%M')
 	local modules=( $(mbe_listAllModules) )
@@ -201,7 +201,7 @@ function mbe_createModuleConfBackups
 	done
 }
 
-function mbe_removeModuleConfBackups
+mbe_removeModuleConfBackups ()
 {
 	local modules=( $(mbe_listAllModules) )
 	local backupConfs=( $(find "${MODULES_DIR}" -regex '.*[a-z0-9A-Z]+\.conf\..*' -printf "%p\n") )
@@ -237,7 +237,7 @@ function mbe_removeModuleConfBackups
 	fi
 }
 
-function mbe_checkModulesDir
+mbe_checkModulesDir ()
 {
 	# Search the modules directory for all pre-modules
 	#modules=('')
@@ -265,7 +265,7 @@ function mbe_checkModulesDir
 	fi
 }
 
-function mbe_loadModules
+mbe_loadModules ()
 {
 	# Loads one or more modules into mbe
 	if (( $# < 1 )); then
@@ -295,7 +295,7 @@ function mbe_loadModules
 	return
 }
 
-function mbe_unloadModules
+mbe_unloadModules ()
 {
 	# Unloads one or more modules from mbe
 	if (( $# < 1 )); then
@@ -321,14 +321,14 @@ function mbe_unloadModules
 	return
 }
 
-function mbe_loadAllModules
+mbe_loadAllModules ()
 {
 	local modules
 	modules=( $(mbe_listAllModules) )
 	mbe_loadModules "${modules[@]}"
 }
 
-function mbe_isModuleLoaded
+mbe_isModuleLoaded ()
 {
 	# $1 is the name of the module to check
 	if [ -z "$1" ]; then
@@ -345,7 +345,7 @@ function mbe_isModuleLoaded
 	return 0
 }
 
-function mbe_listLoadedModules
+mbe_listLoadedModules ()
 {
 	local module
 	for module in "${MODULES_LOADED[@]}"; do
@@ -353,7 +353,7 @@ function mbe_listLoadedModules
 	done
 }
 
-function mbe_listAllModules
+mbe_listAllModules ()
 {
 	# Lists all available modules.
 	# With no arguments looks at user's modules directory
@@ -373,7 +373,7 @@ function mbe_listAllModules
 	fi
 }
 
-function mbe_getModulePath
+mbe_getModulePath ()
 {
 	# $1 is the name of the module to get the path for
 	if [ -z "$1" ]; then
@@ -385,7 +385,7 @@ function mbe_getModulePath
 	echo "${MODULES_DIR}/${module}"
 }
 
-function mbe_editModule
+mbe_editModule ()
 {
 	# $1 is the name of the module to be edited
 	if [ -z "$1" ]; then
@@ -410,7 +410,7 @@ function mbe_editModule
 	${EDITOR} "${modulepath}"
 }
 
-function mbe_editModuleConf
+mbe_editModuleConf ()
 {
 	# $1 is the name of the module to be edited
 	if [ -z "$1" ]; then
@@ -451,7 +451,7 @@ if [ -z "${ORIG_PATH}" ]; then
 	export ORIG_PATH="${PATH}"
 fi
 
-function mbe_cleanpath
+mbe_cleanpath ()
 {
 	# Removes path elements that do not exist from a colon-delimited string
 	uncleanpath="$1"
@@ -489,7 +489,7 @@ function mbe_cleanpath
 	fi
 }
 
-function mbe_buildpath
+mbe_buildpath ()
 {
 	DEBUG echo "mbe_buildpath: enter"
 	# Finds installed programs and configures paths for them

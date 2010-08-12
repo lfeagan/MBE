@@ -21,7 +21,7 @@
 # (1) Backup the existing files (if they exist)
 # (2) Copy in the new files
 
-function usage ()
+usage ()
 {
 	echo "Usage: install [-b] [-B]"
 	echo "  -b disable backup file creation"
@@ -91,7 +91,7 @@ if [ $dobackup -eq 1 ]; then
 		[ $debug -eq 0 ] && mkdir -p "${MBE_BACKUP_DIR}"
 	fi
 
-	function backupfile ()
+	backupfile ()
 	{
 		file=$1
 		if [ -n "$file" ]; then
