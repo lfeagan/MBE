@@ -57,9 +57,9 @@ hcc () { hc;c; }
 
 cx () { hc;x; }
 
-.. () { cd ..; }
-... () { cd ../..; }
-.... () { cd ../../..; }
+#function .. () { cd ..; }
+#function ... () { cd ../..; }
+#function .... () { cd ../../..; }
 
 # For linux, always use color with 'ls'
 # For solaris et al, do not use color as it is usually unsupported
@@ -74,17 +74,17 @@ ew () { ${EDITOR} `which $@`; }
 # Modified listing commands
 #ll () { ls --color=auto -FAql $@; }
 #lf () { ls --color=auto -FAq  $@; }
-ll () { [[ "$OSTYPE" == linux* ]] && ls -FAql $@ || ls -FAl $@; }
+function ll () { [[ "$OSTYPE" == linux* ]] && ls -FAql $@ || ls -FAl $@; }
 lf () { [[ "$OSTYPE" == linux* ]] && ls -FAq $@ || ls -FA $@; }
-la () { ls -A $@; }
-l () { ls -CF $@; }
+function la () { ls -A $@; }
+function l () { ls -CF $@; }
 l. () { ls -d .* $@; } 
 lk () { ls -lSrk $@; }
 lh () { ls -lSrh $@; }
 lt () { ls -ltr $@; }
 cls () { clear; ls $@; }
 cll () { clear; ll $@; }
-dir () { ls --color=auto --format=vertical; }
+function dir () { ls --color=auto --format=vertical; }
 vdir () { ls --color=auto --format=long; }
 
 # Save the real which for a rainy day
