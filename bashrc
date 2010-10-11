@@ -162,7 +162,9 @@ HISTSIZE=2000
 # Ignores duplicate lines next to eachother and ignores a line with a leading space
 # e.g. ignoredups and ignorespace combined
 HISTCONTROL=ignoreboth
-declare -x HISTFILESIZE HISTSIZE HISTCONTROL
+# Command patterns that are to be excluded from the history
+HISTIGNORE="&:ls:[bf]g:exit:[ \t]*"
+declare -x HISTFILESIZE HISTSIZE HISTCONTROL HISTIGNORE
 
 ################################
 # ##### SHELL VARIABLES ###### #
