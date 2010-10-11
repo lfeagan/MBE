@@ -181,6 +181,8 @@ shopt -s cmdhist # Keep a multi-line command together in history
 shopt -s lithist # Multi-line commands saved to history with embedded newlines rather than using semicolon separators where possible.
 shopt -s execfail # Make it so that failed `exec' commands don't flush this shell.
 shopt -s checkhash # Check that a command found in the hash table exists before trying to execute it. If a hashed command no longer exists, a normal path search is performed.
+shopt -s histappend # If  set,  the  history list is appended to the file named by the value of the HISTFILE variable when the shell exits, rather than overwriting the file.
+shopt -s histverify # If set, and readline is being used, the results of history substitution are not immediately passed to the shell parser.  Instead, the resulting line is  loaded  into  the readline editing buffer, allowing further modification.
 shopt -s histreedit # Allow re-editing of a failed history substitution
 shopt -s promptvars # Prompt strings undergo variable and parameter expansion after being expanded.
 shopt -s cdable_vars # An argument to the cd builting command that is not a directory is assumed to be the name of a variable whose value is the directory to change to.
