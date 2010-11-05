@@ -122,7 +122,6 @@ eclipse_config ()
 		echo "	Configures a reasonable environment and executes the Eclipse version specified."
 	}
 
-
 	# parse arguments with getopts
 	# reset getopts state variables
 	unset print_usage
@@ -237,6 +236,12 @@ eclipse_listVersions ()
 #  ECLIPSE_PRODUCT, PRODUCT_VERSION, ECLIPSE_SUBDIR, JAVA_CREATOR, JAVA_VERSION, JAVA_BITS
 eclipse_run()
 {
+	if (( "${#@}" > 0)); then
+		cmd="eclipse_config ${@}"
+		#echo "cmd: ${cmd}"
+		eval "${cmd}"
+	fi
+
 	echo ${ECLIPSE_HOME}
 	if [ ! -d "${ECLIPSE_HOME}" ]; then
 		echo "Unable to run: No Eclipse home configured"
