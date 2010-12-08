@@ -459,9 +459,19 @@ mbe_cleanpath ()
 	pathelems_clean=( )
 	#echo "#numelems=${#pathelems[*]}"
 	for pathelem in ${pathelems[*]}; do
-		#echo "checking ${pathelem}"
-		if [ -d "${pathelem}" ]; then
-			pathelems_clean[${#pathelems_clean[@]}]="${pathelem}"
+		# check for pathelem already being in pathelems_clean
+		let dupfound=0
+		for pathelem_clean in ${pathelems_clean[@]}; do
+			if [ "${pathelem}" == "${pathelem_clean}" ]; then
+				let dupfound=1
+				break
+			fi
+		done
+		# if no duplicate was found, then check for directory existence
+		if (( $dupfound == 0 )); then
+			if [ -d "${pathelem}" ]; then
+				pathelems_clean[${#pathelems_clean[@]}]="${pathelem}"
+			fi
 		fi
 	done
 	#echo "${pathelems_clean[@]}"
