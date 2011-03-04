@@ -249,7 +249,8 @@ eclipse_run()
 		java_config -c "${ECLIPSE_JAVA_CREATOR}" -v "${ECLIPSE_JAVA_VERSION}" -b "${ECLIPSE_JAVA_BITS}"
 
 		# Pre-execution debug statements
-		echo "JAVA_HOME=${JAVA_HOME}"
+		java_env
+		#echo "JAVA_HOME=${JAVA_HOME}"
 		echo "ECLIPSE_HOME=${ECLIPSE_HOME}"
 		echo "ECLIPSE_ARGS=${ECLIPSE_ARGS}"
 
@@ -258,12 +259,14 @@ eclipse_run()
 		# Linux/PPC64 Issue Fixes
 		# If using IBM 1.5 VM on Linux GTK PPC and typing in an editor crashes, add "-Xnojit"
 		# If Eclipse fails to create a lock file with the reason "No lock available", add "-Dosgi.locking=none"
-		pushd .
-	  cd "$ECLIPSE_HOME"
-		./eclipse -vm "${JAVA_HOME}/bin/java" \
-		-data "${ECLIPSE_DATAHOME}" \
-		-vmargs -Xmx512M
+		RUN="${ECLIPSE_HOME}/eclipse ${ECLIPSE_ARGS}"	
+		pushd "${ECLIPSE_HOME}"
+		eval "${RUN}"
 		popd
+
+		#	./eclipse -vm "${JAVA_HOME}/bin/java" \
+		#	-data "${ECLIPSE_DATAHOME}" \
+		#	-vmargs -Xmx512M
 	fi
 }
 
