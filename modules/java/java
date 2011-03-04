@@ -240,9 +240,52 @@ java_isValidVersion ()
 
 java_env ()
 {
+	usage ()
+	{
+		echo "java_env"
+		echo " -i = print internal variable state"
+		echo " -p = print PATH, LD_LIBRARY_PATH, and MANPATH"
+		echo " -h = print usage"
+	}
+	# Process arguments
+	# -i Internal variable state
+	# -p PATH, LD_LIBRARY_PATH, and MANPATH
+	# -h Print usage
+	# parse arguments with getopts
+	# reset getopts state variables
+	print_internal=0
+	print_path=0
+	print_usage=0
+	while getopts "iph" option
+	do
+		case $option in
+			i  ) print_internal=1;;
+		  p  ) print_path=1;;
+			h  ) print_usage=1;;
+			\? ) print_usage=1;;
+			*  ) print_usage=1;;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
 	echo "JAVA_HOME=${JAVA_HOME}"
-	echo "------------------------------------------------------------"
-	echo "JAVA_CREATOR=${JAVA_CREATOR}"
-	echo "JAVA_VERSION=${JAVA_VERSION}"
-	echo "JAVA_BITS=${JAVA_BITS}"
+
+	if	[[ "$print_internal" == 1 ]]; then
+		echo "------------------------------------------------------------"
+		echo "JAVA_CREATOR=${JAVA_CREATOR}"
+		echo "JAVA_VERSION=${JAVA_VERSION}"
+		echo "JAVA_BITS=${JAVA_BITS}"
+	fi
+
+	if	[[ "$print_path" == 1 ]]; then
+		echo "------------------------------------------------------------"
+		echo "PATH=${PATH}"
+		echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+		echo "MANPATH=${MANPATH}"
+	fi
 }
