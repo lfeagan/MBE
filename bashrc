@@ -29,7 +29,11 @@
 #export _DEBUG="on"
 
 # If not running interactively, don't do anything
-[ -z "$PS1" ] && return
+# If MBE_NONINTERACTIVE is set and is non-zero, we still load MBE for use in non-interactive contexts
+if [[ ( -z "$PS1" ) && ( ( -z $MBE_NONINTERACTIVE ) || ( $MBE_NONINTERACTIVE -eq 0 ) ) ]]
+then
+	return
+fi
 
 ##################################
 # ###### LOAD PREFERENCES ###### #
