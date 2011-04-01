@@ -1,0 +1,184 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+ant_dependencies=( 'mbe' 'platform' 'utils' 'java' )
+ant_functions=(ant_load ant_unload ant_setpath ant_usage ant_env ant_config ant_listVersions )
+
+# Environment Variables:
+# ANT_PRODUCT
+# ANT_PRODUCT_VERSION
+# ANT_PRODUCT_SUBDIR
+# ANT_JAVA_CREATOR
+# ANT_JAVA_VERSION
+# ANT_JAVA_BITS
+
+ant_load ()
+{
+	DEBUG echo "ant_load: enter"
+	# Load module dependencies
+	mbe_loadModules "${ant_dependencies[@]}"
+
+	local module="ant"
+	# Load preferences file
+	source "${MODULES_DIR}/${module}/${module}.conf"
+
+	# Specify the default Ant product to be used
+	ANT_PRODUCT=${ANT_PRODUCT:=apache-ant}
+	ANT_PRODUCT_VERSION=${ANT_PRODUCT_VERSION:=1.8.2}
+	
+	# Specify the default Java to be used when running Ant
+	ANT_JAVA_CREATOR=${ANT_JAVA_CREATOR:=Sun}
+	ANT_JAVA_VERSION=${ANT_JAVA_VERSION:=1.6.0}
+	ANT_JAVA_BITS=${ANT_JAVA_BITS:=32}
+
+	DEBUG echo "ant_load: leave"
+	return 0
+
+}
+
+ant_unload ()
+{
+	local module="ant"
+	local func
+	for func in "${ant_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+ant_setpath ()
+{
+	local module="ant"
+
+	if [ -e "${ANT_HOME}" ]; then
+		PATH="${ANT_HOME}/bin:${PATH}"
+		#CLASSPATH="${ANT_HOME}/lib:${CLASSPATH}"
+		export ANT_OPTS="-Xms128m -Xmx512m -XX:MaxPermSize=128M"
+		export JAVA_HOME
+	fi
+}
+
+ant_usage ()
+{
+	local module="ant"
+}
+
+ant_env ()
+{
+	echo "ANT_HOME=${ANT_HOME}"
+	echo "--------------------------------------------------------------------------------"
+	echo "ANT_PRODUCT=${ANT_PRODUCT}"
+	echo "ANT_PRODUCT_VERSION=${ANT_PRODUCT_VERSION}"
+	echo "ANT_JAVA_CREATOR=${ANT_JAVA_CREATOR}"
+	echo "ANT_JAVA_VERSION=${ANT_JAVA_VERSION}"
+	echo "ANT_JAVA_BITS=${ANT_JAVA_BITS}"
+}
+
+ant_config ()
+{
+	local module="ant"
+
+	usage ()
+	{
+		echo "Usage: ant_config [-p <product>] [-v <version>] [-c <java_creator>] [-j <java_version>] [-b <java_bits>]"
+		echo "	Configures a reasonable environment to execute the Ant as specified."
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset ant_product ant_product_version
+	print_usage=0
+	suppress_buildpath=0
+	while getopts "p:v:c:j:b:hn" option
+	do
+		case $option in
+			p  ) ant_product=$OPTARG;;
+			v  ) ant_product_version=$OPTARG;;
+			c  ) ant_java_creator=$OPTARG;;
+			j  ) ant_java_version=$OPTARG;;
+			b  ) ant_java_bits=$OPTARG;;
+			n  ) suppress_buildpath=1;;
+			h  ) print_usage="1";;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	# If a field is unassigned, use the current value as the default (eg no change if unspecified)
+	ant_product="${ant_product-$ANT_PRODUCT}"
+	ant_product_version="${ant_product_version-$ANT_PRODUCT_VERSION}"
+	ant_java_bits="${java_bits-$ANT_JAVA_BITS}"
+	ant_java_creator="${java_creator-$ANT_JAVA_CREATOR}"
+	ant_java_version="${java_version-$ANT_JAVA_VERSION}"
+
+	# Define ANT_HOME
+	ant_subdir="${ant_product}/${ant_product_version}" # The path under TOOLSPATH where the product can be found
+	ant_home="${TOOLSPATHGENERIC}/${ant_subdir}"
+	
+	# Check that Java can be configured with the new options
+
+	# Check that ANT_HOME exists and is a directory
+	if [ ! -d "$ant_home" ]; then
+		echo "ERROR: product ${ant_product} does not exist at ${ant_home}"
+		#ANT_HOME=""
+		return 1
+	else
+		# Export key variables
+		export ANT_HOME="${ant_home}"
+		export ANT_PRODUCT="${ANT_PRODUCT}"
+		export ANT_PRODUCT_VERSION="${ANT_PRODUCT_VERSION}"
+		export ANT_JAVA_BITS="${ant_java_bits}"
+		export ANT_JAVA_CREATOR="${ant_java_creator}"
+		export ANT_JAVA_VERSION="${ant_java_version}"
+
+		# Build PATH
+		if [[ "${suppress_buildpath}" != "1" ]]; then
+			mbe_buildpath
+		fi
+	fi
+}
+
+ant_listVersions ()
+{
+	local versions
+
+	usage ()
+	{
+		echo "Usage: ant_listVersions [-p <product>]"
+		echo " Searches and lists the available Eclipse versions for a particular product."
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "p:b:h" option
+	do
+		case $option in
+			p  ) SEARCH_PRODUCT=$OPTARG;;
+			h  ) print_usage="1";;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	SEARCH_PRODUCT=${SEARCH_PRODUCT:=${ANT_PRODUCT}}
+	SEARCH_PATH="${TOOLSPATHGENERIC}/${SEARCH_PRODUCT}"
+
+	declare -a versions=( $(find_eregex ${SEARCH_PATH} -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort) )
+
+	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
+
+	echo "${versions[@]}"
+}
