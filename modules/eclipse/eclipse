@@ -172,7 +172,15 @@ eclipse_config ()
 	
 	# Export key variables
 	export ECLIPSE_HOME ECLIPSE_USERHOME ECLIPSE_CONFHOME ECLIPSE_DATAHOME ECLIPSE_HOMEARGS
-	export ECLIPSE_ARGS="-vm ${JAVA_HOME}/bin/java ${ECLIPSE_HOMEARGS} -Dosgi.locking=none -Xnojit -vmargs -Xmx512M"
+	ECLIPSE_ARGS="-vm ${JAVA_HOME}/bin/java ${ECLIPSE_HOMEARGS}"
+	ECLIPSE_VMARGS="-vmargs -Xmx512M -Xms192M"
+
+	if [ "${CPUTYPE}" -eq "powerpc" ]; then
+		ECLIPSE_ARGS="${ECLIPSE_ARGS} -Dosgi.locking=non -Xnojit"
+	fi
+
+	ECLIPSE_ARGS="${ECLIPSE_ARGS} ${ECLIPSE_VMARGS}"
+	export ECLIPSE_ARGS
 
 	# Check that ECLIPSE_HOME exists and is a directory
 	if [ ! -d "$ECLIPSE_HOME" ]; then
