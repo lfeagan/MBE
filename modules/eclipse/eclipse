@@ -175,7 +175,7 @@ eclipse_config ()
 	ECLIPSE_ARGS="-vm ${JAVA_HOME}/bin/java ${ECLIPSE_HOMEARGS}"
 	ECLIPSE_VMARGS="-vmargs -Xmx512M -Xms192M"
 
-	if [ "${CPUTYPE}" -eq "powerpc" ]; then
+	if [[ "${KERNELTYPE}" == "Linux" && "${CPUTYPE}" == ppc* ]]; then
 		ECLIPSE_ARGS="${ECLIPSE_ARGS} -Dosgi.locking=non -Xnojit"
 	fi
 
