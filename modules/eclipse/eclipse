@@ -64,9 +64,15 @@ eclipse_setpath ()
 # 64-bit Eclipse + 64-bit Firefox ==> 64-bit XUL
 eclipse_setmozpath()
 {
+	if [ "${ECLIPSE_JAVA_BITS}" == "32" ]; then
+		LIBDIR="/usr/lib"
+	else
+		LIBDIR="/usr/lib64"
+	fi
+
 	# Build list of library directories to search
 	# Uses sub-shells for globbing directories
-	local LIB_DIRS=("/usr/lib/mozilla" "/usr/lib/firefox" $(echo "/usr/lib/xulrunner*") "/usr/lib/mozilla-firefox" $(echo "/usr/lib/thunderbird*") )
+	local LIB_DIRS=("${LIBDIR}/mozilla" "${LIBDIR}/firefox" $(echo "${LIBDIR}/xulrunner*") "${LIBDIR}/mozilla-firefox" $(echo "${LIBDIR}/thunderbird*") )
 	# The libraries to search for
 	local LIBS=("libgtkembedmoz.so" "libxul.so")
 
@@ -80,6 +86,7 @@ eclipse_setmozpath()
 			for LIB in "${LIBS[@]}"; do
 				if [ -e "${LIB_DIR}/${LIB}" ]; then
 					export MOZILLA_FIVE_HOME="${LIB_DIR}"
+					break 2
 				fi
 			done
 		fi
@@ -132,7 +139,8 @@ eclipse_config ()
 			v  ) ECLIPSE_PRODUCT_VERSION=$OPTARG;;
 			c  ) ECLIPSE_JAVA_CREATOR=$OPTARG;;
 			j  ) ECLIPSE_JAVA_VERSION=$OPTARG;;
-			b  ) ECLIPSE_JAVA_BITS=$OPTARG;;
+			b  ) ECLIPSE_JAVA_BITS=$OPTARG
+				   eclipse_setmozpath;;
 			h  ) print_usage="1";;
 			\? ) print_usage="1";;
 			*  ) print_usage="1";;
