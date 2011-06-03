@@ -5,7 +5,7 @@
 # http://help.eclipse.org/help32/index.jsp?topic=/org.eclipse.platform.doc.isv/reference/misc/multi_user_installs.html
 
 eclipse_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-eclipse_functions=(eclipse_load eclipse_unload eclipse_setpath eclipse_setmozpath eclipse_usage eclipse_env eclipse_config eclipse_listVersions eclipse_run sdp_run teamconcert_run )
+eclipse_functions=(eclipse_load eclipse_unload eclipse_setpath eclipse_setmozpath eclipse_usage eclipse_env eclipse_config eclipse_listVersions eclipse_run eclipse_cdworkspace sdp_run teamconcert_run )
 
 # Environment Variables:
 # ECLIPSE_PRODUCT
@@ -284,6 +284,14 @@ eclipse_run()
 		#	-data "${ECLIPSE_DATAHOME}" \
 		#	-vmargs -Xmx512M
 	fi
+}
+
+eclipse_cdworkspace()
+{
+	if [ -z "${ECLIPSE_SUBDIR}" ]; then
+		eclipse_config
+	fi
+	cd "${HOME}/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/workspace"
 }
 
 sdp_run()
