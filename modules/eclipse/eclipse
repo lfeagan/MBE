@@ -294,6 +294,14 @@ eclipse_cdworkspace()
 	cd "${HOME}/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/workspace"
 }
 
+eclipse_cd()
+{
+	if [ -z "${ECLIPSE_SUBDIR}" ]; then
+		eclipse_config
+	fi
+	cd "${ECLIPSE_HOME}"
+}
+
 sdp_run()
 {
 	eclipse_config -p "${SDP_PRODUCT}" -v "${SDP_PRODUCT_VERSION}" -c "${SDP_JAVA_CREATOR}" -j "${SDP_JAVA_VERSION}" -b "${SDP_JAVA_BITS}"
