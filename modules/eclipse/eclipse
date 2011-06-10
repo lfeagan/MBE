@@ -117,6 +117,7 @@ eclipse_env ()
 	echo "ECLIPSE_JAVA_CREATOR=${ECLIPSE_JAVA_CREATOR}"
 	echo "ECLIPSE_JAVA_VERSION=${ECLIPSE_JAVA_VERSION}"
 	echo "ECLIPSE_JAVA_BITS=${ECLIPSE_JAVA_BITS}"
+  echo "ECLIPSE_LANG=${ECLIPSE_LANG}"
 }
 
 eclipse_config ()
@@ -126,6 +127,7 @@ eclipse_config ()
 	usage ()
 	{
 		echo "Usage: eclipse_config [-p <product>] [-v <version>] [-b <bits>]"
+		echo "  [-c <java_creator>] [-j <java_version>] [-n <locale>]"
 		echo "	Configures a reasonable environment and executes the Eclipse version specified."
 	}
 
@@ -141,6 +143,7 @@ eclipse_config ()
 			j  ) ECLIPSE_JAVA_VERSION=$OPTARG;;
 			b  ) ECLIPSE_JAVA_BITS=$OPTARG
 				   eclipse_setmozpath;;
+			n  ) ECLIPSE_LANG=$OPTARG;;
 			h  ) print_usage="1";;
 			\? ) print_usage="1";;
 			*  ) print_usage="1";;
@@ -180,7 +183,7 @@ eclipse_config ()
 	
 	# Export key variables
 	export ECLIPSE_HOME ECLIPSE_USERHOME ECLIPSE_CONFHOME ECLIPSE_DATAHOME ECLIPSE_HOMEARGS
-	ECLIPSE_ARGS="-vm ${JAVA_HOME}/bin/java ${ECLIPSE_HOMEARGS}"
+	ECLIPSE_ARGS="-vm ${JAVA_HOME}/bin/java ${ECLIPSE_HOMEARGS} -nl ${ECLIPSE_LANG}"
 	ECLIPSE_VMARGS="-vmargs -Xmx512M -Xms192M"
 
 	if [[ "${KERNELTYPE}" == "Linux" && "${CPUTYPE}" == ppc* ]]; then
@@ -275,7 +278,7 @@ eclipse_run()
 		# Linux/PPC64 Issue Fixes
 		# If using IBM 1.5 VM on Linux GTK PPC and typing in an editor crashes, add "-Xnojit"
 		# If Eclipse fails to create a lock file with the reason "No lock available", add "-Dosgi.locking=none"
-		RUN="${ECLIPSE_HOME}/eclipse ${ECLIPSE_ARGS}"	
+		RUN="${ECLIPSE_HOME}/eclipse ${ECLIPSE_ARGS}"
 		pushd "${ECLIPSE_HOME}"
 		eval "${RUN}"
 		popd
