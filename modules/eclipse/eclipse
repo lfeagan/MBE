@@ -257,8 +257,9 @@ eclipse_run()
 {
 	if (( "${#@}" > 0)); then
 		cmd="eclipse_config ${@}"
-		#echo "cmd: ${cmd}"
 		eval "${cmd}"
+	elif [[ -z "${ECLIPSE_SUBDIR}" ]]; then
+		eclipse_config
 	fi
 
 	echo ${ECLIPSE_HOME}
