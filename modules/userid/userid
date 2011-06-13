@@ -65,5 +65,10 @@ userid_usage ()
 
 ur ()
 {
-	userid root $@
+	which userid &>/dev/null
+	if [ "$?" -eq 0 ]; then
+		userid root $@
+	else
+		sudo -u root $@
+	fi
 }
