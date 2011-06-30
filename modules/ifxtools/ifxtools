@@ -875,7 +875,14 @@ idsconfig ()
 #---------------------------------------------
 # ----- Informix Related Aliases -------------
 #---------------------------------------------
-ui () { userid informix $@; }
+ui () {
+	which userid &>/dev/null;                                                                                                                                    
+	if [ "$?" -eq 0 ]; then                                                                                                                                      
+		userid informix $@;
+	else                                                                                                                                                         
+		sudo -u informix $@;                                                                                                                                         
+	fi 
+}
 
 ifxchrepobase ()
 {
