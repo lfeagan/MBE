@@ -180,11 +180,25 @@ eclipse_config ()
 
 	# Define ECLIPSE_WORKSPACE
 	#ECLIPSE_WORKSPACE="$HOME/.eclipse-${HOSTTYPE}"
+
+	java_config -c "${ECLIPSE_JAVA_CREATOR}" -v "${ECLIPSE_JAVA_VERSION}" -b "${ECLIPSE_JAVA_BITS}"
 	
 	# Export key variables
 	export ECLIPSE_HOME ECLIPSE_USERHOME ECLIPSE_CONFHOME ECLIPSE_DATAHOME ECLIPSE_HOMEARGS
 	ECLIPSE_ARGS="-vm ${JAVA_HOME}/bin/java ${ECLIPSE_HOMEARGS} -nl ${ECLIPSE_LANG}"
 	ECLIPSE_VMARGS="-vmargs -Xmx512M -Xms192M"
+
+	# Enable Large Pages
+	if [ "${ECLIPSE_JAVA_USELARGEPAGES}" ]; then
+		if [[ "${ECLIPSE_JAVA_CREATOR}" == "IBM" && "${ECLIPSE_JAVA_VERSION}" == "1.6.0" ]]; then
+			# Enable compressed references on 64-bit
+			# Disable the attach handler thread
+			ECLIPSE_VMARGS="${ECLIPSE_VMARGS} -Xlp -Xcompressedrefs -Dcom.ibm.tools.attach.enable=no"
+		fi
+		if [[ "${ECLIPSE_JAVA_CREATOR}" == "Sun" ]]; then
+			ECLIPSE_VMARGS="${ECLIPSE_VMARGS} -XX:+UseLargePages -XX:+UseCompressedOops"
+		fi
+	fi
 
 	if [[ "${KERNELTYPE}" == "Linux" && "${CPUTYPE}" == ppc* ]]; then
 		ECLIPSE_ARGS="${ECLIPSE_ARGS} -Dosgi.locking=non -Xnojit"
