@@ -134,7 +134,7 @@ eclipse_config ()
 	# parse arguments with getopts
 	# reset getopts state variables
 	unset print_usage
-	while getopts "p:v:c:j:b:h" option
+	while getopts "p:v:c:j:b:n:h" option
 	do
 		case $option in
 			p  ) ECLIPSE_PRODUCT=$OPTARG;;
@@ -187,6 +187,10 @@ eclipse_config ()
 	export ECLIPSE_HOME ECLIPSE_USERHOME ECLIPSE_CONFHOME ECLIPSE_DATAHOME ECLIPSE_HOMEARGS
 	ECLIPSE_ARGS="-vm ${JAVA_HOME}/bin/java ${ECLIPSE_HOMEARGS} -nl ${ECLIPSE_LANG}"
 	ECLIPSE_VMARGS="-vmargs -Xmx512M -Xms192M"
+
+	if ${ECLIPSE_SHOW_LOCATION}; then
+		ECLIPSE_ARGS="${ECLIPSE_ARGS} -showlocation"
+	fi
 
 	# Enable Large Pages
 	if [ "${ECLIPSE_JAVA_USELARGEPAGES}" ]; then
