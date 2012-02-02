@@ -59,6 +59,7 @@ mbe_usage ()
 	echo " mbe_loadModules <module1> <module2>... - Loads one or more modules into the current environment"
 	echo " mbe_loadAllModules <module1> <module2>... - Loads all available modules into the current environment"
 	echo " mbe_unloadModules <module1> <modoule2>... - Unloads one or more modules from the current environment"
+	echo " mbe_reloadModule <module> - Reloads the specified module"
 	echo " mbe_listLoadedModules - Lists the modules currently loaded in the environment"
 	echo " mbe_listAllModules - Lists all modules that can be loaded"
 }
@@ -318,6 +319,18 @@ mbe_unloadModules ()
 		fi
 	done
 	mbe_buildpath
+	return
+}
+
+mbe_reloadModules ()
+{
+	# Reloads one or more modules from mbe
+	if (( $# < 1 )); then
+		echo "ERROR: Must provide at least 1 argument to mbe_reloadModules"
+		return 1
+	fi
+	mbe_unloadModules "$@"
+	mbe_loadModules "$@"
 	return
 }
 
