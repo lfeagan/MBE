@@ -73,7 +73,7 @@ mbe_usage ()
 #_DEBUG="on"
 DEBUG ()
 {
-   [ "$_DEBUG" == "on" ] &&  $@ || :
+   [ "$_DEBUG" == "on" ] &&  "$*" || :
 }
 
 ############################################################
@@ -329,8 +329,8 @@ mbe_reloadModules ()
 		echo "ERROR: Must provide at least 1 argument to mbe_reloadModules"
 		return 1
 	fi
-	mbe_unloadModules "$@"
-	mbe_loadModules "$@"
+	mbe_unloadModules "$*"
+	mbe_loadModules "$*"
 	return
 }
 

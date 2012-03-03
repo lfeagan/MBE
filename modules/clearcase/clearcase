@@ -61,22 +61,22 @@ clearcase_usage ()
 
 ct ()
 {
-	cleartool $@
+	cleartool "$*"
 }
 
 csv ()
 {
-	cleartool setview $@
+	cleartool setview "$*"
 }
 
 prediff ()
 {
-	cleartool diff -diff -pre $@
+	cleartool diff -diff -pre "$*"
 }
 
 myviews ()
 {
-	cleartool lsview $@ |grep ${USER}
+	cleartool lsview "$*" |grep ${USER}
 }
 
 codir ()

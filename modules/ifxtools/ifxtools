@@ -82,7 +82,7 @@ ifxtools_log ()
 		if [[ ! -f "$IFXTOOLS_LOGFILE" ]]; then
 			touch "${IFXTOOLS_LOGFILE}"
 		fi
-		echo "${USER}@${HOSTNAME} $(timestamp) $@" >> "${IFXTOOLS_LOGFILE}"
+		echo "${USER}@${HOSTNAME} $(timestamp) $*" >> "${IFXTOOLS_LOGFILE}"
 	fi
 }
 
@@ -141,7 +141,7 @@ ifxmkrepo ()
 	# Make all directories world readable, writable, cd-able
 	chmod -R a+rwX "${target}"
 
-	ifxtools_log ifxmkrepo $@ 
+	ifxtools_log ifxmkrepo "$*" 
 }
 
 idstools_gui ()
@@ -319,7 +319,7 @@ csdkconfig ()
 		export CSDK_PATH CSDK_VERSION CSDK_FIXPACK IFX_SERVERNAME
 		export IFX_DOCSDK=1
 		export IFX_DOIDS=0
-		ifxtools_log csdkconfig $@
+		ifxtools_log csdkconfig "$*"
 		mbe_buildpath
 	else
 		echo "ERROR: ${CSDK_PATH} does not exist"
@@ -439,7 +439,7 @@ ifxlist ()
 	done
 
 	# Log successful invocation
-	ifxtools_log csdklist $@
+	ifxtools_log csdklist "$*"
 }
 
 csdklist ()
@@ -550,7 +550,7 @@ csdklist ()
 	done
 
 	# Log successful invocation
-	ifxtools_log csdklist $@
+	ifxtools_log csdklist "$*"
 }
 
 idslist ()
@@ -672,7 +672,7 @@ idslist ()
 	done
 
 	# Log successful invocation
-	ifxtools_log idslist $@
+	ifxtools_log idslist "$*"
 
 #	for version in "${versions[@]}"; do
 #		echo "${version}"
@@ -766,11 +766,11 @@ idscheckout ()
 			DEBUG echo "rsync -a ${source}/${dir} ${target}"
 			userid root rsync -a "${source}/${dir}" "${target}"
 		done
-		ifxtools_log idscheckout source=${source} target=${target} $@
+		ifxtools_log idscheckout source=${source} target=${target} "$*"
 	else
 		DEBUG echo "rsync -a \"${rsyncsource}/\" ${target}"
 		userid root rsync -a "${rsyncsource}/" "${target}"
-		ifxtools_log idscheckout source=${rsyncsource} target=${target} $@
+		ifxtools_log idscheckout source=${rsyncsource} target=${target} "$*"
 	fi
 }
 
@@ -865,7 +865,7 @@ idsconfig ()
 		export IDS_PATH IDS_VERSION IDS_FIXPACK IDS_BUILDNUM IFX_SERVERNAME
 		export IFX_DOCSDK=0
 		export IFX_DOIDS=1
-		ifxtools_log idsconfig $@
+		ifxtools_log idsconfig "$*"
 		mbe_buildpath
 	else # Otherwise, cleanup things
 		echo "ERROR: Directory ${IDS_PATH} does not exist"
@@ -878,9 +878,9 @@ idsconfig ()
 ui () {
 	which userid &>/dev/null;                                                                                                                                    
 	if [ "$?" -eq 0 ]; then                                                                                                                                      
-		userid informix $@;
+		userid informix "$*";
 	else                                                                                                                                                         
-		sudo -u informix $@;                                                                                                                                         
+		sudo -u informix "$*";                                                                                                                                         
 	fi 
 }
 
@@ -928,7 +928,7 @@ ifxchrepobase ()
 	fi
 
 	mbe_buildpath
-	ifxtools_log ifxchrepobase $@
+	ifxtools_log ifxchrepobase "$*"
 }
 
 ifxenv ()

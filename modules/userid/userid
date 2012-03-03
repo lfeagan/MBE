@@ -67,8 +67,8 @@ ur ()
 {
 	which userid &>/dev/null
 	if [ "$?" -eq 0 ]; then
-		userid root $@
+		userid root "$*"
 	else
-		sudo -u root $@
+		sudo -u root "$*"
 	fi
 }
