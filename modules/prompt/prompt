@@ -97,3 +97,13 @@ prompt_configure ()
 
 	PS1=${PROMPT_BASE}
 }
+
+prompt_swcolor ()
+{
+	case "${PROMPT_INPUT_COLOR}" in
+		"colors_white" ) PROMPT_INPUT_COLOR="colors_black";;
+		"colors_black" ) PROMPT_INPUT_COLOR="colors_white";;
+		* ) PROMPT_INPUT_COLOR="colors_black";;
+	esac
+	prompt_configure
+}
