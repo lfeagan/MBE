@@ -167,7 +167,8 @@ HISTSIZE=2000
 # e.g. ignoredups and ignorespace combined
 HISTCONTROL=ignoreboth
 # Command patterns that are to be excluded from the history
-HISTIGNORE="&:ls:[bf]g:exit:[ \t]*"
+HISTIGNORE="ls:bg:fg:exit"
+# HISTIGNORE supports regexes, but Ubuntu seemed to take exception to this. So, [bf]g is now expanded to bg:fg
 declare -x HISTFILESIZE HISTSIZE HISTCONTROL HISTIGNORE
 
 ################################
