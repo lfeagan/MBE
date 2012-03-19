@@ -1,0 +1,142 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+###############################################################################
+# Module: sauerbraten
+# Description:
+#   Used to launch sauerbraten
+# Defines:
+#   sauerbraten_listVersion
+#   sauerbraten_run
+###############################################################################
+
+#
+# Template for new module creation.
+# Substitute the new module name for 'sauerbraten'
+# %s/sauerbraten/newname/gc
+
+sauerbraten_dependencies=( 'mbe' )
+sauerbraten_functions=( 'sauerbraten_load' 'sauerbraten_unload' 'sauerbraten_setpath' 'sauerbraten_usage' 'sauerbraten_listVersions' 'sauerbraten_run' )
+
+sauerbraten_load ()
+{
+	DEBUG echo "sauerbraten_load: enter"
+	# Load module dependencies
+	mbe_loadModules "${sauerbraten_dependencies[@]}"
+	local module="sauerbraten"
+	# Load preferences
+	source "${MODULES_DIR}/${module}/${module}.conf"
+	# Configure module
+	export SAUERBRATEN_BITS="${SAUERBRATEN_BITS:-32}"
+	DEBUG echo "sauerbraten_load: leave"
+	return 0
+}
+
+sauerbraten_unload ()
+{
+	local module="sauerbraten"
+	local func
+	for func in "${sauerbraten_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+sauerbraten_setpath ()
+{
+	return 0
+}
+
+sauerbraten_usage ()
+{
+	echo "not implemented"
+}
+
+sauerbraten_listVersions ()
+{
+	echo "not implemented"
+}
+
+sauerbraten_buildgamedir ()
+{
+	#gamedir="${TOOLSPATH}/Sauerbraten/2010_07_19_justice_edition"
+	if [[ "${SAUERBRATEN_BITS}" == 32 ]]; then
+		gamedir="${TOOLSPATH32}/Sauerbraten/${SAUERBRATEN_VERSION}"
+	else
+		gamedir="${TOOLSPATH}/Sauerbraten/${SAUERBRATEN_VERSION}"
+	fi 
+	export gamedir
+}
+
+sauerbraten_run ()
+{
+	# Sauerbraten Run Script
+	# Runs Sauerbraten and logs console messages to a
+	# directory with one file per day. File is names with
+	# date in YYYY.MM.DD format.
+	
+	#gamedir="${HOME}/sauerbraten/xsbg"
+	sauerbraten_buildgamedir
+	gamebin="sauerbraten_unix"
+	
+	logenable=true
+	logdir="${HOME}/sauerbraten/logs"
+	logfile="$(date '+%Y.%m.%d')"
+	logpath="${logdir}/${logfile}"
+	timestamp="$(date '+%Y.%m.%d_%H:%M:%S')"
+	
+	mumbleenable=true
+	
+	# configure logdir
+	# if logdir does not exist, create it
+	if [ ! -e "${logdir}" ]; then
+		echo "logdir ${logdir} does not exist, creating it"
+		mkdir -p "${logdir}"
+	fi
+	# if logdir is not a directory, inform the user and exit
+	if [ ! -d "${logdir}" ]; then
+		echo "logdir ${logdir} exists, but is not a directory"
+		exit 1
+	fi
+	# if logdir is not writable, inform the user and exit
+	if [ ! -w "${logdir}" ]; then
+		echo "logdir ${logdir} is not writable"
+		exit 1
+	fi
+
+	# run game
+	pushd "${gamedir}"
+	if ${logenable}; then
+		echo "log start time: ${timestamp}" >> "${logpath}"
+		echo "args $*" >> "${logpath}"
+		if ${mumbleenable}; then
+			mumble-overlay ./${gamebin} "$*" >> "${logpath}"
+		else
+			./${gamebin} "$@" >> "${logpath}"
+		fi
+	else
+		if ${mumbleenable}; then
+			mumble-overlay ./${gamebin} "$*"
+		else
+			./${gamebin} "$*"
+		fi
+	fi
+	popd
+}
+
