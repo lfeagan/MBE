@@ -143,3 +143,15 @@ sauerbraten_run ()
 	popd
 }
 
+sauerbraten_compressScreenshots ()
+{
+	pushd "${SAUERBRATEN_HOME_DIR}"
+	mogrify -path "${SAUERBRATEN_HOME_DIR}/screenshots" -format jpg -resize 50% "*.png"
+	if [ $? -eq 0 ]; then
+		rm *.png
+	else
+		echo "Morgify exited with non-zero return. Leaving png files."
+	fi
+	popd
+}
+
