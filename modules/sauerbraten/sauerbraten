@@ -91,7 +91,6 @@ sauerbraten_run ()
 	# directory with one file per day. File is names with
 	# date in YYYY.MM.DD format.
 	
-	#gamedir="${HOME}/sauerbraten/xsbg"
 	sauerbraten_buildgamedir
 	gamebin="sauerbraten_unix"
 
@@ -129,7 +128,7 @@ sauerbraten_run ()
 			mumble-overlay ./${gamebin} "$*" >> "${logpath}"
 		else
 			echo "Mumble: Disabled"
-			./${gamebin} "$@" >> "${logpath}"
+			./${gamebin} "$*" >> "${logpath}"
 		fi
 	else
 		echo "Logging: Disabled"
