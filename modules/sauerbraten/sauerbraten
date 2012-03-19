@@ -94,15 +94,12 @@ sauerbraten_run ()
 	#gamedir="${HOME}/sauerbraten/xsbg"
 	sauerbraten_buildgamedir
 	gamebin="sauerbraten_unix"
-	
-	logenable=true
-	logdir="${HOME}/sauerbraten/logs"
-	logfile="$(date '+%Y.%m.%d')"
+
+	logdir="${SAUERBRATEN_LOG_DIR}"
+	logfile="$(date ${SAUERBRATEN_LOG_FILE_DATE})"
 	logpath="${logdir}/${logfile}"
-	timestamp="$(date '+%Y.%m.%d_%H:%M:%S')"
-	
-	mumbleenable=true
-	
+	timestamp="$(date ${SAUERBRATEN_LOG_TIMESTAMP})"
+
 	# configure logdir
 	# if logdir does not exist, create it
 	if [ ! -e "${logdir}" ]; then
@@ -112,28 +109,35 @@ sauerbraten_run ()
 	# if logdir is not a directory, inform the user and exit
 	if [ ! -d "${logdir}" ]; then
 		echo "logdir ${logdir} exists, but is not a directory"
-		exit 1
+		return 1
 	fi
 	# if logdir is not writable, inform the user and exit
 	if [ ! -w "${logdir}" ]; then
 		echo "logdir ${logdir} is not writable"
-		exit 1
+		return 1
 	fi
 
 	# run game
 	pushd "${gamedir}"
-	if ${logenable}; then
+	if ${SAUERBRATEN_LOG}; then
+		echo "Logging: Enabled"
+		echo "Logging to: ${logpath}"
 		echo "log start time: ${timestamp}" >> "${logpath}"
 		echo "args $*" >> "${logpath}"
-		if ${mumbleenable}; then
+		if ${SAUERBRATEN_MUMBLE}; then
+			echo "Mumble: Enabled"
 			mumble-overlay ./${gamebin} "$*" >> "${logpath}"
 		else
+			echo "Mumble: Disabled"
 			./${gamebin} "$@" >> "${logpath}"
 		fi
 	else
-		if ${mumbleenable}; then
+		echo "Logging: Disabled"
+		if ${SAUERBRATEN_MUMBLE}; then
+			echo "Mumble: Enabled"
 			mumble-overlay ./${gamebin} "$*"
 		else
+			echo "Mumble: Disabled"
 			./${gamebin} "$*"
 		fi
 	fi
