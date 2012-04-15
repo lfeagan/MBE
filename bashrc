@@ -2,7 +2,7 @@
 # vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
 
 #------------------------------------------------------------------------------
-# Copyright 2009 Lance W. Feagan
+# Copyright 2012 Lance W. Feagan
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); 
 # you may not use this file except in compliance with the License. 
@@ -35,9 +35,9 @@ then
 	return
 fi
 
-##################################
-# ###### LOAD PREFERENCES ###### #
-##################################
+################################
+# ##### LOAD PREFERENCES ##### #
+################################
 export MBE_DIR="${HOME}/.mbe"
 export MODULES_DIR="${MBE_DIR}/modules"
 export MODULES_LOAD=("mbe" "platform" "utils" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "maven" "ifxtools" )
@@ -59,9 +59,9 @@ mbe_load
 # Load the modules specified in the preferences file
 mbe_loadModules "${MODULES_LOAD[@]}"
 
-#########################
-# ###### GENERAL ###### #
-#########################
+#######################
+# ##### GENERAL ##### #
+#######################
 
 export RETVAL
 
