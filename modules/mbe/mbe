@@ -77,6 +77,49 @@ DEBUG ()
 }
 
 ############################################################
+# mbe
+# Description:
+#  Adds the 'mbe' function.
+############################################################
+mbe ()
+{
+	if [ $# -eq 0 ]; then
+		mbe_usage
+		return
+	elif [ $# -eq 1 ]; then
+		# no-argument commands are:
+		# list
+		if [ "$1" == "list" ]; then
+			mbe_listLoadedModules
+			return
+		fi
+	elif [ $# -eq 2 ]; then
+		# commands are:
+		# load <module name>
+		# unload <module name>
+		if [ "$1" == "load" ]; then
+			mbe_loadModules $2
+			return
+		elif [ "$1" == "unload" ]; then
+			mbe_unloadModules $2
+			return
+		else
+			local module_name=$1
+			local module_command=$2
+			command="${module_name}_${module_command}"
+			${command}
+		fi
+	else
+		local module_name=$1
+		local module_command=$2
+		command="${module_name}_${module_command}"
+		shift
+		shift
+		${command} $@
+	fi
+}
+
+############################################################
 # mbe_log_info
 # Description:
 #  Adds the 'mbe_log_info' function, used to log
