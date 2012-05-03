@@ -38,20 +38,20 @@ alias wget='wget -c --tries=100'
 acm () { autoconf; automake; }
 mcm () { make clean; make; }
 
-rmd () { rm -fr "$*"; }
+rmd () { rm -fr "$@"; }
 
-x () { exit    "$*"; }
-z () { suspend "$*"; }
-j () { jobs -l "$*"; }
+x () { exit    "$@"; }
+z () { suspend "$@"; }
+j () { jobs -l "$@"; }
 
 osr () { shutdown -r now; }
 osh () { shutdown -h now; }
 
-p () { ${PAGER}  "$*"; }
-e () { ${EDITOR} "$*"; }
+p () { ${PAGER}  "$@"; }
+e () { ${EDITOR} "$@"; }
 
 c () { clear; }
-h () { history "$*"; }
+h () { history "$@"; }
 hc () { history -c; }
 hcc () { hc;c; }
 
@@ -73,21 +73,21 @@ fi
 
 addkey () { ssh-agent sh -c 'ssh-add < /dev/null && bash'; }
 xtermb () { xterm -fg 'white' -bg 'black'; }
-ew () { ${EDITOR} `which "$*"`; }
+ew () { ${EDITOR} `which "$@"`; }
 
 # Modified listing commands
-#ll () { ls --color=auto -FAql "$*"; }
-#lf () { ls --color=auto -FAq  "$*"; }
-function ll () { [[ "$OSTYPE" == linux* ]] && ls -FAql "$*" || ls -FAl "$*"; }
-lf () { [[ "$OSTYPE" == linux* ]] && ls -FAq "$*" || ls -FA "$*"; }
-function la () { ls -A "$*"; }
-function l () { ls -CF "$*"; }
-l. () { ls -d .* "$*"; } 
-lk () { ls -lSrk "$*"; }
-lh () { ls -lSrh "$*"; }
-lt () { ls -ltr "$*"; }
-cls () { clear; ls "$*"; }
-cll () { clear; ll "$*"; }
+#ll () { ls --color=auto -FAql "$@"; }
+#lf () { ls --color=auto -FAq  "$@"; }
+function ll () { [[ "$OSTYPE" == linux* ]] && ls -FAql "$@" || ls -FAl "$@"; }
+lf () { [[ "$OSTYPE" == linux* ]] && ls -FAq "$@" || ls -FA "$@"; }
+function la () { ls -A "$@"; }
+function l () { ls -CF "$@"; }
+l. () { ls -d .* "$@"; } 
+lk () { ls -lSrk "$@"; }
+lh () { ls -lSrh "$@"; }
+lt () { ls -ltr "$@"; }
+cls () { clear; ls "$@"; }
+cll () { clear; ll "$@"; }
 function dir () { ls --color=auto --format=vertical; }
 vdir () { ls --color=auto --format=long; }
 
@@ -99,12 +99,12 @@ ewhich ()
 {
 	if [[ "$OSTYPE" == linux* ]]; then
 		if [[ "$OSDISTRIBUTOR" == "Ubuntu" ]]; then
-			$(echo $whichbin) "$*"
+			$(echo $whichbin) "$@"
 		else
-			(alias; declare -f) | $(echo $whichbin) --tty-only --read-alias --read-functions --show-tilde --show-dot "$*"
+			(alias; declare -f) | $(echo $whichbin) --tty-only --read-alias --read-functions --show-tilde --show-dot "$@"
 		fi
 	else
-		$(echo $whichbin) "$*"
+		$(echo $whichbin) "$@"
 	fi
 }
 
@@ -283,29 +283,29 @@ umdvd () { umount /mnt/dvd; }
 mcdrom () { mount -t iso9660 -o ro /dev/cdrom /mnt/cdrom; }
 umcdrom () { umount /mnt/cdrom; }
 # ISO9660 File Loopback
-miso () { mount -t iso9660 -o ro,loop "$*" /mnt/iso; }
+miso () { mount -t iso9660 -o ro,loop "$@" /mnt/iso; }
 umiso () { umount /mnt/iso; }
 
-ff () { find . -name "$*" -print; }
+ff () { find . -name "$@" -print; }
 
-psa () { ps aux "$*"; }
-psu () { ps  ux "$*"; }
+psa () { ps aux "$@"; }
+psu () { ps  ux "$@"; }
 
-lpsa () { ps aux "$*" | p; }
-lpsu () { ps  ux "$*" | p; }
+lpsa () { ps aux "$@" | p; }
+lpsu () { ps  ux "$@" | p; }
 
-dub () { du -scb "$*"; }
-duk () { du -sck "$*"; }
-duks () { duk "$*" 2>/dev/null | sort -n -k1,1; }
-dum () { du -scm "$*"; }
-dums () { du -scm "$*" 2>/dev/null | sort -n -k1,1; }
-duh () { du -sch "$*"; }
-#duh () { dh -h --max-depth=1 "$*"; }
+dub () { du -scb "$@"; }
+duk () { du -sck "$@"; }
+duks () { duk "$@" 2>/dev/null | sort -n -k1,1; }
+dum () { du -scm "$@"; }
+dums () { du -scm "$@" 2>/dev/null | sort -n -k1,1; }
+duh () { du -sch "$@"; }
+#duh () { dh -h --max-depth=1 "$@"; }
 
-dfk () { df -PTak "$*"; }
-dfm () { df -PTam "$*"; }
-dfh () { df -PTah "$*"; }
-dfi () { df -PTai "$*"; }
+dfk () { df -PTak "$@"; }
+dfm () { df -PTam "$@"; }
+dfh () { df -PTah "$@"; }
+dfi () { df -PTai "$@"; }
 dflocal ()
 {
 	if [[ "$OSTYPE" == solaris ]]; then
@@ -335,7 +335,7 @@ fi
 
 startvnc ()
 {
-	vncserver -depth 24 -geometry 1280x800 "$*";
+	vncserver -depth 24 -geometry 1280x800 "$@";
 }
 
 ##############################
