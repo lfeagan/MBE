@@ -60,6 +60,10 @@ cx () { hc;x; }
 function .. () { cd ..; }
 function ... () { cd ../..; }
 function .... () { cd ../../..; }
+function ..... () { cd ../../../..; }
+function ...... () { cd ../../../../..; }
+function ....... () { cd ../../../../../..; }
+function ........ () { cd ../../../../../../..; }
 
 # For linux, always use color with 'ls'
 # For solaris et al, do not use color as it is usually unsupported
