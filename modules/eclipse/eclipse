@@ -108,6 +108,30 @@ eclipse_usage ()
 
 }
 
+
+eclipse_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="cd cdworkspace config env list run"
+
+	case "${prev}" in
+		cd|cdworkspace|env)
+			COMPREPLY=( )
+			return 0
+			;;
+		config|run)
+			local config_opts="-p -v -b -c -j -n"
+			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
+}
+
+
 eclipse_env ()
 {
 	echo "ECLIPSE_HOME=${ECLIPSE_HOME}"
