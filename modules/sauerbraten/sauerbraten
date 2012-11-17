@@ -94,7 +94,7 @@ _sauerbraten_run ()
 	# directory with one file per day. File is names with
 	# date in YYYY.MM.DD format.
 	
-	sauerbraten_buildgamedir
+	_sauerbraten_buildgamedir
 	gamebin="sauerbraten_unix"
 
 	logdir="${SAUERBRATEN_LOG_DIR}"
