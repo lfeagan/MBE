@@ -23,15 +23,15 @@
 #  environment, including modules, debugging, and logging.
 ############################################################
 
-mbe_load ()
+_mbe_load ()
 {
 	local module="mbe"
 	# Load preferences file
 	source "${MODULES_DIR}/${module}/${module}.conf"
 	# Load the features specified in preferences file
-	for feature in "${mbe_features[@]}"; do
+	for feature in "${__mbe_features[@]}"; do
 		source "${MODULES_DIR}/${module}/${feature}"
-		${module}_${feature}_load
+		_${module}_${feature}_load
 	done
 
 	export MBE_LOGFILE_NAME="${MBE_LOGFILE_NAME-mbe.log}"
@@ -39,29 +39,29 @@ mbe_load ()
 	return
 }
 
-mbe_unload ()
+_mbe_unload ()
 {
 	return 1
 }
 
-mbe_setpath ()
+_mbe_setpath ()
 {
 	local module="mbe"
 }
 
-mbe_usage ()
+_mbe_usage ()
 {
 	echo "Modular Bash Environment (MBE)"
 	echo "MBE provides a framework for loading and unloading coherent sets of functions and"
 	echo "environment variables at run-time. Using the MBE system typically involves the"
 	echo "addition of a handful of lines to the .bashrc file source during an interactive login."
 	echo "Common Functions"
-	echo " mbe_loadModules <module1> <module2>... - Loads one or more modules into the current environment"
-	echo " mbe_loadAllModules <module1> <module2>... - Loads all available modules into the current environment"
-	echo " mbe_unloadModules <module1> <modoule2>... - Unloads one or more modules from the current environment"
-	echo " mbe_reloadModule <module> - Reloads the specified module"
-	echo " mbe_listLoadedModules - Lists the modules currently loaded in the environment"
-	echo " mbe_listAllModules - Lists all modules that can be loaded"
+	echo " _mbe_loadModules <module1> <module2>... - Loads one or more modules into the current environment"
+	echo " _mbe_loadAllModules <module1> <module2>... - Loads all available modules into the current environment"
+	echo " _mbe_unloadModules <module1> <modoule2>... - Unloads one or more modules from the current environment"
+	echo " _mbe_reloadModule <module> - Reloads the specified module"
+	echo " _mbe_listLoadedModules - Lists the modules currently loaded in the environment"
+	echo " _mbe_listAllModules - Lists all modules that can be loaded"
 }
 
 ############################################################
@@ -84,13 +84,13 @@ DEBUG ()
 mbe ()
 {
 	if [ $# -eq 0 ]; then
-		mbe_usage
+		_mbe_usage
 		return
 	elif [ $# -eq 1 ]; then
 		# no-argument commands are:
 		# list
 		if [ "$1" == "list" ]; then
-			mbe_listLoadedModules
+			_mbe_listLoadedModules
 			return
 		fi
 	elif [ $# -eq 2 ]; then
@@ -98,21 +98,21 @@ mbe ()
 		# load <module name>
 		# unload <module name>
 		if [ "$1" == "load" ]; then
-			mbe_loadModules $2
+			_mbe_loadModules $2
 			return
 		elif [ "$1" == "unload" ]; then
-			mbe_unloadModules $2
+			_mbe_unloadModules $2
 			return
 		else
 			local module_name=$1
 			local module_command=$2
-			command="${module_name}_${module_command}"
+			command="_${module_name}_${module_command}"
 			${command}
 		fi
 	else
 		local module_name=$1
 		local module_command=$2
-		command="${module_name}_${module_command}"
+		command="_${module_name}_${module_command}"
 		shift
 		shift
 		${command} $@
@@ -120,23 +120,23 @@ mbe ()
 }
 
 ############################################################
-# mbe_log_info
+# _mbe_log_info
 # Description:
-#  Adds the 'mbe_log_info' function, used to log
+#  Adds the '_mbe_log_info' function, used to log
 #  informational messages to the MBE log file.
 ############################################################
-mbe_log_info ()
+_mbe_log_info ()
 {
 	echo -ne "INFO: ${@}\n" >> "${MBE_LOGFILE}"
 }
 
 ############################################################
-# mbe_log_error
+# _mbe_log_error
 # Description:
-#  Adds the 'mbe_log_error' function, used to log
+#  Adds the '_mbe_log_error' function, used to log
 #  informational messages to the MBE log file.
 ############################################################
-mbe_log_error ()
+_mbe_log_error ()
 {
 	echo -ne "ERROR: ${@}\n" >> "${MBE_LOGFILE}"
 }
@@ -159,7 +159,7 @@ timestamp ()
 #  searches through an array of paths and sets an
 #  environment variable.
 ############################################################
-mbe_envpathsearch ()
+_mbe_envpathsearch ()
 {
   # $1,env_var   -->  Environment variable to be exported
   # $2,progs_len --> Length of array of programs to search for
@@ -210,7 +210,7 @@ mbe_envpathsearch ()
 #  Updates the mbe environment by pulling from the update
 #  server.
 ############################################################
-mbe_updatembe ()
+_mbe_updatembe ()
 {
 	pushd $HOME
 	local outdir="mbe-update"
@@ -225,19 +225,19 @@ mbe_updatembe ()
     popd
 }
 
-mbe_checkout ()
+_mbe_checkout ()
 {
 	local TARGETDIR="${HOME}/svn/mbe-sf.net"
 	svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk "${TARGETDIR}"
 }
 
-mbe_createModuleConfBackups ()
+_mbe_createModuleConfBackups ()
 {
 	local ts=$(date '+%Y.%m.%d_%H:%M')
-	local modules=( $(mbe_listAllModules) )
+	local modules=( $(_mbe_listAllModules) )
 	local module
 	for module in "${modules[@]}"; do
-		local modulePath="$(mbe_getModulePath ${module})"
+		local modulePath="$(_mbe_getModulePath ${module})"
 		if [ -f "${modulePath}/${module}.conf" ]; then
 			echo "Creating backup of ${module}.conf to ${module}.conf.${ts}"
 			cp "${modulePath}/${module}.conf" "${modulePath}/${module}.conf.${ts}"
@@ -245,9 +245,9 @@ mbe_createModuleConfBackups ()
 	done
 }
 
-mbe_removeModuleConfBackups ()
+_mbe_removeModuleConfBackups ()
 {
-	local modules=( $(mbe_listAllModules) )
+	local modules=( $(_mbe_listAllModules) )
 	local backupConfs=( $(find "${MODULES_DIR}" -regex '.*[a-z0-9A-Z]+\.conf\..*' -printf "%p\n") )
 
 	if (( ${#backupConfs[*]} == 0 )); then
@@ -281,7 +281,7 @@ mbe_removeModuleConfBackups ()
 	fi
 }
 
-mbe_checkModulesDir ()
+_mbe_checkModulesDir ()
 {
 	# Search the modules directory for all pre-modules
 	#modules=('')
@@ -309,82 +309,82 @@ mbe_checkModulesDir ()
 	fi
 }
 
-mbe_loadModules ()
+_mbe_loadModules ()
 {
 	# Loads one or more modules into mbe
 	if (( $# < 1 )); then
-		echo "ERROR: Must provide at least 1 argument to mbe_loadModules"
+		echo "ERROR: Must provide at least 1 argument to _mbe_loadModules"
 		return 1
 	fi
 	local newmodule newmodules
 	newmodules=( $@ )
 
 	for newmodule in "${newmodules[@]}"; do
-		mbe_isModuleLoaded "$newmodule"
+		_mbe_isModuleLoaded "$newmodule"
 		if [ "$?" == "1" ]; then
 			# Module is already loaded
 			continue
 		else
 			# Module is not yet loaded
-			DEBUG echo "mbe_loadModule: loading $newmodule"
+			DEBUG echo "_mbe_loadModule: loading $newmodule"
 			if [ -n "$MODULES_DIR" ]; then
-				DEBUG echo -e "mbe_loadModules: source \"${MODULES_DIR}/${newmodule}/${newmodule}\""
+				DEBUG echo -e "_mbe_loadModules: source \"${MODULES_DIR}/${newmodule}/${newmodule}\""
 				source "${MODULES_DIR}/${newmodule}/${newmodule}"
-				"${newmodule}_load"
+				"_${newmodule}_load"
 				MODULES_LOADED=( ${MODULES_LOADED[@]} ${newmodule} )
 			fi
 		fi
 	done
-	mbe_buildpath
+	_mbe_buildpath
 	return
 }
 
-mbe_unloadModules ()
+_mbe_unloadModules ()
 {
 	# Unloads one or more modules from mbe
 	if (( $# < 1 )); then
-		echo "ERROR: Must provide at least 1 argument to mbe_unloadModules"
+		echo "ERROR: Must provide at least 1 argument to _mbe_unloadModules"
 		return 1
 	fi
 	local oldmodule oldmodules
 	oldmodules=( $@ )
 
 	for oldmodule in "${oldmodules[@]}"; do
-		mbe_isModuleLoaded "$oldmodule"
+		_mbe_isModuleLoaded "$oldmodule"
 		if [ "$?" == "0" ]; then
 			# Module is already unloaded
 			continue
 		else
 			# Module is not yet unloaded
-			DEBUG echo "mbe_unloadModules: unloading $oldmodule"
-			"${oldmodule}_unload"
+			DEBUG echo "_mbe_unloadModules: unloading $oldmodule"
+			"_${oldmodule}_unload"
 			MODULES_LOADED=( ${MODULES_LOADED[@]/$oldmodule/} )
 		fi
 	done
-	mbe_buildpath
+	_mbe_buildpath
 	return
 }
 
-mbe_reloadModules ()
+_mbe_reloadModules ()
 {
 	# Reloads one or more modules from mbe
 	if (( $# < 1 )); then
-		echo "ERROR: Must provide at least 1 argument to mbe_reloadModules"
+		echo "ERROR: Must provide at least 1 argument to _mbe_reloadModules"
 		return 1
 	fi
-	mbe_unloadModules "$*"
-	mbe_loadModules "$*"
+	_mbe_unloadModules "$*"
+	_mbe_loadModules "$*"
 	return
 }
 
-mbe_loadAllModules ()
+_mbe_loadAllModules ()
 {
 	local modules
-	modules=( $(mbe_listAllModules) )
-	mbe_loadModules "${modules[@]}"
+	modules=( $(_mbe_listAllModules) )
+	_mbe_loadModules "${modules[@]}"
 }
 
-mbe_isModuleLoaded ()
+_mbe_isModuleLoaded ()
 {
 	# $1 is the name of the module to check
 	if [ -z "$1" ]; then
@@ -401,7 +401,7 @@ mbe_isModuleLoaded ()
 	return 0
 }
 
-mbe_listLoadedModules ()
+_mbe_listLoadedModules ()
 {
 	local module
 	for module in "${MODULES_LOADED[@]}"; do
@@ -409,7 +409,7 @@ mbe_listLoadedModules ()
 	done
 }
 
-mbe_listAllModules ()
+_mbe_listAllModules ()
 {
 	# Lists all available modules.
 	# With no arguments looks at user's modules directory
@@ -429,7 +429,7 @@ mbe_listAllModules ()
 	fi
 }
 
-mbe_getModulePath ()
+_mbe_getModulePath ()
 {
 	# $1 is the name of the module to get the path for
 	if [ -z "$1" ]; then
@@ -441,7 +441,7 @@ mbe_getModulePath ()
 	echo "${MODULES_DIR}/${module}"
 }
 
-mbe_editModule ()
+_mbe_editModule ()
 {
 	# $1 is the name of the module to be edited
 	if [ -z "$1" ]; then
@@ -466,7 +466,7 @@ mbe_editModule ()
 	${EDITOR} "${modulepath}"
 }
 
-mbe_editModuleConf ()
+_mbe_editModuleConf ()
 {
 	# $1 is the name of the module to be edited
 	if [ -z "$1" ]; then
@@ -507,7 +507,7 @@ if [ -z "${ORIG_PATH}" ]; then
 	export ORIG_PATH="${PATH}"
 fi
 
-mbe_cleanpath ()
+_mbe_cleanpath ()
 {
 	# Removes path elements that do not exist from a colon-delimited string
 	uncleanpath="$1"
@@ -555,9 +555,9 @@ mbe_cleanpath ()
 	fi
 }
 
-mbe_buildpath ()
+_mbe_buildpath ()
 {
-	DEBUG echo "mbe_buildpath: enter"
+	DEBUG echo "_mbe_buildpath: enter"
 	# Finds installed programs and configures paths for them
 	# Reset the PATH envvars to the saved ORIG_*s
 	INCLUDE="${ORIG_INCLUDE}"
@@ -567,8 +567,8 @@ mbe_buildpath ()
 
 	local module
 	for module in "${MODULES_LOADED[@]}"; do
-		DEBUG echo "mbe_buildpath: ${module}_setpath"
-		${module}_setpath
+		DEBUG echo "_mbe_buildpath: _${module}_setpath"
+		_${module}_setpath
 	done
 
 	# Prepend USER_PATHS elements
@@ -597,14 +597,14 @@ mbe_buildpath ()
 	fi
 
 	# Cleanup unavailable path elements
-	PATH=$(mbe_cleanpath "${PATH}")
-	LD_LIBRARY_PATH=$(mbe_cleanpath "${LD_LIBRARY_PATH}")
-	MANPATH=$(mbe_cleanpath ${MANPATH})
+	PATH=$(_mbe_cleanpath "${PATH}")
+	LD_LIBRARY_PATH=$(_mbe_cleanpath "${LD_LIBRARY_PATH}")
+	MANPATH=$(_mbe_cleanpath ${MANPATH})
 
 	# Perform exports
 	export INCLUDE
 	export LD_LIBRARY_PATH
 	export MANPATH 
 	export PATH
-	DEBUG echo "mbe_buildpath: exit"
+	DEBUG echo "_mbe_buildpath: exit"
 }

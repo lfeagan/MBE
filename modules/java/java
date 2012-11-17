@@ -19,15 +19,15 @@
 
 # Sun Java JDK/JRE
 
-java_dependencies=( "mbe" "platform" "utils" )
-java_functions=( "java_load" "java_unload" "java_setpath" "java_usage" "java_listCreators" "java_isValidCreator" "java_listVersions" "java_isValidVersion" "java_env" "java_buildjavahomestring" "java_config" )
+__java_dependencies=( "mbe" "platform" "utils" )
+__java_functions=( "_java_load" "_java_unload" "_java_setpath" "_java_usage" "_java_listCreators" "_java_isValidCreator" "_java_listVersions" "_java_isValidVersion" "_java_env" "_java_buildjavahomestring" "_java_config" )
 
-export java_javadir="Java"
+export __java_javadir="Java"
 
-java_load ()
+_java_load ()
 {
 	# Load module dependencies
-	mbe_loadModules "${java_dependencies[@]}"
+	_mbe_loadModules "${__java_dependencies[@]}"
 	local module="java"
 	# Load preferences
 	source "${MODULES_DIR}/${module}/${module}.conf"
@@ -35,21 +35,21 @@ java_load ()
 	return 0
 }
 
-java_unload ()
+_java_unload ()
 {
 	local module="java"
 	local func
-	for func in "${java_functions[@]}"; do
+	for func in "${__java_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-java_setpath ()
+_java_setpath ()
 {
 	# Configure JAVA_HOME, PATH, MANPATH, LD_LIBRARY_PATH
 	local module="java"
-	JAVA_HOME=$(java_buildjavahomestring ${JAVA_BITS} ${JAVA_CREATOR} ${JAVA_VERSION})
+	JAVA_HOME=$(_java_buildjavahomestring ${JAVA_BITS} ${JAVA_CREATOR} ${JAVA_VERSION})
 
 	if [ -e "${JAVA_HOME}" ]; then
 		PATH="${JAVA_HOME}/bin:${PATH}"
@@ -59,13 +59,40 @@ java_setpath ()
 	fi
 }
 
-java_usage ()
+_java_usage ()
 {
 	local module="java"
-
 }
 
-java_buildjavahomestring ()
+_java_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="config env list"
+
+	case "${prev}" in
+		env)
+			local env_opts="-i -p -h"
+			COMPREPLY=( $(compgen -W "${env_opts}" -- ${cur})  )
+			return 0
+			;;
+		list)
+			local list_opts="versions creators"
+			COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
+			return 0
+			;;
+		config)
+			local config_opts="-c -v -b"
+			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
+}
+
+_java_buildjavahomestring ()
 {
 	# Takes three arguments, JAVA_BITS, JAVA_CREATOR, and JAVA_VERSION and
 	# creates the string to be used for JAVA_HOME
@@ -82,9 +109,9 @@ java_buildjavahomestring ()
 			echo ""
 			return 1
 		fi
-		java_isValidCreator ${creator}
+		_java_isValidCreator ${creator}
 		if [[ "$?" == 1 ]]; then
-			java_isValidVersion ${creator} ${version}
+			_java_isValidVersion ${creator} ${version}
 			if [[ "$?" == 1 ]]; then
 				maybe_java_home="${maybe_java_home}/${java_javadir}/${creator}/${version}"
 				if [[ -d "${maybe_java_home}" ]]; then
@@ -97,11 +124,11 @@ java_buildjavahomestring ()
 	return 1
 }
 
-java_config ()
+_java_config ()
 {
 	usage ()
 	{
-		echo "java_config -c <Creator> -v <Version> -b <Bits>"
+		echo "_java_config -c <Creator> -v <Version> -b <Bits>"
 	}
 	# Process arguments
 	# -b Bits
@@ -142,7 +169,7 @@ java_config ()
 	version="${version-$JAVA_VERSION}"
 
 	# Verify that requested change will succeed
-	local maybe_java_home="$(java_buildjavahomestring ${bits} ${creator} ${version})"
+	local maybe_java_home="$(_java_buildjavahomestring ${bits} ${creator} ${version})"
 	DEBUG echo "maybe_java_home=${maybe_java_home}"
 	if [ -n "${maybe_java_home}" ]; then
 		JAVA_BITS="${bits}"
@@ -153,35 +180,56 @@ java_config ()
 
 		# Export variables
 		if [[ "${suppress_buildpath}" != "1" ]]; then
-			mbe_buildpath
+			_mbe_buildpath
 		fi
 	fi
 }
 
-java_listCreators ()
+_java_list()
 {
 	usage ()
 	{
-		echo "Usage: java_listCreators"
+		echo "Usage: _java_list <creators|versions>"
+	}
+
+	case "$1" in
+	creators)
+		_java_listCreators
+		;;
+	versions)
+		_java_listVersions $2
+		;;
+	*)
+		echo "Unrecognized option"
+		return 1
+		;;
+	esac
+}
+
+_java_listCreators ()
+{
+	usage ()
+	{
+		echo "Usage: _java_listCreators"
 	}
 	local searchpath
 	if [[ "${JAVA_BITS}" == 32 ]]; then
-		searchpath="${TOOLSPATH32}/${java_javadir}"
+		searchpath="${TOOLSPATH32}/${__java_javadir}"
 	else
-		searchpath="${TOOLSPATH}/${java_javadir}"
+		searchpath="${TOOLSPATH}/${__java_javadir}"
 	fi
 	# FIXME: redirecting stderr to devnull should likely have an actual if statement to guard against
 	local creators=( $(find_eregex "${searchpath}" -mindepth 1 -maxdepth 1 -regex '.*/*' 2>/dev/null | trimdirs | sort) )
 	echo "${creators[*]}"
 }
 
-java_isValidCreator ()
+_java_isValidCreator ()
 {
 	usage ()
 	{
-		echo "Usage: java_isValidCreator CREATOR"
+		echo "Usage: _java_isValidCreator CREATOR"
 	}
-	local creators=( $(java_listCreators) )
+	local creators=( $(_java_listCreators) )
 	for creator in "${creators[@]}"; do
 		if [[ "${1}" == "${creator}" ]]; then
 			return 1
@@ -190,42 +238,44 @@ java_isValidCreator ()
 	return 0
 }
 
-java_listVersions ()
+_java_listVersions ()
 {
 	usage ()
 	{
-		echo "Usage: java_listVersions CREATOR"
+		echo "Usage: _java_listVersions CREATOR"
 	}
 
 	# Process arguments
 	# First argument is the creator name
+	local creator
 	if [ -z "${1}" ]; then
-		usage
+		creator="${JAVA_CREATOR:-Sun}" # Default if creator is not set is IBM
 	else
-		local creator="${1:-IBM}" # Default if creator is not set is IBM
-		local searchpath
-		if [[ "${JAVA_BITS}" == 32 ]]; then
-			searchpath="${TOOLSPATH32}/${java_javadir}/${creator}"
-		else
-			searchpath="${TOOLSPATH}/${java_javadir}/${creator}"
-		fi
-		local versions=( $(find_eregex "${searchpath}" -maxdepth 1 -regex '.*/*[0-9].[0-9]*' 2>/dev/null | trimdirs | sort) )
-		echo "${versions[*]}"
+		creator="${1}"
 	fi
+
+	local searchpath
+	if [[ "${JAVA_BITS}" == 32 ]]; then
+		searchpath="${TOOLSPATH32}/${__java_javadir}/${creator}"
+	else
+		searchpath="${TOOLSPATH}/${__java_javadir}/${creator}"
+	fi
+	local versions=( $(find_eregex "${searchpath}" -maxdepth 1 -regex '.*/*[0-9].[0-9]*' 2>/dev/null | trimdirs | sort) )
+	echo "${versions[*]}"
 }
 
-java_isValidVersion ()
+_java_isValidVersion ()
 {
 	usage ()
 	{
-		echo "Usage: java_isValidVersion CREATOR VERSION"
+		echo "Usage: _java_isValidVersion CREATOR VERSION"
 	}
 	# Process arguments
 	# First argument is the creator name
 	if [[ -n "${1}" && -n "${2}" ]]; then
-		java_isValidCreator ${1}
+		_java_isValidCreator ${1}
 		if [[ "$?" == 1 ]]; then
-			local versions=( $(java_listVersions ${1}) )
+			local versions=( $(_java_listVersions ${1}) )
 			for version in "${versions[@]}"; do
 				if [[ "${2}" == "${version}" ]]; then
 					return 1
@@ -238,11 +288,11 @@ java_isValidVersion ()
 	return 0
 }
 
-java_env ()
+_java_env ()
 {
 	usage ()
 	{
-		echo "java_env"
+		echo "_java_env"
 		echo " -i = print internal variable state"
 		echo " -p = print PATH, LD_LIBRARY_PATH, and MANPATH"
 		echo " -h = print usage"

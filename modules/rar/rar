@@ -29,31 +29,31 @@
 # Substitute the new module name for 'rar'
 # %s/rar/newname/gc
 
-rar_dependencies=( 'mbe' )
-rar_functions=( 'rar_load' 'rar_unload' 'rar_setpath' 'rar_usage' )
+__rar_dependencies=( 'mbe' )
+__rar_functions=( '_rar_load' '_rar_unload' '_rar_setpath' '_rar_usage' )
 
-rar_load ()
+_rar_load ()
 {
-	DEBUG echo "rar_load: enter"
+	DEBUG echo "_rar_load: enter"
 	local module="rar"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "rar_load: leave"
+	DEBUG echo "_rar_load: leave"
 }
 
-rar_unload ()
+_rar_unload ()
 {
 	local func
-	for func in "${rar_functions[@]}"; do
+	for func in "${__rar_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-rar_setpath ()
+_rar_setpath ()
 {
 	# RAR Tooling, 32-bit only at present
 	if [ -x "${TOOLSPATH32}/rar/rar" ]; then
@@ -61,7 +61,7 @@ rar_setpath ()
 	fi
 }
 
-rar_usage ()
+_rar_usage ()
 {
 	echo "no usage info"
 }

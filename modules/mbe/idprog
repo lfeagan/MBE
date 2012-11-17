@@ -17,7 +17,7 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-mbe_idprog_load ()
+_mbe_idprog_load ()
 {
 	if [[ "$OSTYPE" == solaris* ]]; then
 		IDPROG_USERID="/usr/xpg4/bin/id -u"
