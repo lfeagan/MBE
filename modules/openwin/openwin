@@ -24,38 +24,38 @@
 # 	nextline
 ###############################################################################
 
-openwin_dependencies=( 'mbe' )
-openwin_functions=( 'openwin_load' 'openwin_unload' 'openwin_setpath' 'openwin_usage' )
+__openwin_dependencies=( 'mbe' )
+__openwin_functions=( '_openwin_load' '_openwin_unload' '_openwin_setpath' '_openwin_usage' )
 
-openwin_load ()
+_openwin_load ()
 {
-	DEBUG echo "openwin_load: enter"
+	DEBUG echo "_openwin_load: enter"
 	local module="openwin"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "openwin_load: leave"
+	DEBUG echo "_openwin_load: leave"
 }
 
-openwin_unload ()
+_openwin_unload ()
 {
 	local func
-	for func in "${openwin_functions[@]}"; do
+	for func in "${__openwin_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-openwin_setpath ()
+_openwin_setpath ()
 {
 	if [ -d "/usr/openwin/bin/" ]; then
 		PATH="/usr/openwin/bin:${PATH}"
 	fi
 }
 
-openwin_usage ()
+_openwin_usage ()
 {
 	echo "no usage info"
 }

@@ -15,11 +15,11 @@ eclipse_functions=(eclipse_load eclipse_unload eclipse_setpath eclipse_setmozpat
 # ECLIPSE_JAVA_VERSION
 # ECLIPSE_JAVA_BITS
 
-eclipse_load ()
+_eclipse_load ()
 {
 	DEBUG echo "eclipse_load: enter"
 	# Load module dependencies
-	mbe_loadModules "${eclipse_dependencies[@]}"
+	_mbe_loadModules "${eclipse_dependencies[@]}"
 
 	local module="eclipse"
 	# Load preferences file
@@ -39,7 +39,7 @@ eclipse_load ()
 
 }
 
-eclipse_unload ()
+_eclipse_unload ()
 {
 	local module="eclipse"
 	local func
@@ -49,11 +49,11 @@ eclipse_unload ()
 	return 0
 }
 
-eclipse_setpath ()
+_eclipse_setpath ()
 {
 	local module="eclipse"
 
-	eclipse_setmozpath
+	_eclipse_setmozpath
 
 	#eclipse_config
 }
@@ -62,7 +62,7 @@ eclipse_setpath ()
 # 32-bit Eclipse + 32-bit Firefox ==> 32-bit XUL
 # 32-bit Eclipse + 64-bit Firefox ==> 32-bit XUL ***
 # 64-bit Eclipse + 64-bit Firefox ==> 64-bit XUL
-eclipse_setmozpath()
+_eclipse_setmozpath()
 {
 	if [ "${ECLIPSE_JAVA_BITS}" == "32" ]; then
 		LIBDIR="/usr/lib"
@@ -94,7 +94,7 @@ eclipse_setmozpath()
 
 	if [[ "${KERNELNAME}" == "Linux" ]]; then
 		if [ -z "$MOZILLA_FIVE_HOME" ]; then
-			mbe_log_info "Unable to locate appropriate library for integrated Mozilla browser support"
+			_mbe_log_info "Unable to locate appropriate library for integrated Mozilla browser support"
 		fi
 	fi
 
@@ -102,14 +102,13 @@ eclipse_setmozpath()
 	LD_LIBRARY_PATH=$MOZILLA_FIVE_HOME${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 }
 
-eclipse_usage ()
+_eclipse_usage ()
 {
 	local module="eclipse"
 
 }
 
-
-eclipse_complete()
+_eclipse_complete()
 {
 	local opts
 	COMPREPLY=( )
@@ -132,7 +131,7 @@ eclipse_complete()
 }
 
 
-eclipse_env ()
+_eclipse_env ()
 {
 	echo "ECLIPSE_HOME=${ECLIPSE_HOME}"
 	echo "--------------------------------------------------------------------------------"
@@ -144,7 +143,7 @@ eclipse_env ()
   echo "ECLIPSE_LANG=${ECLIPSE_LANG}"
 }
 
-eclipse_config ()
+_eclipse_config ()
 {
 	local module="eclipse"
 
@@ -243,7 +242,7 @@ eclipse_config ()
 	fi
 }
 
-eclipse_listVersions ()
+_eclipse_listVersions ()
 {
 	local versions
 
@@ -295,7 +294,7 @@ eclipse_listVersions ()
 # eclipse_run
 # The following environment variable(s) may be used:
 #  ECLIPSE_PRODUCT, PRODUCT_VERSION, ECLIPSE_SUBDIR, JAVA_CREATOR, JAVA_VERSION, JAVA_BITS
-eclipse_run()
+_eclipse_run()
 {
 	if (( "${#@}" > 0)); then
 		cmd="eclipse_config ${@}"
@@ -308,7 +307,7 @@ eclipse_run()
 	if [ ! -d "${ECLIPSE_HOME}" ]; then
 		echo "Unable to run: No Eclipse home configured"
 	else
-		java_config -c "${ECLIPSE_JAVA_CREATOR}" -v "${ECLIPSE_JAVA_VERSION}" -b "${ECLIPSE_JAVA_BITS}"
+		_java_config -c "${ECLIPSE_JAVA_CREATOR}" -v "${ECLIPSE_JAVA_VERSION}" -b "${ECLIPSE_JAVA_BITS}"
 
 		# Pre-execution debug statements
 		java_env
@@ -332,7 +331,7 @@ eclipse_run()
 	fi
 }
 
-eclipse_cdworkspace()
+_eclipse_cdworkspace()
 {
 	if [ -z "${ECLIPSE_SUBDIR}" ]; then
 		eclipse_config
@@ -340,7 +339,7 @@ eclipse_cdworkspace()
 	cd "${HOME}/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/workspace"
 }
 
-eclipse_cd()
+_eclipse_cd()
 {
 	if [ -z "${ECLIPSE_SUBDIR}" ]; then
 		eclipse_config
@@ -348,13 +347,13 @@ eclipse_cd()
 	cd "${ECLIPSE_HOME}"
 }
 
-sdp_run()
+_sdp_run()
 {
 	eclipse_config -p "${SDP_PRODUCT}" -v "${SDP_PRODUCT_VERSION}" -c "${SDP_JAVA_CREATOR}" -j "${SDP_JAVA_VERSION}" -b "${SDP_JAVA_BITS}"
 	eclipse_run
 }
 
-teamconcert_run()
+_teamconcert_run()
 {
 	echo "not yet implemented"
 }

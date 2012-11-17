@@ -24,31 +24,31 @@
 # 	nextline
 ###############################################################################
 
-netclient_dependencies=( 'mbe' )
-netclient_functions=( 'netclient_load' 'netclient_unload' 'netclient_setpath' 'netclient_usage' )
+__netclient_dependencies=( 'mbe' )
+__netclient_functions=( '_netclient_load' '_netclient_unload' '_netclient_setpath' '_netclient_usage' )
 
-netclient_load ()
+_netclient_load ()
 {
-	DEBUG echo "netclient_load: enter"
+	DEBUG echo "_netclient_load: enter"
 	local module="netclient"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "netclient_load: leave"
+	DEBUG echo "_netclient_load: leave"
 }
 
-netclient_unload ()
+_netclient_unload ()
 {
 	local func
-	for func in "${netclient_functions[@]}"; do
+	for func in "${_netclient_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-netclient_setpath ()
+_netclient_setpath ()
 {
 	# AT&T NetClient
 	local netclientbindir="/opt/agns/bin"
@@ -57,7 +57,7 @@ netclient_setpath ()
 	fi
 }
 
-netclient_usage ()
+_netclient_usage ()
 {
 	echo "no usage info"
 }

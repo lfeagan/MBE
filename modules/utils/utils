@@ -29,36 +29,36 @@
 # Substitute the new module name for 'utils'
 # %s/utils/newname/gc
 
-utils_dependencies=( 'mbe' 'platform' )
-utils_functions=( 'utils_load' 'utils_unload' 'utils_setpath' 'utils_usage' 'trimdirs' )
+__utils_dependencies=( 'mbe' 'platform' )
+__utils_functions=( '_utils_load' '_utils_unload' '_utils_setpath' '_utils_usage' 'trimdirs' )
 
-utils_load ()
+_utils_load ()
 {
-	DEBUG echo "utils_load: enter"
+	DEBUG echo "_utils_load: enter"
 	local module="utils"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "utils_load: leave"
+	DEBUG echo "_utils_load: leave"
 }
 
-utils_unload ()
+_utils_unload ()
 {
 	local func
-	for func in "${utils_functions[@]}"; do
+	for func in "${__utils_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-utils_setpath ()
+_utils_setpath ()
 {
 	echo -ne ""
 }
 
-utils_usage ()
+_utils_usage ()
 {
 	echo -ne ""
 }

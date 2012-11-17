@@ -24,34 +24,34 @@
 # 	nextline
 ###############################################################################
 
-sbin_dependencies=( 'mbe' )
-sbin_functions=( 'sbin_load' 'sbin_unload' 'sbin_setpath' 'sbin_usage' )
+__sbin_dependencies=( 'mbe' )
+__sbin_functions=( '_sbin_load' '_sbin_unload' '_sbin_setpath' '_sbin_usage' )
 
-sbin_load ()
+_sbin_load ()
 {
-	DEBUG echo "sbin_load: enter"
+	DEBUG echo "_sbin_load: enter"
 	local module="sbin"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "sbin_load: leave"
+	DEBUG echo "_sbin_load: leave"
 }
 
-sbin_unload ()
+_sbin_unload ()
 {
 	local func
-	for func in "${sbin_functions[@]}"; do
+	for func in "${__sbin_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-sbin_setpath ()
+_sbin_setpath ()
 {
 	# Adds in sbin paths as there are many useful sysadminly tools there
-	sbin_paths=("/sbin" "/usr/sbin" "/usr/local/sbin" "/opt/local/sbin")
+	local sbin_paths=("/sbin" "/usr/sbin" "/usr/local/sbin" "/opt/local/sbin")
 	for i in "${sbin_paths[@]}"; do
 	if [ -d "${i}" ]; then
 		PATH="${i}:${PATH}"
@@ -59,7 +59,7 @@ sbin_setpath ()
 	done
 }
 
-sbin_usage ()
+_sbin_usage ()
 {
 	echo "no usage info"
 }

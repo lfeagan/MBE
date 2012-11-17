@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-icscope2_dependencies=( 'mbe' )
-icscope2_functions=( 'icscope2_load' 'icscope2_unload' 'icscope2_setpath' 'icscope2_usage' )
+__icscope2_dependencies=( 'mbe' )
+__icscope2_functions=( '_icscope2_load' '_icscope2_unload' '_icscope2_setpath' '_icscope2_usage' )
 
-icscope2_load ()
+_icscope2_load ()
 {
-	DEBUG echo "icscope2_load: enter"
+	DEBUG echo "_icscope2_load: enter"
 	local module="icscope2"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "icscope2_load: leave"
+	DEBUG echo "_icscope2_load: leave"
 }
 
-icscope2_unload ()
+_icscope2_unload ()
 {
 	local func
-	for func in "${icscope2_functions[@]}"; do
+	for func in "${__icscope2_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-icscope2_setpath ()
+_icscope2_setpath ()
 {
 	if [ -d "/usr/cm/icscope2" ]; then
 		if [ -r "/usr/cm/icscope2/bin/icscope2" ]; then
@@ -50,7 +50,7 @@ icscope2_setpath ()
 	fi
 }
 
-icscope2_usage ()
+_icscope2_usage ()
 {
 	echo "no usage info"
 }

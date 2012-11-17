@@ -8,7 +8,7 @@ _mbe_complete()
 	COMPREPLY=( )
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
-	opts="list load unload version `mbe_listLoadedModules`"
+	opts="list load unload version `_mbe_listLoadedModules`"
 
 	# Determine if the first argument is a loaded module
 	# and define module to be the module's name
@@ -17,7 +17,7 @@ _mbe_complete()
 		if [ -z "${module}" ]; then
 			module=""
 		else
-			mbe_isModuleLoaded "${module}"
+			_mbe_isModuleLoaded "${module}"
 			retval=$?
 			if [ $retval -ne 1 ]; then
 				module=""
@@ -35,12 +35,12 @@ _mbe_complete()
 				return 0
 				;;
 			load)
-				local loaded=`mbe_listAllModules`
+				local loaded=`_mbe_listAllModules`
 				COMPREPLY=( $(compgen -W "${loaded}" -- ${cur})  )
 				return 0
 				;;
 			unload)
-				local loaded=`mbe_listLoadedModules`
+				local loaded=`_mbe_listLoadedModules`
 				COMPREPLY=( $(compgen -W "${loaded}" -- ${cur})  )
 				return 0
 				;;
@@ -55,7 +55,7 @@ _mbe_complete()
 		COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 		return 0
 	else
-		local loaded=`mbe_listLoadedModules`
+		local loaded=`_mbe_listLoadedModules`
 		_eclipse_complete
 	fi
 

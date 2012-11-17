@@ -17,32 +17,32 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-prompt_dependencies=( 'mbe' 'colors' )
+__prompt_dependencies=( 'mbe' 'colors' )
 
-prompt_load ()
+_prompt_load ()
 {
 	# Load module dependencies
-	mbe_loadModules "${prompt_dependencies[@]}"
+	_mbe_loadModules "${__prompt_dependencies[@]}"
 	# Set module name
 	local module="prompt"
 	# Load preferences
 	source "${MODULES_DIR}/${module}/${module}.conf"
-	prompt_configure
+	_prompt_configure
 	return 0
 }
 
-prompt_unload ()
+_prompt_unload ()
 {
 	return 0
 }
 
-prompt_setpath ()
+_prompt_setpath ()
 {
 	local module="prompt"
 	return 0
 }
 
-prompt_command ()
+_prompt_command ()
 {
 	local module="prompt"
 	# XTerm supports a titlebar
@@ -76,7 +76,7 @@ prompt_command ()
 	fi
 }
 
-prompt_configure ()
+_prompt_configure ()
 {
 	local module="prompt"
 	local username_color
@@ -89,8 +89,8 @@ prompt_configure ()
 	# Change the shell prompt to my liking
 	if [ -z "$LOGIN_SHELL" ]; then
 		case "${PROMPT_INPUT_COLOR}" in
-			"colors_white" ) PROMPT_BASE="${username_color}${PROMPT_BASE_WHITE}";;
-			"colors_black" ) PROMPT_BASE="${username_color}${PROMPT_BASE_BLACK}";;
+			"white" ) PROMPT_BASE="${username_color}${PROMPT_BASE_WHITE}";;
+			"black" ) PROMPT_BASE="${username_color}${PROMPT_BASE_BLACK}";;
 			* ) PROMPT_BASE="${PROMPT_BASE_OTHER}"
 		esac
 	fi
@@ -98,12 +98,29 @@ prompt_configure ()
 	PS1=${PROMPT_BASE}
 }
 
-prompt_swcolor ()
+_prompt_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="swcolor"
+
+	case "${prev}" in
+		swcolor)
+			COMPREPLY=( )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
+}
+
+_prompt_swcolor ()
 {
 	case "${PROMPT_INPUT_COLOR}" in
-		"colors_white" ) PROMPT_INPUT_COLOR="colors_black";;
-		"colors_black" ) PROMPT_INPUT_COLOR="colors_white";;
-		* ) PROMPT_INPUT_COLOR="colors_black";;
+		"white" ) PROMPT_INPUT_COLOR="black";;
+		"black" ) PROMPT_INPUT_COLOR="white";;
+		* ) PROMPT_INPUT_COLOR="__colors_black";;
 	esac
-	prompt_configure
+	_prompt_configure
 }

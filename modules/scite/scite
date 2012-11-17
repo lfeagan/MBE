@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-scite_dependencies=( 'mbe' )
-scite_functions=( 'scite_load' 'scite_unload' 'scite_setpath' 'scite_usage' )
+__scite_dependencies=( 'mbe' )
+__scite_functions=( '_scite_load' '_scite_unload' '_scite_setpath' '_scite_usage' )
 
-scite_load ()
+_scite_load ()
 {
-	DEBUG echo "scite_load: enter"
+	DEBUG echo "_scite_load: enter"
 	local module="scite"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "scite_load: leave"
+	DEBUG echo "_scite_load: leave"
 }
 
-scite_unload ()
+_scite_unload ()
 {
 	local func
-	for func in "${scite_functions[@]}"; do
+	for func in "${__scite_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-scite_setpath ()
+_scite_setpath ()
 {
 	# For SciTE, Scintilla Text Editor
 	if [ -e "${TOOLSPATH}/scite/1.75" ]; then
@@ -49,7 +49,7 @@ scite_setpath ()
 	fi
 }
 
-scite_usage ()
+_scite_usage ()
 {
 	echo "no usage info"
 }

@@ -24,95 +24,95 @@
 # 	color escape-sequences.
 ############################################################
 
-colors_functions=( 'colors_load' 'colors_unload' 'colors_setpath' 'colors_define' 'colors_undefine' )
+__colors_functions=( '_colors_load' '_colors_unload' '_colors_setpath' '_colors_define' '_colors_undefine' )
 
-colors_load ()
+_colors_load ()
 {
-	DEBUG echo "colors_load: enter"
+	DEBUG echo "_colors_load: enter"
 	local module="colors"
 	# Load preferences
 	
 	# Configure module
-	colors_define
-	DEBUG echo "colors_load: leave"
+	_colors_define
+	DEBUG echo "_colors_load: leave"
 }
 
-colors_unload ()
+_colors_unload ()
 {
-	colors_undefine
+	_colors_undefine
 	local func
-	for func in "${colors_functions[@]}"; do
+	for func in "${__colors_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-colors_setpath ()
+_colors_setpath ()
 {
 	local module="colors"
 }
 
-colors_define ()
+_colors_define ()
 {
 	# color_name='\[\033[ modifier; color_code m\]'
 	# Modifiers
 	# 0 = default          1 = bold
 	# 4 = underlined       5 = flashing text
 	# 7 = reverse field
-	colors_restore='\[\033[00m\]'
-	colors_black='\[\033[00;30m\]'
-	colors_firebrick='\[\033[00;31m\]'
-	colors_red='\[\033[01;31m\]'
-	colors_forest='\[\033[00;32m\]'
-	colors_green='\[\033[01;32m\]'
-	colors_brown='\[\033[00;33m\]'
-	colors_yellow='\[\033[01;33m\]'
-	colors_navy='\[\033[00;34m\]'
-	colors_blue='\[\033[01;34m\]'
-	colors_purple='\[\033[00;35m\]'
-	colors_magenta='\[\033[01;35m\]'
-	colors_cadet='\[\033[00;36m\]'
-	colors_cyan='\[\033[01;36m\]'
-	colors_gray='\[\033[00;37m\]'
-	colors_white='\[\033[01;37m\]'
-	colors_std="${colors_white}"
-	colors_red_back='\[\033[00;41m\]'
-	colors_green_back='\[\033[00;42m\]'
-	colors_orange_back='\[\033[00;43m\]'
-	colors_blue_back='\[\033[00;44m\]'
-	colors_purple_back='\[\033[00;45m\]'
-	colors_cyan_back='\[\033[00;46m\]'
-	colors_grey_back='\[\033[00;47m\]'
+	__colors_restore='\[\033[00m\]'
+	__colors_black='\[\033[00;30m\]'
+	__colors_firebrick='\[\033[00;31m\]'
+	__colors_red='\[\033[01;31m\]'
+	__colors_forest='\[\033[00;32m\]'
+	__colors_green='\[\033[01;32m\]'
+	__colors_brown='\[\033[00;33m\]'
+	__colors_yellow='\[\033[01;33m\]'
+	__colors_navy='\[\033[00;34m\]'
+	__colors_blue='\[\033[01;34m\]'
+	__colors_purple='\[\033[00;35m\]'
+	__colors_magenta='\[\033[01;35m\]'
+	__colors_cadet='\[\033[00;36m\]'
+	__colors_cyan='\[\033[01;36m\]'
+	__colors_gray='\[\033[00;37m\]'
+	__colors_white='\[\033[01;37m\]'
+	__colors_std="${__colors_white}"
+	__colors_red_back='\[\033[00;41m\]'
+	__colors_green_back='\[\033[00;42m\]'
+	__colors_orange_back='\[\033[00;43m\]'
+	__colors_blue_back='\[\033[00;44m\]'
+	__colors_purple_back='\[\033[00;45m\]'
+	__colors_cyan_back='\[\033[00;46m\]'
+	__colors_grey_back='\[\033[00;47m\]'
 }
 
 ############################
 # ##### UNSET colors ##### #
 ############################
-colors_undefine ()
+_colors_undefine ()
 {
- unset colors_restore     \
-       colors_black       \
-       colors_firebrick   \
-       colors_red         \
-       colors_forest      \
-       colors_green       \
-       colors_brown       \
-       colors_yellow      \
-       colors_navy        \
-       colors_blue        \
-       colors_purple      \
-       colors_magenta     \
-       colors_cadet       \
-       colors_cyan        \
-       colors_gray        \
-       colors_white       \
-       colors_std         \
-       colors_usr         \
-			 colors_red_back    \
-			 colors_green_back  \
-			 colors_orange_back \
-			 colors_blue_back   \
-			 colors_purple_back \
-			 colors_cyan_back   \
-			 colors_grey_back
+ unset __colors_restore     \
+       __colors_black       \
+       __colors_firebrick   \
+       __colors_red         \
+       __colors_forest      \
+       __colors_green       \
+       __colors_brown       \
+       __colors_yellow      \
+       __colors_navy        \
+       __colors_blue        \
+       __colors_purple      \
+       __colors_magenta     \
+       __colors_cadet       \
+       __colors_cyan        \
+       __colors_gray        \
+       __colors_white       \
+       __colors_std         \
+       __colors_usr         \
+			 __colors_red_back    \
+			 __colors_green_back  \
+			 __colors_orange_back \
+			 __colors_blue_back   \
+			 __colors_purple_back \
+			 __colors_cyan_back   \
+			 __colors_grey_back
 }

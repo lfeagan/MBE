@@ -23,31 +23,31 @@
 # 	Adds the user's ~/home/bin folder into PATH
 ###############################################################################
 
-homebin_dependencies=( 'mbe' )
-homebin_functions=( 'homebin_load' 'homebin_unload' 'homebin_setpath' 'homebin_usage' )
+__homebin_dependencies=( 'mbe' )
+__homebin_functions=( '_homebin_load' '_homebin_unload' '_homebin_setpath' '_homebin_usage' )
 
-homebin_load ()
+_homebin_load ()
 {
-	DEBUG echo "homebin_load: enter"
+	DEBUG echo "_homebin_load: enter"
 	local module="homebin"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "homebin_load: leave"
+	DEBUG echo "_homebin_load: leave"
 }
 
-homebin_unload ()
+_homebin_unload ()
 {
 	local func
-	for func in "${homebin_functions[@]}"; do
+	for func in "${__homebin_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-homebin_setpath ()
+_homebin_setpath ()
 {
 	# Add in the bin folder in my home directory
 	if [ -e $HOME/bin ]; then
@@ -55,7 +55,7 @@ homebin_setpath ()
 	fi
 }
 
-homebin_usage ()
+_homebin_usage ()
 {
 	echo "no usage info"
 }

@@ -55,9 +55,9 @@ source "${MODULES_DIR}/mbe/mbe.conf"
 
 # Bootstrap by manually loading the mbe module, the others can be done automatically
 . "${MODULES_DIR}/mbe/mbe"
-mbe_load
+_mbe_load
 # Load the modules specified in the preferences file
-mbe_loadModules "${MODULES_LOAD[@]}"
+_mbe_loadModules "${MODULES_LOAD[@]}"
 
 #######################
 # ##### GENERAL ##### #
@@ -139,20 +139,20 @@ fi
 
 # Pager
 if [ -z "${USER_PAGERS[*]}" ]; then
-	mbe_pager_choices=("less" "more")
+	__mbe_pager_choices=("less" "more")
 else
-	mbe_pager_choices=( $(echo "${USER_PAGERS[*]}") )
+	__mbe_pager_choices=( $(echo "${USER_PAGERS[*]}") )
 fi
-mbe_envpathsearch PAGER ${#USER_PAGERS[@]} `echo ${mbe_pager_choices[@]} ${std_bin_paths[@]}`
+_mbe_envpathsearch PAGER ${#USER_PAGERS[@]} `echo ${__mbe_pager_choices[@]} ${std_bin_paths[@]}`
 [ -n "$RETVAL" ] && $(echo $RETVAL)
 
 # Editors
 if [ -z "${USER_EDITORS[*]}" ]; then
-	mbe_editor_choices=("vim" "vi" "emacs")
+	__mbe_editor_choices=("vim" "vi" "emacs")
 else
-	mbe_editor_choices=( $(echo "${USER_EDITORS[*]}") )
+	__mbe_editor_choices=( $(echo "${USER_EDITORS[*]}") )
 fi
-mbe_envpathsearch EDITOR ${#USER_EDITORS[@]} `echo ${mbe_editor_choices[@]} ${std_bin_paths[@]}`
+_mbe_envpathsearch EDITOR ${#USER_EDITORS[@]} `echo ${__mbe_editor_choices[@]} ${std_bin_paths[@]}`
 [ -n "$RETVAL" ] && $(echo $RETVAL)
 export CVSEDITOR="${EDITOR}"
 export FCEDIT="${EDITOR}"
@@ -254,7 +254,7 @@ fi
 # Sources important shell files again. Used when changing users and wanting to source files or when making frequent changes to installed bash files.
 resource ()
 {
-	#mbe_reloadModules
+	#_mbe_reloadModules
 	source ${HOME}/.bashrc; 
 	source ${HOME}/.bash_aliases;
 }
