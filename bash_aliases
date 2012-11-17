@@ -65,6 +65,12 @@ function ...... () { cd ../../../../..; }
 function ....... () { cd ../../../../../..; }
 function ........ () { cd ../../../../../../..; }
 
+#function cd. () {
+#	echo "min ${1##.*}"
+#	#if [ ${1##.}
+#	echo "1 = $1"
+#}
+
 # For linux, always use color with 'ls'
 # For solaris et al, do not use color as it is usually unsupported
 if [[ "$OSTYPE" == linux* ]]; then
