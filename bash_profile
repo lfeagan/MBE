@@ -46,3 +46,8 @@ PATH=$PATH:$HOME/bin
 
 declare -x PATH
 #unset USERNAME
+
+# For MacPorts bash completion
+if [ -f /opt/local/etc/profile.d/bash_completion.sh ]; then
+	. /opt/local/etc/profile.d/bash_completion.sh
+fi 
