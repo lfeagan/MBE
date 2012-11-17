@@ -17,45 +17,56 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-__icscope2_dependencies=( 'mbe' )
-__icscope2_functions=( '_icscope2_load' '_icscope2_unload' '_icscope2_setpath' '_icscope2_usage' 'icscope2_complete' )
+###############################################################################
+# Module: macports
+# Description:
+# 	Defines ...
+# 	nextline
+###############################################################################
 
-_icscope2_load ()
+#
+# Template for new module creation.
+# Substitute the new module name for 'macports'
+# %s/macports/newname/gc
+
+__macports_dependencies=( 'mbe' )
+__macports_functions=( '_macports_load' '_macports_unload' '_macports_setpath' '_macports_usage' '_macports_complete' )
+
+_macports_load ()
 {
-	DEBUG echo "_icscope2_load: enter"
-	local module="icscope2"
+	DEBUG echo "_macports_load: enter"
+	local module="macports"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "_icscope2_load: leave"
+	DEBUG echo "_macports_load: leave"
 }
 
-_icscope2_unload ()
+_macports_unload ()
 {
 	local func
-	for func in "${__icscope2_functions[@]}"; do
+	for func in "${__macports_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-_icscope2_setpath ()
+_macports_setpath ()
 {
-	if [ -d "/usr/cm/icscope2" ]; then
-		if [ -r "/usr/cm/icscope2/bin/icscope2" ]; then
-			PATH="/usr/cm/icscope2/bin:${PATH}"
-		fi
-	fi
+  if [ -f /opt/local/etc/profile.d/bash_completion.sh ]; then
+      . /opt/local/etc/profile.d/bash_completion.sh
+  fi
 }
 
-_icscope2_usage ()
+_macports_usage ()
 {
-	echo "no usage info"
+	echo -ne ""
+
 }
 
-_icscope2_complete()
+_macports_complete()
 {
 	COMPREPLY=( )
 	return 0

@@ -25,7 +25,7 @@
 ###############################################################################
 
 __sbin_dependencies=( 'mbe' )
-__sbin_functions=( '_sbin_load' '_sbin_unload' '_sbin_setpath' '_sbin_usage' )
+__sbin_functions=( '_sbin_load' '_sbin_unload' '_sbin_setpath' '_sbin_usage' '_sbin_complete' )
 
 _sbin_load ()
 {
@@ -62,4 +62,10 @@ _sbin_setpath ()
 _sbin_usage ()
 {
 	echo "no usage info"
+}
+
+_sbin_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

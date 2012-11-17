@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 ibmxlc_dependencies=( 'mbe' )
-ibmxlc_functions=( 'ibmxlc_load' 'ibmxlc_unload' 'ibmxlc_setpath' 'ibmxlc_usage' )
+ibmxlc_functions=( 'ibmxlc_load' 'ibmxlc_unload' 'ibmxlc_setpath' 'ibmxlc_usage' 'ibmxlc_complete' )
 
 ibmxlc_load ()
 {
@@ -53,4 +53,10 @@ ibmxlc_setpath ()
 ibmxlc_usage ()
 {
 	echo "no usage info"
+}
+
+_ibmxlc_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

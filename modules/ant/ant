@@ -1,8 +1,8 @@
 #!/bin/bash
 # vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
 
-ant_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-ant_functions=(ant_load ant_unload ant_setpath ant_usage ant_env ant_config ant_listVersions )
+__ant_dependencies=( 'mbe' 'platform' 'utils' 'java' )
+__ant_functions=(_ant_load _ant_unload _ant_setpath _ant_usage _ant_env _ant_config _ant_list _ant_listVersions _ant_complete)
 
 # Environment Variables:
 # ANT_PRODUCT
@@ -12,11 +12,11 @@ ant_functions=(ant_load ant_unload ant_setpath ant_usage ant_env ant_config ant_
 # ANT_JAVA_VERSION
 # ANT_JAVA_BITS
 
-ant_load ()
+_ant_load ()
 {
-	DEBUG echo "ant_load: enter"
+	DEBUG echo "_ant_load: enter"
 	# Load module dependencies
-	mbe_loadModules "${ant_dependencies[@]}"
+	_mbe_loadModules "${__ant_dependencies[@]}"
 
 	local module="ant"
 	# Load preferences file
@@ -31,22 +31,22 @@ ant_load ()
 	ANT_JAVA_VERSION=${ANT_JAVA_VERSION:=1.6.0}
 	ANT_JAVA_BITS=${ANT_JAVA_BITS:=32}
 
-	DEBUG echo "ant_load: leave"
+	DEBUG echo "_ant_load: leave"
 	return 0
 
 }
 
-ant_unload ()
+_ant_unload ()
 {
 	local module="ant"
 	local func
-	for func in "${ant_functions[@]}"; do
+	for func in "${__ant_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-ant_setpath ()
+_ant_setpath ()
 {
 	local module="ant"
 
@@ -58,12 +58,12 @@ ant_setpath ()
 	fi
 }
 
-ant_usage ()
+_ant_usage ()
 {
 	local module="ant"
 }
 
-ant_env ()
+_ant_env ()
 {
 	echo "ANT_HOME=${ANT_HOME}"
 	echo "--------------------------------------------------------------------------------"
@@ -74,13 +74,13 @@ ant_env ()
 	echo "ANT_JAVA_BITS=${ANT_JAVA_BITS}"
 }
 
-ant_config ()
+_ant_config ()
 {
 	local module="ant"
 
 	usage ()
 	{
-		echo "Usage: ant_config [-p <product>] [-v <version>] [-c <java_creator>] [-j <java_version>] [-b <java_bits>]"
+		echo "Usage: _ant_config [-p <product>] [-v <version>] [-c <java_creator>] [-j <java_version>] [-b <java_bits>]"
 		echo "	Configures a reasonable environment to execute the Ant as specified."
 	}
 
@@ -144,13 +144,31 @@ ant_config ()
 	fi
 }
 
-ant_listVersions ()
+_ant_list()
+{
+	usage ()
+	{
+		echo "Usage: _ant_list <versions>"
+	}
+
+	case "$1" in
+	versions)
+		_ant_listVersions $2
+		;;
+	*)
+		echo "Unrecognized option"
+		return 1
+		;;
+	esac
+}
+
+_ant_listVersions ()
 {
 	local versions
 
 	usage ()
 	{
-		echo "Usage: ant_listVersions [-p <product>]"
+		echo "Usage: _ant_listVersions [-p <product>]"
 		echo " Searches and lists the available Eclipse versions for a particular product."
 	}
 
@@ -181,4 +199,31 @@ ant_listVersions ()
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 
 	echo "${versions[@]}"
+}
+
+_ant_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="config env list"
+
+	case "${prev}" in
+		env)
+			COMPREPLY=( )
+			return 0
+			;;
+		list)
+			local list_opts="versions"
+			COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
+			return 0
+			;;
+		config)
+			local config_opts="-p -v -j -c -b -n"
+			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
 }

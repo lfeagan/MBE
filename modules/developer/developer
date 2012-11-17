@@ -24,46 +24,52 @@
 # 	development.
 ############################################################
 
-developer_dependencies=( 'mbe' 'platform' )
-developer_functions=( 'developer_load' 'developer_unload' 'developer_setpath' )
+__developer_dependencies=( 'mbe' 'platform' )
+__developer_functions=( '_developer_load' '_developer_unload' '_developer_setpath' )
 
-developer_load ()
+_developer_load ()
 {
-	DEBUG echo "developer_load: enter"
+	DEBUG echo "_developer_load: enter"
 	# Load module dependencies
-	mbe_loadModules "${developer_dependencies[@]}"
+	_mbe_loadModules "${__developer_dependencies[@]}"
 	local module="developer"
 	# Load preferences file
 	source "${MODULES_DIR}/${module}/${module}.conf"
 	# Source the features specified in preferences file
-	DEBUG echo "developer_load: developer_features=${developer_features[@]}"
+	DEBUG echo "_developer_load: developer_features=${__developer_features[@]}"
 	local feature
-	for feature in "${developer_features[@]}"; do
+	for feature in "${__developer_features[@]}"; do
 		source "${MODULES_DIR}/${module}/${feature}"
 	done
-	DEBUG echo "developer_load: leave"
+	DEBUG echo "_developer_load: leave"
 	return 0
 }
 
-developer_unload ()
+_developer_unload ()
 {
 	local func
-	for func in "${developer_functions[@]}"; do
+	for func in "${__developer_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-developer_setpath ()
+_developer_setpath ()
 {
-	DEBUG echo "developer_setpath: enter"
+	DEBUG echo "_developer_setpath: enter"
 	local module="developer"
-	DEBUG echo "developer_setpath: developer_features=${developer_features[@]}"
+	DEBUG echo "_developer_setpath: developer_features=${__developer_features[@]}"
 	local feature
-	for feature in "${developer_features[@]}"; do
+	for feature in "${__developer_features[@]}"; do
 		DEBUG echo ${module}_${feature}_setpath
 		${module}_${feature}_setpath
 	done
-	DEBUG echo "developer_setpath: leave"
+	DEBUG echo "_developer_setpath: leave"
+	return 0
+}
+
+_developer_complete()
+{
+	COMPREPLY=( )
 	return 0
 }

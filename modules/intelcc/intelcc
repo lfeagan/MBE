@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-intelcc_dependencies=( 'mbe' )
-intelcc_functions=( 'intelcc_load' 'intelcc_unload' 'intelcc_setpath' 'intelcc_usage' )
+__intelcc_dependencies=( 'mbe' )
+__intelcc_functions=( '_intelcc_load' '_intelcc_unload' '_intelcc_setpath' '_intelcc_usage' '_intelcc_complete' )
 
-intelcc_load ()
+_intelcc_load ()
 {
-	DEBUG echo "intelcc_load: enter"
+	DEBUG echo "_intelcc_load: enter"
 	local module="intelcc"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "intelcc_load: leave"
+	DEBUG echo "_intelcc_load: leave"
 }
 
-intelcc_unload ()
+_intelcc_unload ()
 {
 	local func
-	for func in "${intelcc_functions[@]}"; do
+	for func in "${__intelcc_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-intelcc_setpath ()
+_intelcc_setpath ()
 {
 	# For the Intel Compiler
 	if [ -e /opt/intel_cc_80 ]; then
@@ -60,7 +60,13 @@ intelcc_setpath ()
 	fi
 }
 
-intelcc_usage ()
+_intelcc_usage ()
 {
 	echo "no usage info"
+}
+
+_intelcc_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

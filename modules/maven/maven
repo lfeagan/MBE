@@ -1,8 +1,8 @@
 #!/bin/bash
 # vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
 
-maven_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-maven_functions=(maven_load maven_unload maven_setpath maven_usage maven_env maven_config maven_listVersions )
+__maven_dependencies=( 'mbe' 'platform' 'utils' 'java' )
+__maven_functions=( _maven_load _maven_unload _maven_setpath _maven_usage _maven_env _maven_config _maven_list _maven_listVersions _maven_complete )
 
 # Environment Variables:
 # MAVEN_PRODUCT
@@ -12,11 +12,11 @@ maven_functions=(maven_load maven_unload maven_setpath maven_usage maven_env mav
 # MAVEN_JAVA_VERSION
 # MAVEN_JAVA_BITS
 
-maven_load ()
+_maven_load ()
 {
-	DEBUG echo "maven_load: enter"
+	DEBUG echo "_maven_load: enter"
 	# Load module dependencies
-	mbe_loadModules "${maven_dependencies[@]}"
+	_mbe_loadModules "${__maven_dependencies[@]}"
 
 	local module="maven"
 	# Load preferences file
@@ -31,22 +31,22 @@ maven_load ()
 	MAVEN_JAVA_VERSION=${MAVEN_JAVA_VERSION:=1.5.0}
 	MAVEN_JAVA_BITS=${MAVEN_JAVA_BITS:=32}
 
-	DEBUG echo "maven_load: leave"
+	DEBUG echo "_maven_load: leave"
 	return 0
 
 }
 
-maven_unload ()
+_maven_unload ()
 {
 	local module="maven"
 	local func
-	for func in "${maven_functions[@]}"; do
+	for func in "${__maven_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-maven_setpath ()
+_maven_setpath ()
 {
 	local module="maven"
 
@@ -58,12 +58,12 @@ maven_setpath ()
 	fi
 }
 
-maven_usage ()
+_maven_usage ()
 {
 	local module="maven"
 }
 
-maven_env ()
+_maven_env ()
 {
 	echo "MAVEN_HOME=${MAVEN_HOME}"
 	echo "--------------------------------------------------------------------------------"
@@ -74,7 +74,7 @@ maven_env ()
 	echo "MAVEN_JAVA_BITS=${MAVEN_JAVA_BITS}"
 }
 
-maven_config ()
+_maven_config ()
 {
 	local module="maven"
 
@@ -125,13 +125,31 @@ maven_config ()
 	fi
 }
 
-maven_listVersions ()
+_maven_list()
+{
+	usage ()
+	{
+		echo "Usage: _maven_list <versions>"
+	}
+
+	case "$1" in
+	versions)
+		_maven_listVersions $2
+		;;
+	*)
+		echo "Unrecognized option"
+		return 1
+		;;
+	esac
+}
+
+_maven_listVersions ()
 {
 	local versions
 
 	usage ()
 	{
-		echo "Usage: maven_listVersions [-p <product>]"
+		echo "Usage: _maven_listVersions [-p <product>]"
 		echo " Searches and lists the available Eclipse versions for a particular product."
 	}
 
@@ -162,4 +180,31 @@ maven_listVersions ()
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 
 	echo "${versions[@]}"
+}
+
+_maven_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="config env list"
+
+	case "${prev}" in
+		env)
+			COMPREPLY=( )
+			return 0
+			;;
+		list)
+			local list_opts="versions"
+			COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
+			return 0
+			;;
+		config)
+			local config_opts="-p -v -j -c -b -n"
+			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
 }

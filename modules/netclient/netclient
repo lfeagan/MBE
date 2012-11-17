@@ -25,7 +25,7 @@
 ###############################################################################
 
 __netclient_dependencies=( 'mbe' )
-__netclient_functions=( '_netclient_load' '_netclient_unload' '_netclient_setpath' '_netclient_usage' )
+__netclient_functions=( '_netclient_load' '_netclient_unload' '_netclient_setpath' '_netclient_usage' '_netclient_complete' )
 
 _netclient_load ()
 {
@@ -60,4 +60,10 @@ _netclient_setpath ()
 _netclient_usage ()
 {
 	echo "no usage info"
+}
+
+_netclient_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

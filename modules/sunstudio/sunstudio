@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-sunstudio_dependencies=( 'mbe' )
-sunstudio_functions=( 'sunstudio_load' 'sunstudio_unload' 'sunstudio_setpath' 'sunstudio_usage' )
+__sunstudio_dependencies=( 'mbe' )
+__sunstudio_functions=( '_sunstudio_load' '_sunstudio_unload' '_sunstudio_setpath' '_sunstudio_usage' '_sunstudio_complete' )
 
-sunstudio_load ()
+_sunstudio_load ()
 {
-	DEBUG echo "sunstudio_load: enter"
+	DEBUG echo "_sunstudio_load: enter"
 	local module="sunstudio"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "sunstudio_load: leave"
+	DEBUG echo "_sunstudio_load: leave"
 }
 
-sunstudio_unload ()
+_sunstudio_unload ()
 {
 	local func
-	for func in "${sunstudio_functions[@]}"; do
+	for func in "${__sunstudio_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-sunstudio_setpath ()
+_sunstudio_setpath ()
 {
 	# For Sun Studio 11 on Linux
 	if [ -e /usr/sun/sunstudio11 ]; then
@@ -63,7 +63,13 @@ sunstudio_setpath ()
 	fi
 }
 
-sunstudio_usage ()
+_sunstudio_usage ()
 {
 	echo "no usage info"
+}
+
+_sunstudio_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

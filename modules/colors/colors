@@ -24,7 +24,7 @@
 # 	color escape-sequences.
 ############################################################
 
-__colors_functions=( '_colors_load' '_colors_unload' '_colors_setpath' '_colors_define' '_colors_undefine' )
+__colors_functions=( '_colors_load' '_colors_unload' '_colors_setpath' '_colors_define' '_colors_undefine' '_colors_complete' )
 
 _colors_load ()
 {
@@ -116,3 +116,11 @@ _colors_undefine ()
 			 __colors_cyan_back   \
 			 __colors_grey_back
 }
+
+
+_colors_complete()
+{
+	COMPREPLY=( )
+	return 0
+}
+

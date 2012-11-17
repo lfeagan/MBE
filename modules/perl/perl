@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-perl_dependencies=( 'mbe' )
-perl_functions=( 'perl_load' 'perl_unload' 'perl_setpath' 'perl_usage' )
+__perl_dependencies=( 'mbe' )
+__perl_functions=( '_perl_load' '_perl_unload' '_perl_setpath' '_perl_usage' '_perl_complete' )
 
-perl_load ()
+_perl_load ()
 {
-	DEBUG echo "perl_load: enter"
+	DEBUG echo "_perl_load: enter"
 	local module="perl"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "perl_load: leave"
+	DEBUG echo "_perl_load: leave"
 }
 
-perl_unload ()
+_perl_unload ()
 {
 	local func
-	for func in "${perl_functions[@]}"; do
+	for func in "${__perl_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-perl_setpath ()
+_perl_setpath ()
 {
 	# Reference path elements
 	#/opt/tools/Linux/64/ppc64/perl/5.8.8/lib/site_perl/5.8.8/ppc64-linux-thread-multi
@@ -93,7 +93,13 @@ perl_setpath ()
 		fi
 }
 
-perl_usage ()
+_perl_usage ()
 {
 	echo "no usage info"
+}
+
+_perl_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

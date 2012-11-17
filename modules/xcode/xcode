@@ -29,31 +29,31 @@
 # Substitute the new module name for 'xcode'
 # %s/xcode/newname/gc
 
-xcode_dependencies=( 'mbe' )
-xcode_functions=( 'xcode_load' 'xcode_unload' 'xcode_setpath' 'xcode_usage' )
+__xcode_dependencies=( 'mbe' )
+__xcode_functions=( '_xcode_load' '_xcode_unload' '_xcode_setpath' '_xcode_usage' '_xcode_complete' )
 
-xcode_load ()
+_xcode_load ()
 {
-	DEBUG echo "xcode_load: enter"
+	DEBUG echo "_xcode_load: enter"
 	local module="xcode"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "xcode_load: leave"
+	DEBUG echo "_xcode_load: leave"
 }
 
-xcode_unload ()
+_xcode_unload ()
 {
 	local func
-	for func in "${xcode_functions[@]}"; do
+	for func in "${__xcode_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-xcode_setpath ()
+_xcode_setpath ()
 {
 	if [ -e /Developer/usr ]; then
 		PATH=/Developer/usr/bin:$PATH
@@ -62,7 +62,13 @@ xcode_setpath ()
 	fi
 }
 
-xcode_usage ()
+_xcode_usage ()
 {
 	echo "XCode module has no special commands or configuration at this time"
+}
+
+_xcode_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

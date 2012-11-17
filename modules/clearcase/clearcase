@@ -21,31 +21,31 @@
 # ------ ClearCase Tools Related -------------
 #---------------------------------------------
 
-clearcase_dependencies=( 'mbe' )
-clearcase_functions=( 'clearcase_load' 'clearcase_unload' 'clearcase_setpath' 'clearcase_usage' 'ct' 'csv' 'prefiff' 'myviews' 'codir' )
+_clearcase_dependencies=( 'mbe' )
+_clearcase_functions=( '_clearcase_load' '_clearcase_unload' '_clearcase_setpath' '_clearcase_usage' '_clearcase_complete' 'ct' 'csv' 'prefiff' 'myviews' 'codir' )
 
-clearcase_load ()
+_clearcase_load ()
 {
-	DEBUG echo "clearcase_load: enter"
+	DEBUG echo "_clearcase_load: enter"
 	local module="clearcase"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "clearcase_load: leave"
+	DEBUG echo "_clearcase_load: leave"
 }
 
-clearcase_unload ()
+_clearcase_unload ()
 {
 	local func
-	for func in "${clearcase_functions[@]}"; do
+	for func in "${__clearcase_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-clearcase_setpath ()
+_clearcase_setpath ()
 {
 	# ClearCase & ClearQuest Tools
 	if [ -e /usr/atria/bin ]; then
@@ -54,7 +54,7 @@ clearcase_setpath ()
 	fi
 }
 
-clearcase_usage ()
+_clearcase_usage ()
 {
 	echo "no usage info"
 }
@@ -122,5 +122,11 @@ codir ()
 	else
 		find "$checkout_path" | xargs "$xargs_args" cleartool -c "$checkout_comment" {}
 	fi
+}
+
+_clearcase_complete()
+{
+	COMPREPLY=( )
+	return 0
 }
 

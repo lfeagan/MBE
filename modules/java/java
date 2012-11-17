@@ -20,7 +20,7 @@
 # Sun Java JDK/JRE
 
 __java_dependencies=( "mbe" "platform" "utils" )
-__java_functions=( "_java_load" "_java_unload" "_java_setpath" "_java_usage" "_java_listCreators" "_java_isValidCreator" "_java_listVersions" "_java_isValidVersion" "_java_env" "_java_buildjavahomestring" "_java_config" )
+__java_functions=( "_java_load" "_java_unload" "_java_setpath" "_java_usage" "_java_listCreators" "_java_isValidCreator" "_java_listVersions" "_java_isValidVersion" "_java_env" "_java_buildjavahomestring" "_java_config" '_java_complete' )
 
 export __java_javadir="Java"
 

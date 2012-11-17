@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-vim_dependencies=( 'mbe' )
-vim_functions=( 'vim_load' 'vim_unload' 'vim_setpath' 'vim_usage' )
+__vim_dependencies=( 'mbe' )
+__vim_functions=( '_vim_load' '_vim_unload' '_vim_setpath' '_vim_usage' '_vim_complete')
 
-vim_load ()
+_vim_load ()
 {
-	DEBUG echo "vim_load: enter"
+	DEBUG echo "_vim_load: enter"
 	local module="vim"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "vim_load: leave"
+	DEBUG echo "_vim_load: leave"
 }
 
-vim_unload ()
+_vim_unload ()
 {
 	local func
-	for func in "${vim_functions[@]}"; do
+	for func in "${__vim_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-vim_setpath ()
+_vim_setpath ()
 {
 	# Use custom version of vim in $TOOLSPATH/vim if available
 	if [ -d "${TOOLSPATH}/vim" ]; then
@@ -53,4 +53,10 @@ vim_setpath ()
 vim_usage ()
 {
 	echo "no usage info"
+}
+
+_vim_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

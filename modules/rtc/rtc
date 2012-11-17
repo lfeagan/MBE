@@ -29,46 +29,51 @@
 # Substitute the new module name for 'rtc'
 # %s/rtc/newname/gc
 
-rtc_dependencies=( 'mbe' )
-rtc_functions=( 'rtc_load' 'rtc_unload' 'rtc_setpath' 'rtc_usage' 'rtc_loadWorkspace' )
+__rtc_dependencies=( 'mbe' )
+__rtc_functions=( '_rtc_load' '_rtc_unload' '_rtc_setpath' '_rtc_usage' '_rtc_loadWorkspace' '_rtc_complete' )
 
-
-rtc_load ()
+_rtc_load ()
 {
-	DEBUG echo "rtc_load: enter"
+	DEBUG echo "_rtc_load: enter"
 	local module="rtc"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "rtc_load: leave"
+	DEBUG echo "_rtc_load: leave"
 }
 
-rtc_unload ()
+_rtc_unload ()
 {
 	local func
-	for func in "${rtc_functions[@]}"; do
+	for func in "${__rtc_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-rtc_setpath ()
+_rtc_setpath ()
 {
 
 }
 
-rtc_usage ()
+_rtc_usage ()
 {
 
 }
 
-rtc_config ()
+_rtc_complete()
+{
+	COMPREPLY=( )
+	return 0
+}
+
+_rtc_config ()
 {
 	usage ()
 	{
-		echo "rtc_config -c <Creator> -v <Version> -b <Bits>"
+		echo "_rtc_config -c <Creator> -v <Version> -b <Bits>"
 	}
 
 
@@ -132,22 +137,22 @@ rtc_config ()
 
 }
 
-rtc_scmtools_buildpath ()
+_rtc_scmtools_buildpath ()
 {
 
 }
 
-rtc_listWorkspaces ()
+_rtc_listWorkspaces ()
 {
 
 }
 
-rtc_loadWorkspace ()
+_rtc_loadWorkspace ()
 {
 
 }
 
-rtc_scmtools_buildpath ()
+_rtc_scmtools_buildpath ()
 {
 	# Takes three arguments, JAVA_BITS, JAVA_CREATOR, and JAVA_VERSION and
 	# creates the string to be used for JAVA_HOME

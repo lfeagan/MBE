@@ -24,31 +24,31 @@
 # 	nextline
 ###############################################################################
 
-usrlocalbin_dependencies=( 'mbe' )
-usrlocalbin_functions=( 'usrlocalbin_load' 'usrlocalbin_unload' 'usrlocalbin_setpath' 'usrlocalbin_usage' )
+__usrlocalbin_dependencies=( 'mbe' )
+__usrlocalbin_functions=( '_usrlocalbin_load' '_usrlocalbin_unload' '_usrlocalbin_setpath' '_usrlocalbin_usage' '_usrlocalbin_complete' )
 
-usrlocalbin_load ()
+_usrlocalbin_load ()
 {
-	DEBUG echo "usrlocalbin_load: enter"
+	DEBUG echo "_usrlocalbin_load: enter"
 	local module="usrlocalbin"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "usrlocalbin_load: leave"
+	DEBUG echo "_usrlocalbin_load: leave"
 }
 
-usrlocalbin_unload ()
+_usrlocalbin_unload ()
 {
 	local func
-	for func in "${usrlocalbin_functions[@]}"; do
+	for func in "${__usrlocalbin_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-usrlocalbin_setpath ()
+_usrlocalbin_setpath ()
 {
 	# Fix Solaris and others not having /usr/local/bin, etc in the default PATH
 	bin_paths=("/usr/xpg4/bin" "/usr/xpg6/bin" "/usr/local/bin" "/opt/freeware/bin" "/opt/local/bin" )
@@ -66,7 +66,13 @@ usrlocalbin_setpath ()
 	done
 }
 
-usrlocalbin_usage ()
+_usrlocalbin_usage ()
 {
 	echo "no usage info"
+}
+
+_usrlocalbin_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

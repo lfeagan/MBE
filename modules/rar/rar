@@ -30,7 +30,7 @@
 # %s/rar/newname/gc
 
 __rar_dependencies=( 'mbe' )
-__rar_functions=( '_rar_load' '_rar_unload' '_rar_setpath' '_rar_usage' )
+__rar_functions=( '_rar_load' '_rar_unload' '_rar_setpath' '_rar_usage' '_rar_complete' )
 
 _rar_load ()
 {
@@ -64,4 +64,10 @@ _rar_setpath ()
 _rar_usage ()
 {
 	echo "no usage info"
+}
+
+_rar_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

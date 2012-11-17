@@ -7,51 +7,51 @@
 #  Tools for retrieving, configuring, and using Informix products
 ##############################################################################
 
-informix_dependencies=( 'mbe' 'platform' )
-informix_functions=( 'informix_load' 'informix_unload' 'informix_setpath' \
-		'ifxmkrepo' 'ifxlist' 'ifxcd' 'ifxchrepobase' 'ifxenv' 'informix_log' 'ifxtestvobsconfig' \
+__informix_dependencies=( 'mbe' 'platform' )
+__informix_functions=( '_informix_load' '_informix_unload' '_informix_setpath' \
+		'ifxmkrepo' 'ifxlist' 'ifxcd' 'ifxchrepobase' 'ifxenv' '_informix_log' 'ifxtestvobsconfig' \
 		'idslist' 'idscheckout' 'idsconfig' 'idsup' 'idsupi' 'idsdown' 'idscd' 'idstools_gui' 'idsddd' \
-		'csdklist' 'csdkconfig' )
+		'csdklist' 'csdkconfig' '_informix_complete' )
 
-informix_load ()
+_informix_load ()
 {
 	# Load module dependencies
-	mbe_loadModules "${informix_dependencies[@]}"
+	_mbe_loadModules "${__informix_dependencies[@]}"
 	local module="informix"
 	# Load preferences
 	source "${MODULES_DIR}/${module}/${module}.conf"
 	return 0
 }
 
-informix_unload ()
+_informix_unload ()
 {
 	local func
-	for func in "${informix_functions[@]}"; do
+	for func in "${__informix_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-informix_setpath ()
+_informix_setpath ()
 {
 	local module="informix"
 	# /informix_repo will often be a sym-link to a large storage area
 	# If IFX_REPO_BASE_ARCHIVE is not yet defined, set it to the default value
 	if [ -z "${IFX_REPO_BASE_ARCHIVE}" ]; then
 		export IFX_REPO_BASE_ARCHIVE="/informix_repo"
-		DEBUG echo "informix_setpath: base was not yet set"
+		DEBUG echo "_informix_setpath: base was not yet set"
 	fi
 	export IFX_REPO_ARCHIVE="${IFX_REPO_BASE_ARCHIVE}/${PLATFORMPATH}"
 
 	# If IFX_REPO_BASE_WORKING is not yet defined, set it to the default value of ~/informix_repo
 	if [ -z "${IFX_REPO_BASE_WORKING}" ]; then
 		export IFX_REPO_BASE_WORKING="~/informix_repo"
-		DEBUG echo "informix_setpath: base was not yet set"
+		DEBUG echo "_informix_setpath: base was not yet set"
 	fi
 	export IFX_REPO_WORKING="${IFX_REPO_BASE_WORKING}/${PLATFORMPATH}"
 
 	if [[ $IFX_DOIDS -eq 1 ]]; then
-		DEBUG echo "informix_setpath: IFX_DOIDS is set"
+		DEBUG echo "_informix_setpath: IFX_DOIDS is set"
 		export INFORMIXDIR="${IDS_PATH}"
 		export ONCONFIG="onconfig.${IFX_SERVERNAME}"
 		export INFORMIXSERVER="${IFX_SERVERNAME}"
@@ -63,20 +63,20 @@ informix_setpath ()
 			LD_LIBRARY_PATH="${IDS_PATH}/lib/esql:${LD_LIBRARY_PATH}"
 		fi
 	elif [[ $IFX_DOCSDK -eq 1 ]]; then
-		DEBUG echo "informix_setpath: IFX_DOCSDK is set"
+		DEBUG echo "_informix_setpath: IFX_DOCSDK is set"
 		export INFORMIXDIR=${CSDK_PATH}
 		export INFORMIXSERVER="${IFX_SERVERNAME}"
 		export INFORMIXSQLHOSTS="${CSDK_PATH}/etc/sqlhosts.${IFX_SERVERNAME}"
 		PATH="${CSDK_PATH}/bin:${PATH}"
 		LD_LIBRARY_PATH="${CSDK_PATH}/lib:${CSDK_PATH}/lib/esql:${LD_LIBRARY_PATH}"
 	else
-		DEBUG echo "informix_setpath: Neither IFX_DOIDS or IFX_DOCSDK are set. Unsetting variables" 
+		DEBUG echo "_informix_setpath: Neither IFX_DOIDS or IFX_DOCSDK are set. Unsetting variables" 
 		unset -v INFORMIXDIR ONCONFIG INFORMIXSERVER INFORMIXSQLHOSTS
 		return 1
 	fi
 }
 
-informix_log ()
+_informix_log ()
 {
 	if [[ "$INFORMIX_LOG" == "on" ]]; then
 		if [[ ! -f "$INFORMIX_LOGFILE" ]]; then
@@ -141,7 +141,7 @@ ifxmkrepo ()
 	# Make all directories world readable, writable, cd-able
 	chmod -R a+rwX "${target}"
 
-	informix_log ifxmkrepo "$*" 
+	_informix_log ifxmkrepo "$*" 
 }
 
 idstools_gui ()
@@ -319,7 +319,7 @@ csdkconfig ()
 		export CSDK_PATH CSDK_VERSION CSDK_FIXPACK IFX_SERVERNAME
 		export IFX_DOCSDK=1
 		export IFX_DOIDS=0
-		informix_log csdkconfig "$*"
+		_informix_log csdkconfig "$*"
 		mbe_buildpath
 	else
 		echo "ERROR: ${CSDK_PATH} does not exist"
@@ -439,7 +439,7 @@ ifxlist ()
 	done
 
 	# Log successful invocation
-	informix_log csdklist "$*"
+	_informix_log csdklist "$*"
 }
 
 csdklist ()
@@ -550,7 +550,7 @@ csdklist ()
 	done
 
 	# Log successful invocation
-	informix_log csdklist "$*"
+	_informix_log csdklist "$*"
 }
 
 idslist ()
@@ -672,7 +672,7 @@ idslist ()
 	done
 
 	# Log successful invocation
-	informix_log idslist "$*"
+	_informix_log idslist "$*"
 
 #	for version in "${versions[@]}"; do
 #		echo "${version}"
@@ -766,11 +766,11 @@ idscheckout ()
 			DEBUG echo "rsync -a ${source}/${dir} ${target}"
 			userid root rsync -a "${source}/${dir}" "${target}"
 		done
-		informix_log idscheckout source=${source} target=${target} "$*"
+		_informix_log idscheckout source=${source} target=${target} "$*"
 	else
 		DEBUG echo "rsync -a \"${rsyncsource}/\" ${target}"
 		userid root rsync -a "${rsyncsource}/" "${target}"
-		informix_log idscheckout source=${rsyncsource} target=${target} "$*"
+		_informix_log idscheckout source=${rsyncsource} target=${target} "$*"
 	fi
 }
 
@@ -865,7 +865,7 @@ idsconfig ()
 		export IDS_PATH IDS_VERSION IDS_FIXPACK IDS_BUILDNUM IFX_SERVERNAME
 		export IFX_DOCSDK=0
 		export IFX_DOIDS=1
-		informix_log idsconfig "$*"
+		_informix_log idsconfig "$*"
 		mbe_buildpath
 	else # Otherwise, cleanup things
 		echo "ERROR: Directory ${IDS_PATH} does not exist"
@@ -928,7 +928,7 @@ ifxchrepobase ()
 	fi
 
 	mbe_buildpath
-	informix_log ifxchrepobase "$*"
+	_informix_log ifxchrepobase "$*"
 }
 
 ifxenv ()
@@ -1042,3 +1042,8 @@ ifxtestvobsconfig ()
   export OSNAME=linux86-64
 }
 
+_informix_complete()
+{
+	COMPREPLY=( )
+	return 0
+}

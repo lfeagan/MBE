@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __opengl_dependencies=( 'mbe' )
-__opengl_functions=( '_opengl_load' '_opengl_unload' '_opengl_setpath' '_opengl_usage' )
+__opengl_functions=( '_opengl_load' '_opengl_unload' '_opengl_setpath' '_opengl_usage' '_opengl_complete' )
 
 _opengl_load ()
 {
@@ -58,4 +58,10 @@ _opengl_setpath ()
 _opengl_usage ()
 {
 	echo "no usage info"
+}
+
+_opengl_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

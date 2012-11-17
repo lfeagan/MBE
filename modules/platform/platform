@@ -325,6 +325,23 @@ _platform_toolspath ()
 	export TOOLSPATHGENERIC="${TOOLSPATH_BASE}/${GENERIC_ARCH}"
 }
 
+_platform_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="desc"
+
+	case "${prev}" in
+		desc)
+			COMPREPLY=( )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
+}
+
 cdtools () { cd "${TOOLSPATH}"; }
 cdtools32 () { cd "${TOOLSPATH32}"; }
 cdtoolsgeneric () { cd "${TOOLSPATHGENERIC}"; }

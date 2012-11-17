@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-csope_dependencies=( 'mbe' )
-csope_functions=( 'csope_load' 'csope_unload' 'csope_setpath' 'csope_usage' )
+__cscope_dependencies=( 'mbe' )
+__cscope_functions=( '_cscope_load' '_cscope_unload' '_cscope_setpath' '_cscope_usage' '_cscope_complete' )
 
-cscope_load ()
+_cscope_load ()
 {
-	DEBUG echo "csope_load: enter"
-	local module="csope"
+	DEBUG echo "cscope_load: enter"
+	local module="cscope"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "csope_load: leave"
+	DEBUG echo "cscope_load: leave"
 }
 
-cscope_unload ()
+_cscope_unload ()
 {
 	local func
-	for func in "${csope_functions[@]}"; do
+	for func in "${__cscope_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-cscope_setpath ()
+_cscope_setpath ()
 {
 	# CSCOPE Declarations
 	export CSCOPE_EDITOR="${EDITOR}"
@@ -50,7 +50,13 @@ cscope_setpath ()
 	export VPATH="" # Colon-separated list of directories to search. If not set, cscope searches only in the current directory.
 }
 
-cscope_usage ()
+_cscope_usage ()
 {
 	echo "no usage info"
+}
+
+_cscope_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

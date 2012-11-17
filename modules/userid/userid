@@ -29,36 +29,36 @@
 # Substitute the new module name for 'userid'
 # %s/userid/newname/gc
 
-userid_dependencies=( 'mbe' )
-userid_functions=( 'userid_load' 'userid_unload' 'userid_setpath' 'userid_usage' 'ur' )
+__userid_dependencies=( 'mbe' )
+__userid_functions=( '_userid_load' '_userid_unload' '_userid_setpath' '_userid_usage' 'ur' )
 
-userid_load ()
+_userid_load ()
 {
-	DEBUG echo "userid_load: enter"
+	DEBUG echo "_userid_load: enter"
 	local module="userid"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "userid_load: leave"
+	DEBUG echo "_userid_load: leave"
 }
 
-userid_unload ()
+_userid_unload ()
 {
 	local func
-	for func in "${userid_functions[@]}"; do
+	for func in "${__userid_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-userid_setpath ()
+_userid_setpath ()
 {
 	DEBUG echo -n ""
 }
 
-userid_usage ()
+_userid_usage ()
 {
 	echo "no usage info"
 }
@@ -71,4 +71,10 @@ ur ()
 	else
 		sudo -u root "$*"
 	fi
+}
+
+_userid_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

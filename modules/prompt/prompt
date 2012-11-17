@@ -18,6 +18,7 @@
 #------------------------------------------------------------------------------
 
 __prompt_dependencies=( 'mbe' 'colors' )
+__prompt_functions=( '_prompt_load' '_prompt_unload' '_prompt_setpath' '_prompt_usage' '_prompt_complete' )
 
 _prompt_load ()
 {
@@ -33,6 +34,10 @@ _prompt_load ()
 
 _prompt_unload ()
 {
+	local func
+	for func in "${__prompt_functions[@]}"; do
+		unset "${func}"
+	done
 	return 0
 }
 

@@ -31,49 +31,52 @@
 # Substitute the new module name for 'sauerbraten'
 # %s/sauerbraten/newname/gc
 
-sauerbraten_dependencies=( 'mbe' )
-sauerbraten_functions=( 'sauerbraten_load' 'sauerbraten_unload' 'sauerbraten_setpath' 'sauerbraten_usage' 'sauerbraten_listVersions' 'sauerbraten_run' )
+__sauerbraten_dependencies=( 'mbe' )
+__sauerbraten_functions=( '_sauerbraten_load' '_sauerbraten_unload' \
+		'_sauerbraten_setpath' '_sauerbraten_usage' \
+		'_sauerbraten_listVersions' '_sauerbraten_run' \
+		'_sauerbraten_compressScreenshots' '_sauerbraten_complete' )
 
-sauerbraten_load ()
+_sauerbraten_load ()
 {
-	DEBUG echo "sauerbraten_load: enter"
+	DEBUG echo "_sauerbraten_load: enter"
 	# Load module dependencies
-	mbe_loadModules "${sauerbraten_dependencies[@]}"
+	_mbe_loadModules "${__sauerbraten_dependencies[@]}"
 	local module="sauerbraten"
 	# Load preferences
 	source "${MODULES_DIR}/${module}/${module}.conf"
 	# Configure module
 	export SAUERBRATEN_BITS="${SAUERBRATEN_BITS:-32}"
-	DEBUG echo "sauerbraten_load: leave"
+	DEBUG echo "_sauerbraten_load: leave"
 	return 0
 }
 
-sauerbraten_unload ()
+_sauerbraten_unload ()
 {
 	local module="sauerbraten"
 	local func
-	for func in "${sauerbraten_functions[@]}"; do
+	for func in "${__sauerbraten_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-sauerbraten_setpath ()
+_sauerbraten_setpath ()
 {
 	return 0
 }
 
-sauerbraten_usage ()
+_sauerbraten_usage ()
 {
 	echo "not implemented"
 }
 
-sauerbraten_listVersions ()
+_sauerbraten_listVersions ()
 {
 	echo "not implemented"
 }
 
-sauerbraten_buildgamedir ()
+_sauerbraten_buildgamedir ()
 {
 	#gamedir="${TOOLSPATH}/Sauerbraten/2010_07_19_justice_edition"
 	if [[ "${SAUERBRATEN_BITS}" == 32 ]]; then
@@ -84,7 +87,7 @@ sauerbraten_buildgamedir ()
 	export gamedir
 }
 
-sauerbraten_run ()
+_sauerbraten_run ()
 {
 	# Sauerbraten Run Script
 	# Runs Sauerbraten and logs console messages to a
@@ -143,7 +146,7 @@ sauerbraten_run ()
 	popd
 }
 
-sauerbraten_compressScreenshots ()
+_sauerbraten_compressScreenshots ()
 {
 	pushd "${SAUERBRATEN_HOME_DIR}"
 	mogrify -path "${SAUERBRATEN_HOME_DIR}/screenshots" -format jpg -resize 50% "*.png"
@@ -155,3 +158,24 @@ sauerbraten_compressScreenshots ()
 	popd
 }
 
+_sauerbraten_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="compressScreenshots run list"
+
+	case "${prev}" in
+		compressScreenshots|run)
+			COMPREPLY=( )
+			return 0
+			;;
+		list)
+			local list_opts="versions"
+			COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
+}

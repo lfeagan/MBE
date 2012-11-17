@@ -24,31 +24,31 @@
 # 	nextline
 ###############################################################################
 
-brlcad_dependencies=( 'mbe' )
-brlcad_functions=( 'brlcad_load' 'brlcad_unload' 'brlcad_setpath' 'brlcad_usage' )
+__brlcad_dependencies=( 'mbe' )
+__brlcad_functions=( '_brlcad_load' '_brlcad_unload' '_brlcad_setpath' '_brlcad_usage' '_brlcad_complete' )
 
-brlcad_load ()
+_brlcad_load ()
 {
-	DEBUG echo "brlcad_load: enter"
+	DEBUG echo "_brlcad_load: enter"
 	local module="brlcad"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "brlcad_load: leave"
+	DEBUG echo "_brlcad_load: leave"
 }
 
-brlcad_unload ()
+_brlcad_unload ()
 {
 	local func
-	for func in "${brlcad_functions[@]}"; do
+	for func in "${__brlcad_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-brlcad_setpath ()
+_brlcad_setpath ()
 {
 	# BRL-CAD
 	if [ -e /usr/brlcad/bin ]; then
@@ -58,7 +58,7 @@ brlcad_setpath ()
 	fi
 }
 
-brlcad_usage ()
+_brlcad_usage ()
 {
 	echo "no usage info"
 }

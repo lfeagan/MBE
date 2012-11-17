@@ -24,31 +24,31 @@
 # 	nextline
 ###############################################################################
 
-lotusnotes_dependencies=( 'mbe' )
-lotusnotes_functions=( 'lotusnotes_load' 'lotusnotes_unload' 'lotusnotes_setpath' 'lotusnotes_usage' 'lotusnotes_run' 'lotusnotes_backupUserData' )
+__lotusnotes_dependencies=( 'mbe' )
+__lotusnotes_functions=( '_lotusnotes_load' '_lotusnotes_unload' '_lotusnotes_setpath' '_lotusnotes_usage' '_lotusnotes_run' '_lotusnotes_backupUserData' '_lotusnotes_complete' )
 
-lotusnotes_load ()
+_lotusnotes_load ()
 {
-	DEBUG echo "lotusnotes_load: enter"
+	DEBUG echo "_lotusnotes_load: enter"
 	local module="lotusnotes"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "lotusnotes_load: leave"
+	DEBUG echo "_lotusnotes_load: leave"
 }
 
-lotusnotes_unload ()
+_lotusnotes_unload ()
 {
 	local func
-	for func in "${lotusnotes_functions[@]}"; do
+	for func in "${__lotusnotes_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-lotusnotes_setpath ()
+_lotusnotes_setpath ()
 {
 	local notesdir="/opt/ibm/lotus/notes"
 	local notesbin="${notesdir}/notes"
@@ -60,18 +60,18 @@ lotusnotes_setpath ()
 	fi	
 }
 
-lotusnotes_usage ()
+_lotusnotes_usage ()
 {
 	echo "adds /opt/ibm/lotus/notes to PATH"
 }
 
-lotusnotes_run ()
+_lotusnotes_run ()
 {
 	/opt/ibm/lotus/notes/framework/../notes
 }
 
 
-lotusnotes_backupUserData ()
+_lotusnotes_backupUserData ()
 {
 	
 	# Files to backup
@@ -138,4 +138,10 @@ lotusnotes_backupUserData ()
 
 	local MERGEDIRECTIVE="merge $(mbe_getModulePath lotusnotes)/lotusnotes.rsync"
 	rsync -avh -f "${MERGEDIRECTIVE}" --prune-empty-dirs "${LOTUSNOTES_DATA}/" "${LOTUSNOTES_BACKUP}"
+}
+
+_lotusnotes_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

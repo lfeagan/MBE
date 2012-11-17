@@ -24,31 +24,31 @@
 # 	nextline
 ###############################################################################
 
-dia_dependencies=( 'mbe' )
-dia_functions=( 'dia_load' 'dia_unload' 'dia_setpath' 'dia_usage' )
+__dia_dependencies=( 'mbe' )
+__dia_functions=( '_dia_load' '_dia_unload' '_dia_setpath' '_dia_usage' '_dia_complete' )
 
-dia_load ()
+_dia_load ()
 {
-	DEBUG echo "dia_load: enter"
+	DEBUG echo "_dia_load: enter"
 	local module="dia"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "dia_load: leave"
+	DEBUG echo "_dia_load: leave"
 }
 
-dia_unload ()
+_dia_unload ()
 {
 	local func
-	for func in "${dia_functions[@]}"; do
+	for func in "${__dia_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-dia_setpath ()
+_dia_setpath ()
 {
 	# DIA
 	if [ -e /opt/dia-0.96 ]; then
@@ -57,7 +57,13 @@ dia_setpath ()
 	fi
 }
 
-dia_usage ()
+__dia_usage ()
 {
 	echo "no usage info"
+}
+
+_dia_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

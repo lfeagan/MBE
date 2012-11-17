@@ -24,7 +24,7 @@
 ###############################################################################
 
 __homebin_dependencies=( 'mbe' )
-__homebin_functions=( '_homebin_load' '_homebin_unload' '_homebin_setpath' '_homebin_usage' )
+__homebin_functions=( '_homebin_load' '_homebin_unload' '_homebin_setpath' '_homebin_usage' '_homebin_complete' )
 
 _homebin_load ()
 {
@@ -58,4 +58,10 @@ _homebin_setpath ()
 _homebin_usage ()
 {
 	echo "no usage info"
+}
+
+_homebin_complete()
+{
+	COMPREPLY=( )
+	return 0
 }

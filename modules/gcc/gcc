@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-gcc_dependencies=( 'mbe' )
-gcc_functions=( 'gcc_load' 'gcc_unload' 'gcc_setpath' 'gcc_usage' )
+__gcc_dependencies=( 'mbe' )
+__gcc_functions=( '_gcc_load' '_gcc_unload' '_gcc_setpath' '_gcc_usage' '_gcc_complete' )
 
-gcc_load ()
+_gcc_load ()
 {
-	DEBUG echo "gcc_load: enter"
+	DEBUG echo "_gcc_load: enter"
 	local module="gcc"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "gcc_load: leave"
+	DEBUG echo "_gcc_load: leave"
 }
 
-gcc_unload ()
+_gcc_unload ()
 {
 	local func
-	for func in "${gcc_functions[@]}"; do
+	for func in "${__gcc_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-gcc_setpath ()
+_gcc_setpath ()
 {
 	# Many GNU programs expect CPP to the the C++ compiler, not the C Pre-Processor, as is the case on Solaris.
 	if [[ "${OSTYPE}" == solaris* ]]; then
@@ -53,7 +53,13 @@ gcc_setpath ()
 	fi
 }
 
-gcc_usage ()
+_gcc_usage ()
 {
 	echo "no usage info"
+}
+
+_gcc_complete()
+{
+	COMPREPLY=( )
+	return 0
 }
