@@ -245,6 +245,9 @@ bind '"\M-t": menu-complete'        # replaces 'transpose-words'
 # User alias specifications
 test -s ~/.bash_aliases && . ~/.bash_aliases
 
+# Bash completion
+test -s "${MBE_DIR}/mbe_completion" && . "${MBE_DIR}/mbe_completion"
+
 # User-specific bash files are sourced last so that they can override anything
 #test -s ~/.bash_${USER} && ~/.bash_${USER}
 if [ -f "${HOME}/.bash_${USER}" ]; then

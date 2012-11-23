@@ -122,6 +122,9 @@ echo -e "Copying \"${copydir}/bash_aliases\" to \"${target}/.bash_aliases\""
 echo -e "Copying \"${copydir}/bash_profile\" to \"${target}/.bash_profile\""
 [ $debug -eq 0 ] && cp "${copydir}/bash_profile" "${target}/.bash_profile"
 
+echo -e "Copying \"${copydir}/mbe_completion\" to \"${MBE_DIR}/mbe_completion\""
+[ $debug -eq 0 ] && cp "${copydir}/mbe_completion" "${MBE_DIR}/mbe_completion"
+
 # Copy contents of modules folder
 echo -e "Copying modules from \"${copydir}/modules/*\" to \"${MBE_MODULES_DIR}\""
 [ $debug -eq 0 ] && rsync -r -C ${copydir}/modules/ "${MBE_MODULES_DIR}"
