@@ -4,8 +4,8 @@
 # Customized based on the Eclipse Mutli-User Install Guide at:
 # http://help.eclipse.org/help32/index.jsp?topic=/org.eclipse.platform.doc.isv/reference/misc/multi_user_installs.html
 
-eclipse_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-eclipse_functions=(eclipse_load eclipse_unload eclipse_setpath eclipse_setmozpath eclipse_usage eclipse_env eclipse_config eclipse_listVersions eclipse_run eclipse_cdworkspace sdp_run teamconcert_run )
+__eclipse_dependencies=( 'mbe' 'platform' 'utils' 'java' )
+__eclipse_functions=(_eclipse_load _eclipse_unload _eclipse_setpath _eclipse_setmozpath _eclipse_usage _eclipse_env _eclipse_config _eclipse_listVersions _eclipse_run _eclipse_cdworkspace sdp_run teamconcert_run )
 
 # Environment Variables:
 # ECLIPSE_PRODUCT
@@ -19,7 +19,7 @@ _eclipse_load ()
 {
 	DEBUG echo "eclipse_load: enter"
 	# Load module dependencies
-	_mbe_loadModules "${eclipse_dependencies[@]}"
+	_mbe_loadModules "${__eclipse_dependencies[@]}"
 
 	local module="eclipse"
 	# Load preferences file
@@ -43,7 +43,7 @@ _eclipse_unload ()
 {
 	local module="eclipse"
 	local func
-	for func in "${eclipse_functions[@]}"; do
+	for func in "${__eclipse_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
@@ -165,7 +165,7 @@ _eclipse_config ()
 			c  ) ECLIPSE_JAVA_CREATOR=$OPTARG;;
 			j  ) ECLIPSE_JAVA_VERSION=$OPTARG;;
 			b  ) ECLIPSE_JAVA_BITS=$OPTARG
-				   eclipse_setmozpath;;
+				   _eclipse_setmozpath;;
 			n  ) ECLIPSE_LANG=$OPTARG;;
 			h  ) print_usage="1";;
 			\? ) print_usage="1";;
@@ -297,10 +297,10 @@ _eclipse_listVersions ()
 _eclipse_run()
 {
 	if (( "${#@}" > 0)); then
-		cmd="eclipse_config ${@}"
+		cmd="_eclipse_config ${@}"
 		eval "${cmd}"
 	elif [[ -z "${ECLIPSE_SUBDIR}" ]]; then
-		eclipse_config
+		_eclipse_config
 	fi
 
 	echo ${ECLIPSE_HOME}
@@ -310,7 +310,7 @@ _eclipse_run()
 		_java_config -c "${ECLIPSE_JAVA_CREATOR}" -v "${ECLIPSE_JAVA_VERSION}" -b "${ECLIPSE_JAVA_BITS}"
 
 		# Pre-execution debug statements
-		java_env
+		_java_env
 		#echo "JAVA_HOME=${JAVA_HOME}"
 		echo "ECLIPSE_HOME=${ECLIPSE_HOME}"
 		echo "ECLIPSE_ARGS=${ECLIPSE_ARGS}"
@@ -334,7 +334,7 @@ _eclipse_run()
 _eclipse_cdworkspace()
 {
 	if [ -z "${ECLIPSE_SUBDIR}" ]; then
-		eclipse_config
+		_eclipse_config
 	fi
 	cd "${HOME}/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/workspace"
 }
@@ -342,14 +342,14 @@ _eclipse_cdworkspace()
 _eclipse_cd()
 {
 	if [ -z "${ECLIPSE_SUBDIR}" ]; then
-		eclipse_config
+		_eclipse_config
 	fi
 	cd "${ECLIPSE_HOME}"
 }
 
 _sdp_run()
 {
-	eclipse_config -p "${SDP_PRODUCT}" -v "${SDP_PRODUCT_VERSION}" -c "${SDP_JAVA_CREATOR}" -j "${SDP_JAVA_VERSION}" -b "${SDP_JAVA_BITS}"
+	_eclipse_config -p "${SDP_PRODUCT}" -v "${SDP_PRODUCT_VERSION}" -c "${SDP_JAVA_CREATOR}" -j "${SDP_JAVA_VERSION}" -b "${SDP_JAVA_BITS}"
 	eclipse_run
 }
 

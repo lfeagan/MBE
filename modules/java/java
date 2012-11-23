@@ -113,7 +113,7 @@ _java_buildjavahomestring ()
 		if [[ "$?" == 1 ]]; then
 			_java_isValidVersion ${creator} ${version}
 			if [[ "$?" == 1 ]]; then
-				maybe_java_home="${maybe_java_home}/${java_javadir}/${creator}/${version}"
+				maybe_java_home="${maybe_java_home}/${__java_javadir}/${creator}/${version}"
 				if [[ -d "${maybe_java_home}" ]]; then
 					echo "${maybe_java_home}"
 				fi
