@@ -23,7 +23,7 @@ __prompt_functions=( '_prompt_load' '_prompt_unload' '_prompt_setpath' '_prompt_
 _prompt_load ()
 {
 	# Load module dependencies
-	_mbe_loadModules "${__prompt_dependencies[@]}"
+	_mbe_activateModules "${__prompt_dependencies[@]}"
 	# Set module name
 	local module="prompt"
 	# Load preferences

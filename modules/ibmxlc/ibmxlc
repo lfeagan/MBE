@@ -17,31 +17,31 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-ibmxlc_dependencies=( 'mbe' )
-ibmxlc_functions=( 'ibmxlc_load' 'ibmxlc_unload' 'ibmxlc_setpath' 'ibmxlc_usage' 'ibmxlc_complete' )
+__ibmxlc_dependencies=( 'mbe' )
+__ibmxlc_functions=( '_ibmxlc_load' '_ibmxlc_unload' '_ibmxlc_setpath' '_ibmxlc_usage' '_ibmxlc_complete' )
 
-ibmxlc_load ()
+_ibmxlc_load ()
 {
-	DEBUG echo "ibmxlc_load: enter"
+	DEBUG echo "_ibmxlc_load: enter"
 	local module="ibmxlc"
 
 	# Load preferences
 	
 	# Configure module
 
-	DEBUG echo "ibmxlc_load: leave"
+	DEBUG echo "_ibmxlc_load: leave"
 }
 
-ibmxlc_unload ()
+_ibmxlc_unload ()
 {
 	local func
-	for func in "${ibmxlc_functions[@]}"; do
+	for func in "${__ibmxlc_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
 }
 
-ibmxlc_setpath ()
+_ibmxlc_setpath ()
 {
 	# For the IBM XLC/XLC++ Compiler on PS3/CBE
 	if [ -e /opt/ibmcmp/xlc/8.2 ]; then
@@ -50,7 +50,7 @@ ibmxlc_setpath ()
 	fi
 }
 
-ibmxlc_usage ()
+_ibmxlc_usage ()
 {
 	echo "no usage info"
 }

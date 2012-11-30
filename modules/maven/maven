@@ -16,7 +16,7 @@ _maven_load ()
 {
 	DEBUG echo "_maven_load: enter"
 	# Load module dependencies
-	_mbe_loadModules "${__maven_dependencies[@]}"
+	_mbe_activateModules "${__maven_dependencies[@]}"
 
 	local module="maven"
 	# Load preferences file

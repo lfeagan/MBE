@@ -31,7 +31,7 @@ _developer_load ()
 {
 	DEBUG echo "_developer_load: enter"
 	# Load module dependencies
-	_mbe_loadModules "${__developer_dependencies[@]}"
+	_mbe_activateModules "${__developer_dependencies[@]}"
 	local module="developer"
 	# Load preferences file
 	source "${MODULES_DIR}/${module}/${module}.conf"
