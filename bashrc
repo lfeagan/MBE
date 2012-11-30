@@ -121,7 +121,9 @@ std_bin_paths=("/bin" "/usr/bin" "/usr/local/bin" "/sbin" "/usr/sbin" "/usr/loca
 #std_bin_paths_arg=`echo ${std_bin_paths[@]}`
 
 # Limit core dumps to zero size (e.g. do not allow core dumps)
-ulimit -c 0
+# Only the soft-limit is set to zero, so that the user can alter as needed
+ulimit -H -c unlimited
+ulimit -S -c 0
 
 # If TERM=vt100, even if terminal reports support for color (COLORTERM=1), vim will fail to use colors but will work if TERM=xterm.
 if [[ "$COLORTERM" -eq 1 ]]; then
