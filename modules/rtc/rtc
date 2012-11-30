@@ -55,12 +55,12 @@ _rtc_unload ()
 
 _rtc_setpath ()
 {
-
+	echo -ne ""
 }
 
 _rtc_usage ()
 {
-
+	echo -ne ""
 }
 
 _rtc_complete()
@@ -131,7 +131,7 @@ _rtc_config ()
 
 		# Export variables
 		if [[ "${suppress_buildpath}" != "1" ]]; then
-			mbe_buildpath
+			_mbe_buildpath
 		fi
 	fi
 
@@ -139,17 +139,17 @@ _rtc_config ()
 
 _rtc_scmtools_buildpath ()
 {
-
+	echo -ne ""
 }
 
 _rtc_listWorkspaces ()
 {
-
+	echo -ne ""
 }
 
 _rtc_loadWorkspace ()
 {
-
+	echo -ne ""
 }
 
 _rtc_scmtools_buildpath ()

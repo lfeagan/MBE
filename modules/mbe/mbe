@@ -56,12 +56,13 @@ _mbe_usage ()
 	echo "environment variables at run-time. Using the MBE system typically involves the"
 	echo "addition of a handful of lines to the .bashrc file source during an interactive login."
 	echo "Common Functions"
-	echo " _mbe_loadModules <module1> <module2>... - Loads one or more modules into the current environment"
-	echo " _mbe_loadAllModules <module1> <module2>... - Loads all available modules into the current environment"
-	echo " _mbe_unloadModules <module1> <modoule2>... - Unloads one or more modules from the current environment"
-	echo " _mbe_reloadModule <module> - Reloads the specified module"
-	echo " _mbe_listLoadedModules - Lists the modules currently loaded in the environment"
-	echo " _mbe_listAllModules - Lists all modules that can be loaded"
+	echo " _mbe_activateModules <module1> <module2>... - Activates one or more modules in the current environment"
+	echo " _mbe_activateAllModules <module1> <module2>... - Activates all available modules in the current environment"
+	echo " _mbe_deactivateModules <module1> <modoule2>... - Deactivates one or more modules in the current environment"
+	echo " _mbe_reactivateModule <module> - Refreshes the specified module"
+	echo " _mbe_listActiveModules - Lists the active modules in the current environment"
+	echo " _mbe_listInactiveModules - Lists the inactive modules in the current environment"
+	echo " _mbe_listAllModules - Lists all modules in the environment"
 }
 
 ############################################################
@@ -90,18 +91,21 @@ mbe ()
 		# no-argument commands are:
 		# list
 		if [ "$1" == "list" ]; then
-			_mbe_listLoadedModules
+			_mbe_listActiveModules
 			return
 		fi
 	elif [ $# -eq 2 ]; then
 		# commands are:
-		# load <module name>
-		# unload <module name>
-		if [ "$1" == "load" ]; then
-			_mbe_loadModules $2
+		# activate <module name>
+		# deactivate <module name>
+		if [ "$1" == "activate" ]; then
+			_mbe_activateModules $2
 			return
-		elif [ "$1" == "unload" ]; then
-			_mbe_unloadModules $2
+		elif [ "$1" == "deactivate" ]; then
+			_mbe_deactivateModules $2
+			return
+		elif [ "$1" == "list" ]; then
+			_mbe_list $2
 			return
 		else
 			local module_name=$1
@@ -286,7 +290,7 @@ _mbe_checkModulesDir ()
 	# Search the modules directory for all pre-modules
 	#modules=('')
 
-	# Determine folder that contains modules to be loaded
+	# Determine folder that contains modules to be activated
 	# On Linux, readlink utility is used
 	# On other platforms, assume $HOME
 	if [ -z "${MODULES_DIR}" ]; then # If MODULES_DIR is not yet set
@@ -309,29 +313,29 @@ _mbe_checkModulesDir ()
 	fi
 }
 
-_mbe_loadModules ()
+_mbe_activateModules ()
 {
 	# Loads one or more modules into mbe
 	if (( $# < 1 )); then
-		echo "ERROR: Must provide at least 1 argument to _mbe_loadModules"
+		echo "ERROR: Must provide at least 1 argument to _mbe_activateModules"
 		return 1
 	fi
 	local newmodule newmodules
 	newmodules=( $@ )
 
 	for newmodule in "${newmodules[@]}"; do
-		_mbe_isModuleLoaded "$newmodule"
+		_mbe_isModuleActive "$newmodule"
 		if [ "$?" == "1" ]; then
-			# Module is already loaded
+			# Module is already active
 			continue
 		else
-			# Module is not yet loaded
-			DEBUG echo "_mbe_loadModule: loading $newmodule"
+			# Module is not yet active
+			DEBUG echo "_mbe_activateModule: activating $newmodule"
 			if [ -n "$MODULES_DIR" ]; then
-				DEBUG echo -e "_mbe_loadModules: source \"${MODULES_DIR}/${newmodule}/${newmodule}\""
+				DEBUG echo -e "_mbe_activateModules: source \"${MODULES_DIR}/${newmodule}/${newmodule}\""
 				source "${MODULES_DIR}/${newmodule}/${newmodule}"
 				"_${newmodule}_load"
-				MODULES_LOADED=( ${MODULES_LOADED[@]} ${newmodule} )
+				MODULES_ACTIVE=( ${MODULES_ACTIVE[@]} ${newmodule} )
 			fi
 		fi
 	done
@@ -339,52 +343,52 @@ _mbe_loadModules ()
 	return
 }
 
-_mbe_unloadModules ()
+_mbe_deactivateModules ()
 {
 	# Unloads one or more modules from mbe
 	if (( $# < 1 )); then
-		echo "ERROR: Must provide at least 1 argument to _mbe_unloadModules"
+		echo "ERROR: Must provide at least 1 argument to _mbe_deactivateModules"
 		return 1
 	fi
 	local oldmodule oldmodules
 	oldmodules=( $@ )
 
 	for oldmodule in "${oldmodules[@]}"; do
-		_mbe_isModuleLoaded "$oldmodule"
+		_mbe_isModuleActive "$oldmodule"
 		if [ "$?" == "0" ]; then
-			# Module is already unloaded
+			# Module is already active
 			continue
 		else
-			# Module is not yet unloaded
-			DEBUG echo "_mbe_unloadModules: unloading $oldmodule"
+			# Module is not yet active
+			DEBUG echo "_mbe_deactivateModules: unloading $oldmodule"
 			"_${oldmodule}_unload"
-			MODULES_LOADED=( ${MODULES_LOADED[@]/$oldmodule/} )
+			MODULES_ACTIVE=( ${MODULES_ACTIVE[@]/$oldmodule/} )
 		fi
 	done
 	_mbe_buildpath
 	return
 }
 
-_mbe_reloadModules ()
+_mbe_reactivateModules ()
 {
 	# Reloads one or more modules from mbe
 	if (( $# < 1 )); then
-		echo "ERROR: Must provide at least 1 argument to _mbe_reloadModules"
+		echo "ERROR: Must provide at least 1 argument to _mbe_reactivateModules"
 		return 1
 	fi
-	_mbe_unloadModules "$*"
-	_mbe_loadModules "$*"
+	_mbe_deactivateModules "$*"
+	_mbe_activateModules "$*"
 	return
 }
 
-_mbe_loadAllModules ()
+_mbe_activateAllModules ()
 {
 	local modules
 	modules=( $(_mbe_listAllModules) )
-	_mbe_loadModules "${modules[@]}"
+	_mbe_activateModules "${modules[@]}"
 }
 
-_mbe_isModuleLoaded ()
+_mbe_isModuleActive ()
 {
 	# $1 is the name of the module to check
 	if [ -z "$1" ]; then
@@ -393,7 +397,7 @@ _mbe_isModuleLoaded ()
 	fi
 
 	local name
-	for name in "${MODULES_LOADED[@]}"; do
+	for name in "${MODULES_ACTIVE[@]}"; do
 		if [ "$1" == "$name" ]; then
 			return 1
 		fi
@@ -401,12 +405,36 @@ _mbe_isModuleLoaded ()
 	return 0
 }
 
-_mbe_listLoadedModules ()
+_mbe_list ()
+{
+	if [ -z $1 ]; then
+		echo "Must specify all, active, or inactive"
+		return 1
+	fi
+
+	case "$1" in
+	active)
+		_mbe_listActiveModules
+		;;
+	all)
+		_mbe_listAllModules
+		;;
+	inactive)
+		_mbe_listInactiveModules
+		;;
+	esac
+}
+
+_mbe_listActiveModules ()
 {
 	local module
-	for module in "${MODULES_LOADED[@]}"; do
-		echo -e "${module}"
-	done
+	if [[ $1 == -1 ]]; then
+		for module in "${MODULES_ACTIVE[@]}"; do
+			echo "${module}"
+		done
+	else
+		echo "${MODULES_ACTIVE[@]}"
+	fi
 }
 
 _mbe_listAllModules ()
@@ -420,12 +448,40 @@ _mbe_listAllModules ()
 		#read -r -a modules <<< $(ls -1 ${MODULES_DIR})
 		modules=( ${MODULES_DIR}/* )
 		local module
+		local result=()
 		for module in "${modules[@]}"; do
 			module="${module##/*/}"
-			echo -e "$module "
+			result+=( "${module}" )
+			#echo -e "$module "
 		done
-		#echo -ne "\n"
-		#popd > /dev/null
+
+		if [[ $1 == -1 ]]; then
+			for module in "${result[@]}"; do
+				echo "${module}"
+			done
+		else
+			echo "${result[@]}"
+		fi
+	fi
+}
+
+_mbe_listInactiveModules ()
+{
+	local module
+	local result=()
+	for module in $(_mbe_listAllModules); do
+		_mbe_isModuleActive "${module}"
+		if [ $? -eq 0 ]; then
+			result+=( "${module}" )
+		fi
+	done
+
+	if [[ $1 == -1 ]]; then
+		for module in "${result[@]}"; do
+			echo "${module}"
+		done
+	else
+		echo "${result[@]}"
 	fi
 }
 
@@ -566,7 +622,7 @@ _mbe_buildpath ()
 	PATH="${ORIG_PATH}"
 
 	local module
-	for module in "${MODULES_LOADED[@]}"; do
+	for module in "${MODULES_ACTIVE[@]}"; do
 		DEBUG echo "_mbe_buildpath: _${module}_setpath"
 		_${module}_setpath
 	done

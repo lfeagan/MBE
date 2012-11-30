@@ -16,7 +16,7 @@ _ant_load ()
 {
 	DEBUG echo "_ant_load: enter"
 	# Load module dependencies
-	_mbe_loadModules "${__ant_dependencies[@]}"
+	_mbe_activateModules "${__ant_dependencies[@]}"
 
 	local module="ant"
 	# Load preferences file
@@ -139,7 +139,7 @@ _ant_config ()
 
 		# Build PATH
 		if [[ "${suppress_buildpath}" != "1" ]]; then
-			mbe_buildpath
+			_mbe_buildpath
 		fi
 	fi
 }

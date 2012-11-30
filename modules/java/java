@@ -27,7 +27,7 @@ export __java_javadir="Java"
 _java_load ()
 {
 	# Load module dependencies
-	_mbe_loadModules "${__java_dependencies[@]}"
+	_mbe_activateModules "${__java_dependencies[@]}"
 	local module="java"
 	# Load preferences
 	source "${MODULES_DIR}/${module}/${module}.conf"

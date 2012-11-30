@@ -16,7 +16,7 @@ __informix_functions=( '_informix_load' '_informix_unload' '_informix_setpath' \
 _informix_load ()
 {
 	# Load module dependencies
-	_mbe_loadModules "${__informix_dependencies[@]}"
+	_mbe_activateModules "${__informix_dependencies[@]}"
 	local module="informix"
 	# Load preferences
 	source "${MODULES_DIR}/${module}/${module}.conf"
@@ -320,7 +320,7 @@ csdkconfig ()
 		export IFX_DOCSDK=1
 		export IFX_DOIDS=0
 		_informix_log csdkconfig "$*"
-		mbe_buildpath
+		_mbe_buildpath
 	else
 		echo "ERROR: ${CSDK_PATH} does not exist"
 	fi
@@ -866,7 +866,7 @@ idsconfig ()
 		export IFX_DOCSDK=0
 		export IFX_DOIDS=1
 		_informix_log idsconfig "$*"
-		mbe_buildpath
+		_mbe_buildpath
 	else # Otherwise, cleanup things
 		echo "ERROR: Directory ${IDS_PATH} does not exist"
 	fi
@@ -927,7 +927,7 @@ ifxchrepobase ()
 		return 1
 	fi
 
-	mbe_buildpath
+	_mbe_buildpath
 	_informix_log ifxchrepobase "$*"
 }
 
