@@ -40,8 +40,8 @@ fi
 ################################
 export MBE_DIR="${HOME}/.mbe"
 export MODULES_DIR="${MBE_DIR}/modules"
-export MODULES_LOAD=("mbe" "platform" "utils" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "maven" "informix" )
-# Loaded modules are stored in MODULES_LOADED
+export MODULES_INIT=("mbe" "platform" "utils" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "maven" "informix" )
+# Loaded modules are stored in MODULES_ACTIVE
 
 source "${MODULES_DIR}/mbe/mbe.conf"
 
@@ -50,14 +50,14 @@ source "${MODULES_DIR}/mbe/mbe.conf"
 ##################################
 # Define the storage location for the modules
 # export MODULES_DIR="${HOME}/.mbe/modules"
-# Specify the modules to be loaded
-# export MODULES_LOAD=("mbe" "platform" )
+# Specify the modules to be activated
+# export MODULES_INIT=("mbe" "platform" )
 
-# Bootstrap by manually loading the mbe module, the others can be done automatically
+# Bootstrap by manually activating the mbe module, the others can be done automatically
 . "${MODULES_DIR}/mbe/mbe"
 _mbe_load
 # Load the modules specified in the preferences file
-_mbe_loadModules "${MODULES_LOAD[@]}"
+_mbe_activateModules "${MODULES_INIT[@]}"
 
 #######################
 # ##### GENERAL ##### #
