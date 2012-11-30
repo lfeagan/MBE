@@ -19,7 +19,7 @@ _eclipse_load ()
 {
 	DEBUG echo "eclipse_load: enter"
 	# Load module dependencies
-	_mbe_loadModules "${__eclipse_dependencies[@]}"
+	_mbe_activateModules "${__eclipse_dependencies[@]}"
 
 	local module="eclipse"
 	# Load preferences file
@@ -240,6 +240,24 @@ _eclipse_config ()
 		ECLIPSE_HOME=""
 		return 1
 	fi
+}
+
+_eclipse_list()
+{
+	usage ()
+	{
+		echo "Usage: _eclipse_list <versions>"
+	}
+
+	case "$1" in
+	versions)
+		_eclipse_listVersions
+		;;
+	*)
+		echo "Unrecognized option"
+		return 1
+		;;
+	esac
 }
 
 _eclipse_listVersions ()

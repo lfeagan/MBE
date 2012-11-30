@@ -8,16 +8,16 @@ _mbe_complete()
 	COMPREPLY=( )
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
-	opts="list load unload version `_mbe_listLoadedModules`"
+	opts="list activate deactivate version `_mbe_listActiveModules`"
 
-	# Determine if the first argument is a loaded module
+	# Determine if the first argument is an enabled module
 	# and define module to be the module's name
 	if [ "${COMP_CWORD}" -gt 0 ]; then
 		module="${COMP_WORDS[1]}"
 		if [ -z "${module}" ]; then
 			module=""
 		else
-			_mbe_isModuleLoaded "${module}"
+			_mbe_isModuleActive "${module}"
 			retval=$?
 			if [ $retval -ne 1 ]; then
 				module=""
@@ -31,17 +31,17 @@ _mbe_complete()
 	elif [ -z "${module}" ]; then
 		case "${prev}" in
 			list)
-				COMPREPLY=( loaded all )
+				COMPREPLY=( $(compgen -W "all active inactive" -- ${cur}) )
 				return 0
 				;;
-			load)
-				local loaded=`_mbe_listAllModules`
-				COMPREPLY=( $(compgen -W "${loaded}" -- ${cur})  )
+			activate)
+				local disabled=`_mbe_listInactiveModules`
+				COMPREPLY=( $(compgen -W "${disabled}" -- ${cur})  )
 				return 0
 				;;
-			unload)
-				local loaded=`_mbe_listLoadedModules`
-				COMPREPLY=( $(compgen -W "${loaded}" -- ${cur})  )
+			deactivate)
+				local enabled=`_mbe_listActiveModules`
+				COMPREPLY=( $(compgen -W "${enabled}" -- ${cur})  )
 				return 0
 				;;
 		esac
@@ -55,7 +55,7 @@ _mbe_complete()
 		COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 		return 0
 	else
-		local loaded=`_mbe_listLoadedModules`
+		local enabled=`_mbe_listActiveModules`
 		_eclipse_complete
 	fi
 
