@@ -52,6 +52,25 @@ _colors_setpath ()
 	local module="colors"
 }
 
+_colors_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="list"
+
+	#echo -e "\nvars: $prev , $cur"
+
+	case "${prev}" in
+		list)
+			COMPREPLY=( )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
+}
+
 _colors_define ()
 {
 	# color_name='\[\033[ modifier; color_code m\]'
@@ -117,10 +136,31 @@ _colors_undefine ()
 			 __colors_grey_back
 }
 
-
-_colors_complete()
+_colors_list ()
 {
-	COMPREPLY=( )
-	return 0
+	echo -ne "__colors_restore
+__colors_black
+__colors_firebrick
+__colors_red
+__colors_forest
+__colors_green
+__colors_brown
+__colors_yellow
+__colors_navy
+__colors_blue
+__colors_purple
+__colors_magenta
+__colors_cadet
+__colors_cyan
+__colors_gray
+__colors_white
+__colors_std
+__colors_usr
+__colors_red_back
+__colors_green_back
+__colors_orange_back
+__colors_blue_back
+__colors_purple_back
+__colors_cyan_back
+__colors_grey_back\n"
 }
-
