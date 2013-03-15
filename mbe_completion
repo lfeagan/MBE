@@ -7,13 +7,26 @@ _mbe_complete()
 #	local cur prev opts base module
 	COMPREPLY=( )
 	cur="${COMP_WORDS[COMP_CWORD]}"
-	prev="${COMP_WORDS[COMP_CWORD-1]}"
+	if [ ${COMP_CWORD} -ge 2 ]; then
+		prev="${COMP_WORDS[COMP_CWORD-1]}"
+	else
+		prev=""
+	fi
 	opts="list activate deactivate version `_mbe_listActiveModules`"
+
+	# The command structure is: mbe <module> <function> [<arg1> <arg2> ...]
+	# COMP_CWORD == 0 --> is always 'mbe'
+	# COMP_CWORD == 1 --> the module name
+	# COMP_CWORD == 2 --> the module function (action)
+	# COMP_CWORD >= 3 --> arguments passed to the module function
 
 	# Determine if the first argument is an enabled module
 	# and define module to be the module's name
-	if [ "${COMP_CWORD}" -gt 0 ]; then
+	# define module_function to be the name of the function being called in the module
+	if [ "${COMP_CWORD}" -ge 1 ]; then
 		module="${COMP_WORDS[1]}"
+#		echo -e "\nword: ${COMP_CWORD}"
+#		echo -e "\nmodule: ${module}"
 		if [ -z "${module}" ]; then
 			module=""
 		else
@@ -21,6 +34,12 @@ _mbe_complete()
 			retval=$?
 			if [ $retval -ne 1 ]; then
 				module=""
+			else
+				if [ ${COMP_CWORD} -ge 2 ]; then
+					module_function="${COMP_WORDS[2]}"
+				else
+					module_function=""
+				fi
 			fi
 		fi
 	fi
@@ -64,9 +83,53 @@ _mbe_complete()
 }
 complete -F _mbe_complete mbe
 
-_module_complete()
+# Determines the flag that have yet to be added as arguments
+# Takes no arguments but instead requires the variable _mbe_functionFlags be set.
+# return : 0 if successful, otherwise 1
+# echo : prints a string with the flags that have not yet been passed
+_mbe_getRemainingConfigFlags ()
 {
-	echo foo
+	local result=""
+
+	if [ -z "${_mbe_functionFlags}" ]; then
+		echo $result
+		return 1
+	fi
+
+	for flag in "${_mbe_functionFlags[@]}"; do
+		_mbe_compWordsContains "${flag}"
+		if [ $? -eq 1 ]; then
+			result="$result$flag "
+#			echo -e "\nadding $flag" >&2
+		fi
+	done
+	echo $result
+	return 0
+}
+
+# Determines if the COMP_WORDS array contains a string
+# Takes one or two arguments
+# arg1 : the string to find (typically a flag)
+# arg2 : optional, the array index to begin the search at, defaults to 3 for use in function argument checking
+# return : 0 if the string is found, otherwise 1
+# exceptions : if no arguments are specified, returns 1
+_mbe_compWordsContains ()
+{
+	if [ -z "$1" ]; then
+		return 1
+	fi
+	local idx="3"
+	if [[ -n ${2} && ( ${2} -ge 0 ) ]]; then
+		idx="${2}"
+	fi
+	while [ "$idx" -lt "$COMP_CWORD" ]; do
+		local arg="${COMP_WORDS[idx]}"
+		if [ $arg = $1 ]; then
+			return 0
+		fi
+		let idx+=1
+	done
+	return 1
 }
 
 #_mbe_listAllCommands()

@@ -15,6 +15,9 @@ __eclipse_functions=(_eclipse_load _eclipse_unload _eclipse_setpath _eclipse_set
 # ECLIPSE_JAVA_VERSION
 # ECLIPSE_JAVA_BITS
 
+_eclipse_localesArray=( cs de es fr hu it ja ko pl pt_BR ru sk zh zh_TW )
+_eclipse_localesString="cs de es fr hu it ja ko pl pt_BR ru sk zh zh_TW"
+
 _eclipse_load ()
 {
 	DEBUG echo "eclipse_load: enter"
@@ -112,24 +115,89 @@ _eclipse_complete()
 {
 	local opts
 	COMPREPLY=( )
-	opts="cd cdworkspace config env list run"
 
-	case "${prev}" in
+	if [ $COMP_CWORD -eq 2 ]; then
+		funcs="cd cdworkspace config env list run"
+		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		return 0
+	fi
+
+#echo "$module_function"
+
+	case "${module_function}" in
 		cd|cdworkspace|env)
 			COMPREPLY=( )
 			return 0
 			;;
-		config|run)
-			local config_opts="-p -v -b -c -j -n"
-			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+		list)
+			COMPREPLY=( versions )
 			return 0
 			;;
+		config|run)
+			# when previous is the function, list the possible flags
+			# when previous is a flag, generate possible flag arguments
+			case "${prev}" in
+#				config|run)
+#					local config_opts="-p -v -b -c -j -n "
+#					COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+#					return 0
+#					;;
+				-b)
+					local bits="32 64"
+					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					return 0
+					;;
+				-c)
+					local creators="$(_java_listCreators)"
+					COMPREPLY=( $(compgen -W "${creators}" -- ${cur})  )
+					return 0
+					;;
+				-j)
+					local versions="$(_java_listVersions)"
+					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					return 0
+					;;
+				-n)
+					COMPREPLY=( $(compgen -W "${_eclipse_localesString}" -- ${cur})  )
+					return 0
+					;;
+				-p)
+					local products="Eclipse"
+					COMPREPLY=( $(compgen -W "${products}" -- ${cur})  )
+					return 0
+					;;
+				-v)
+					local versions="$(_eclipse_listVersions)"
+					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					return 0
+					;;
+				*)
+					_mbe_functionFlags=( '-p' '-v' '-b' '-c' '-j' '-n' )
+					local flags="$(_mbe_getRemainingConfigFlags)"
+					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					return 0
+					;;
+			esac
 		esac
 
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	COMPREPLY=( )
 	return 0
 }
 
+#	local flags="$(_eclipse_remainingConfigFlags)"
+#_eclipse_remainingConfigFlags ()
+#{
+#	local flagsArray=( '-p' '-v' '-b' '-c' '-j' '-n' )
+#	local result=""
+#	for flag in "${flagsArray[@]}"; do
+#		_mbe_compWordsContains "${flag}"
+#		if [ $? -eq 1 ]; then
+#			result="$result $flag"
+##			echo -e "\nadding $flag" >&2
+#		fi
+#	done
+#	echo $result
+#}
 
 _eclipse_env ()
 {
@@ -212,23 +280,27 @@ _eclipse_config ()
 	ECLIPSE_VMARGS="-vmargs -Xmx512M -Xms192M"
 
 	if ${ECLIPSE_SHOW_LOCATION}; then
-		ECLIPSE_ARGS="${ECLIPSE_ARGS} -showlocation"
+		ECLIPSE_ARGS+=" -showlocation"
 	fi
+
+#	if [ "${KERNELNAME}" == "Darwin" ]; then
+#		ECLIPSE_VMARGS+=" -XX:+UseFileLocking"
+#	fi
 
 	# Enable Large Pages
 	if [ "${ECLIPSE_JAVA_USELARGEPAGES}" ]; then
 		if [[ "${ECLIPSE_JAVA_CREATOR}" == "IBM" && "${ECLIPSE_JAVA_VERSION}" == "1.6.0" ]]; then
 			# Enable compressed references on 64-bit
 			# Disable the attach handler thread
-			ECLIPSE_VMARGS="${ECLIPSE_VMARGS} -Xlp -Xcompressedrefs -Dcom.ibm.tools.attach.enable=no"
+			ECLIPSE_VMARGS+=" -Xlp -Xcompressedrefs -Dcom.ibm.tools.attach.enable=no"
 		fi
 		if [[ "${ECLIPSE_JAVA_CREATOR}" == "Sun" ]]; then
-			ECLIPSE_VMARGS="${ECLIPSE_VMARGS} -XX:+UseLargePages -XX:+UseCompressedOops"
+			ECLIPSE_VMARGS+=" -XX:+UseLargePages -XX:+UseCompressedOops"
 		fi
 	fi
 
 	if [[ "${KERNELTYPE}" == "Linux" && "${CPUTYPE}" == ppc* ]]; then
-		ECLIPSE_ARGS="${ECLIPSE_ARGS} -Dosgi.locking=non -Xnojit"
+		ECLIPSE_ARGS+=" -Dosgi.locking=non -Xnojit"
 	fi
 
 	ECLIPSE_ARGS="${ECLIPSE_ARGS} ${ECLIPSE_VMARGS}"
