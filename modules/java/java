@@ -66,30 +66,72 @@ _java_usage ()
 
 _java_complete()
 {
-	local opts
 	COMPREPLY=( )
-	opts="config env list"
 
-	case "${prev}" in
-		env)
-			local env_opts="-i -p -h"
-			COMPREPLY=( $(compgen -W "${env_opts}" -- ${cur})  )
-			return 0
-			;;
-		list)
-			local list_opts="versions creators"
-			COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
+	if [ $COMP_CWORD -eq 2 ]; then
+		opts="config env list"
+		funcs="cd config env list"
+		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		return 0
+	fi
+
+	case "${module_function}" in
+		cd)
+			COMPREPLY=( )
 			return 0
 			;;
 		config)
-			local config_opts="-c -v -b"
-			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+			# when previous is the function, list the possible flags
+			# when previous is a flag, generate possible flag arguments
+			case "${prev}" in
+				-b)
+					local bits="32 64"
+					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					return 0
+					;;
+				-c)
+					local creators="$(_java_listCreators)"
+					COMPREPLY=( $(compgen -W "${creators}" -- ${cur})  )
+					return 0
+					;;
+				-v)
+					local versions="$(_java_listVersions)"
+					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					return 0
+					;;
+			config|*)
+					# flags are: "-b -c -h -v "
+					_mbe_functionFlags=( '-b' '-c' '-h' '-v' )
+					local flags="$(_mbe_getRemainingConfigFlags)"
+					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					return 0
+					;;
+			esac
+			;;
+		env)
+			_mbe_functionFlags=( '-i' '-h' '-p' )
+			local flags="$(_mbe_getRemainingConfigFlags)"
+			COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
 			return 0
+			;;
+		list)
+			if [ "$prev" = "list" ]; then
+				local list_opts="versions creators"
+				COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
+				return 0
+			else
+				COMPREPLY=( )
+			fi
 			;;
 		esac
 
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	COMPREPLY=( )
 	return 0
+}
+
+_java_cd ()
+{
+	cd "${JAVA_HOME}"
 }
 
 _java_buildjavahomestring ()
