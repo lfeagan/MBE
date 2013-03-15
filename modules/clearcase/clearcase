@@ -59,6 +59,38 @@ _clearcase_usage ()
 	echo "no usage info"
 }
 
+_clearcase_complete()
+{
+	local opts
+	COMPREPLY=( )
+	opts="cdview myviews"
+
+	case "${prev}" in
+		cdview|myviews)
+			COMPREPLY=( )
+			return 0
+			;;
+		codir)
+			local config_opts="-p -v -b -c -j -n"
+			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+			return 0
+			;;
+		esac
+
+	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	return 0
+}
+
+_clearcase_cdview ()
+{
+	echo "Not yet implemented"
+}
+
+_clearcase_myviews ()
+{
+	cleartool lsview "$@" |grep ${USER}
+}
+
 ct ()
 {
 	cleartool "$@"
@@ -72,11 +104,6 @@ csv ()
 prediff ()
 {
 	cleartool diff -diff -pre "$@"
-}
-
-myviews ()
-{
-	cleartool lsview "$@" |grep ${USER}
 }
 
 codir ()
@@ -122,11 +149,5 @@ codir ()
 	else
 		find "$checkout_path" | xargs "$xargs_args" cleartool -c "$checkout_comment" {}
 	fi
-}
-
-_clearcase_complete()
-{
-	COMPREPLY=( )
-	return 0
 }
 
