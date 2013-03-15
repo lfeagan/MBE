@@ -113,7 +113,6 @@ _eclipse_usage ()
 
 _eclipse_complete()
 {
-	local opts
 	COMPREPLY=( )
 
 	if [ $COMP_CWORD -eq 2 ]; then
@@ -121,8 +120,6 @@ _eclipse_complete()
 		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
 		return 0
 	fi
-
-#echo "$module_function"
 
 	case "${module_function}" in
 		cd|cdworkspace|env)
@@ -137,11 +134,6 @@ _eclipse_complete()
 			# when previous is the function, list the possible flags
 			# when previous is a flag, generate possible flag arguments
 			case "${prev}" in
-#				config|run)
-#					local config_opts="-p -v -b -c -j -n "
-#					COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
-#					return 0
-#					;;
 				-b)
 					local bits="32 64"
 					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
@@ -171,13 +163,15 @@ _eclipse_complete()
 					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
 					return 0
 					;;
-				*)
+				config|run|*)
+					# flags are: "-p -v -b -c -j -n "
 					_mbe_functionFlags=( '-p' '-v' '-b' '-c' '-j' '-n' )
 					local flags="$(_mbe_getRemainingConfigFlags)"
 					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
 					return 0
 					;;
 			esac
+			;;
 		esac
 
 	COMPREPLY=( )
