@@ -33,7 +33,6 @@ _ant_load ()
 
 	DEBUG echo "_ant_load: leave"
 	return 0
-
 }
 
 _ant_unload ()
@@ -54,7 +53,7 @@ _ant_setpath ()
 		PATH="${ANT_HOME}/bin:${PATH}"
 		#CLASSPATH="${ANT_HOME}/lib:${CLASSPATH}"
 		export ANT_OPTS="-Xms128m -Xmx512m -XX:MaxPermSize=128M"
-		export JAVA_HOME
+		export ANT_HOME
 	fi
 }
 
@@ -72,6 +71,14 @@ _ant_env ()
 	echo "ANT_JAVA_CREATOR=${ANT_JAVA_CREATOR}"
 	echo "ANT_JAVA_VERSION=${ANT_JAVA_VERSION}"
 	echo "ANT_JAVA_BITS=${ANT_JAVA_BITS}"
+}
+
+_ant_cd()
+{
+	if [ -z "${ANT_HOME}" ]; then
+		_ant_config
+	fi
+	cd "${ANT_HOME}"
 }
 
 _ant_config ()
@@ -144,6 +151,69 @@ _ant_config ()
 	fi
 }
 
+_ant_complete()
+{
+	COMPREPLY=( )
+
+	if [ $COMP_CWORD -eq 2 ]; then
+		funcs="cd config env list"
+		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		return 0
+	fi
+
+	case "${module_function}" in
+		cd|env)
+			COMPREPLY=( )
+			return 0
+			;;
+		list)
+			COMPREPLY=( versions )
+			return 0
+			;;
+		config|run)
+			# when previous is the function, list the possible flags
+			# when previous is a flag, generate possible flag arguments
+			case "${prev}" in
+				-b)
+					local bits="32 64"
+					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					return 0
+					;;
+				-c)
+					local creators="$(_java_listCreators)"
+					COMPREPLY=( $(compgen -W "${creators}" -- ${cur})  )
+					return 0
+					;;
+				-j)
+					local versions="$(_java_listVersions)"
+					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					return 0
+					;;
+				-p)
+					local products="apache-ant"
+					COMPREPLY=( $(compgen -W "${products}" -- ${cur})  )
+					return 0
+					;;
+				-v)
+					local versions="$(_ant_listVersions)"
+					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					return 0
+					;;
+				config|run|*)
+					# flags are: "-b -c -j -n -p -v "
+					_mbe_functionFlags=( '-b' '-c' '-j' '-p' '-v' )
+					local flags="$(_mbe_getRemainingConfigFlags)"
+					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					return 0
+					;;
+			esac
+			;;
+		esac
+
+	COMPREPLY=( )
+	return 0
+}
+
 _ant_list()
 {
 	usage ()
@@ -169,7 +239,7 @@ _ant_listVersions ()
 	usage ()
 	{
 		echo "Usage: _ant_listVersions [-p <product>]"
-		echo " Searches and lists the available Eclipse versions for a particular product."
+		echo " Searches and lists the available Ant versions for a particular product."
 	}
 
 	# parse arguments with getopts
@@ -201,29 +271,3 @@ _ant_listVersions ()
 	echo "${versions[@]}"
 }
 
-_ant_complete()
-{
-	local opts
-	COMPREPLY=( )
-	opts="config env list"
-
-	case "${prev}" in
-		env)
-			COMPREPLY=( )
-			return 0
-			;;
-		list)
-			local list_opts="versions"
-			COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
-			return 0
-			;;
-		config)
-			local config_opts="-p -v -j -c -b -n"
-			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
-			return 0
-			;;
-		esac
-
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-	return 0
-}
