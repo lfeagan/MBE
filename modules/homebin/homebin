@@ -50,8 +50,8 @@ _homebin_unload ()
 _homebin_setpath ()
 {
 	# Add in the bin folder in my home directory
-	if [ -e $HOME/bin ]; then
-		PATH=$HOME/bin:$PATH
+	if [ -e "${HOME}/bin" ]; then
+		PATH="${HOME}/bin:${PATH}"
 	fi
 }
 

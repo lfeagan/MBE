@@ -62,3 +62,9 @@ _brlcad_usage ()
 {
 	echo "no usage info"
 }
+
+_brlcad_complete ()
+{
+	COMPREPLY=( )
+	return 0
+}

@@ -25,7 +25,7 @@
 ############################################################
 
 __developer_dependencies=( 'mbe' 'platform' )
-__developer_functions=( '_developer_load' '_developer_unload' '_developer_setpath' )
+__developer_functions=( '_developer_load' '_developer_unload' '_developer_setpath' '_developer_complete' )
 
 _developer_load ()
 {

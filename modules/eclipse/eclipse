@@ -164,8 +164,8 @@ _eclipse_complete()
 					return 0
 					;;
 				config|run|*)
-					# flags are: "-p -v -b -c -j -n "
-					_mbe_functionFlags=( '-p' '-v' '-b' '-c' '-j' '-n' )
+					# flags are: "-b -c -j -n -p -v "
+					_mbe_functionFlags=( '-b' '-c' '-j' '-n' '-p' '-v' )
 					local flags="$(_mbe_getRemainingConfigFlags)"
 					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
 					return 0
