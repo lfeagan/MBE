@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __gcc_dependencies=( 'mbe' )
-__gcc_functions=( '_gcc_load' '_gcc_unload' '_gcc_setpath' '_gcc_usage' '_gcc_complete' )
+__gcc_functions=( '_gcc_load' '_gcc_unload' '_gcc_setpath' '_gcc_info' '_gcc_complete' )
 
 _gcc_load ()
 {
@@ -53,9 +53,9 @@ _gcc_setpath ()
 	fi
 }
 
-_gcc_usage ()
+_gcc_info ()
 {
-	echo "no usage info"
+	echo "Configures the GNU C compiler"
 }
 
 _gcc_complete()

@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __icscope2_dependencies=( 'mbe' )
-__icscope2_functions=( '_icscope2_load' '_icscope2_unload' '_icscope2_setpath' '_icscope2_usage' 'icscope2_complete' )
+__icscope2_functions=( '_icscope2_load' '_icscope2_unload' '_icscope2_setpath' '_icscope2_info' 'icscope2_complete' )
 
 _icscope2_load ()
 {
@@ -50,9 +50,9 @@ _icscope2_setpath ()
 	fi
 }
 
-_icscope2_usage ()
+_icscope2_info ()
 {
-	echo "no usage info"
+	echo "Configures the Informix cscope suite (a ClearCase/Informix version aware framework for cscope access)"
 }
 
 _icscope2_complete()

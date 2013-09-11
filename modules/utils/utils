@@ -30,7 +30,7 @@
 # %s/utils/newname/gc
 
 __utils_dependencies=( 'mbe' 'platform' )
-__utils_functions=( '_utils_load' '_utils_unload' '_utils_setpath' '_utils_usage' '_utils_complete' 'trimdirs' )
+__utils_functions=( '_utils_load' '_utils_unload' '_utils_setpath' '_utils_info' '_utils_complete' 'trimdirs' )
 
 _utils_load ()
 {
@@ -58,9 +58,9 @@ _utils_setpath ()
 	echo -ne ""
 }
 
-_utils_usage ()
+_utils_info ()
 {
-	echo -ne ""
+	echo "bash shell utility functions"
 }
 
 trimdirs ()

@@ -30,7 +30,7 @@
 # %s/userid/newname/gc
 
 __userid_dependencies=( 'mbe' )
-__userid_functions=( '_userid_load' '_userid_unload' '_userid_setpath' '_userid_usage' 'ur' )
+__userid_functions=( '_userid_load' '_userid_unload' '_userid_setpath' '_userid_info' 'ur' )
 
 _userid_load ()
 {
@@ -58,9 +58,9 @@ _userid_setpath ()
 	DEBUG echo -n ""
 }
 
-_userid_usage ()
+_userid_inf ()
 {
-	echo "no usage info"
+	echo "Configures the Informix userid executable"
 }
 
 ur ()

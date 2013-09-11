@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __ibmxlc_dependencies=( 'mbe' )
-__ibmxlc_functions=( '_ibmxlc_load' '_ibmxlc_unload' '_ibmxlc_setpath' '_ibmxlc_usage' '_ibmxlc_complete' )
+__ibmxlc_functions=( '_ibmxlc_load' '_ibmxlc_unload' '_ibmxlc_setpath' '_ibmxlc_info' '_ibmxlc_complete' )
 
 _ibmxlc_load ()
 {
@@ -50,9 +50,9 @@ _ibmxlc_setpath ()
 	fi
 }
 
-_ibmxlc_usage ()
+_ibmxlc_info ()
 {
-	echo "no usage info"
+	echo "Configures the IBM XL C/C++ Compiler"
 }
 
 _ibmxlc_complete()

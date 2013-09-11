@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __intelcc_dependencies=( 'mbe' )
-__intelcc_functions=( '_intelcc_load' '_intelcc_unload' '_intelcc_setpath' '_intelcc_usage' '_intelcc_complete' )
+__intelcc_functions=( '_intelcc_load' '_intelcc_unload' '_intelcc_setpath' '_intelcc_info' '_intelcc_complete' )
 
 _intelcc_load ()
 {
@@ -60,9 +60,9 @@ _intelcc_setpath ()
 	fi
 }
 
-_intelcc_usage ()
+_intelcc_info ()
 {
-	echo "no usage info"
+	echo "Configures the Intel C/C++ Compiler Suite"
 }
 
 _intelcc_complete()

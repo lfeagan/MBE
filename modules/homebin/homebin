@@ -24,7 +24,7 @@
 ###############################################################################
 
 __homebin_dependencies=( 'mbe' )
-__homebin_functions=( '_homebin_load' '_homebin_unload' '_homebin_setpath' '_homebin_usage' '_homebin_complete' )
+__homebin_functions=( '_homebin_load' '_homebin_unload' '_homebin_setpath' '_homebin_info' '_homebin_complete' )
 
 _homebin_load ()
 {
@@ -55,9 +55,9 @@ _homebin_setpath ()
 	fi
 }
 
-_homebin_usage ()
+_homebin_info ()
 {
-	echo "no usage info"
+	echo -e "adds \$HOME/bin to \$PATH"
 }
 
 _homebin_complete()

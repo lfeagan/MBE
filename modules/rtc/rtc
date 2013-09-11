@@ -30,7 +30,7 @@
 # %s/rtc/newname/gc
 
 __rtc_dependencies=( 'mbe' )
-__rtc_functions=( '_rtc_load' '_rtc_unload' '_rtc_setpath' '_rtc_usage' '_rtc_loadWorkspace' '_rtc_complete' )
+__rtc_functions=( '_rtc_load' '_rtc_unload' '_rtc_setpath' '_rtc_info' '_rtc_loadWorkspace' '_rtc_complete' )
 
 _rtc_load ()
 {
@@ -58,9 +58,9 @@ _rtc_setpath ()
 	echo -ne ""
 }
 
-_rtc_usage ()
+_rtc_info ()
 {
-	echo -ne ""
+	echo "Configures IBM Rational Team Concert's Command-Line SCM Tools"
 }
 
 _rtc_complete()
@@ -111,8 +111,6 @@ _rtc_config ()
 	fi
 
 	version="${version-$JAVA_VERSION}"
-
-
 
 	RTC_SCMTOOLS_DIR="/mnt/xfs0/software_repo/Linux/IBM/Rational/TeamConcert/2.0.0.1/jazz/scmtools/eclipse"
 	RTC_TARGET_DIR="/tmp/Workspace_Derby"

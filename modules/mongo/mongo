@@ -69,8 +69,7 @@ _mongo_setpath ()
 
 _mongo_info ()
 {
-	echo ""
-
+	echo "Configures Mongo DB"
 }
 
 _mongo_env()

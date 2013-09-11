@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __cscope_dependencies=( 'mbe' )
-__cscope_functions=( '_cscope_load' '_cscope_unload' '_cscope_setpath' '_cscope_usage' '_cscope_complete' )
+__cscope_functions=( '_cscope_load' '_cscope_unload' '_cscope_setpath' '_cscope_info' '_cscope_complete' )
 
 _cscope_load ()
 {
@@ -50,9 +50,9 @@ _cscope_setpath ()
 	export VPATH="" # Colon-separated list of directories to search. If not set, cscope searches only in the current directory.
 }
 
-_cscope_usage ()
+_cscope_info ()
 {
-	echo "no usage info"
+	echo "configures cscope"
 }
 
 _cscope_complete()

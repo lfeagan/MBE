@@ -25,7 +25,7 @@
 ###############################################################################
 
 __sbin_dependencies=( 'mbe' )
-__sbin_functions=( '_sbin_load' '_sbin_unload' '_sbin_setpath' '_sbin_usage' '_sbin_complete' )
+__sbin_functions=( '_sbin_load' '_sbin_unload' '_sbin_setpath' '_sbin_info' '_sbin_complete' )
 
 _sbin_load ()
 {
@@ -59,9 +59,10 @@ _sbin_setpath ()
 	done
 }
 
-_sbin_usage ()
+_sbin_info ()
 {
-	echo "no usage info"
+	echo "Configures various "sbin" paths"
+	echo "Directories processed include: /sbin, /usr/sbin, /usr/local/sbin, and /opt/local/sbin"
 }
 
 _sbin_complete()

@@ -25,7 +25,7 @@
 ###############################################################################
 
 __brlcad_dependencies=( 'mbe' )
-__brlcad_functions=( '_brlcad_load' '_brlcad_unload' '_brlcad_setpath' '_brlcad_usage' '_brlcad_complete' )
+__brlcad_functions=( '_brlcad_load' '_brlcad_unload' '_brlcad_setpath' '_brlcad_info' '_brlcad_complete' )
 
 _brlcad_load ()
 {
@@ -58,9 +58,9 @@ _brlcad_setpath ()
 	fi
 }
 
-_brlcad_usage ()
+_brlcad_info ()
 {
-	echo "no usage info"
+	echo "Configures US ARMY BRLCAD Design Program"
 }
 
 _brlcad_complete ()

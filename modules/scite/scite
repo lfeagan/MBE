@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __scite_dependencies=( 'mbe' )
-__scite_functions=( '_scite_load' '_scite_unload' '_scite_setpath' '_scite_usage' '_scite_compete')
+__scite_functions=( '_scite_load' '_scite_unload' '_scite_setpath' '_scite_info' '_scite_compete')
 
 _scite_load ()
 {
@@ -49,9 +49,9 @@ _scite_setpath ()
 	fi
 }
 
-_scite_usage ()
+_scite_info ()
 {
-	echo "no usage info"
+	echo "Configures the path to the SciTE editor"
 }
 
 _scite_complete()

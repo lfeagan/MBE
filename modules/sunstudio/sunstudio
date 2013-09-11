@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __sunstudio_dependencies=( 'mbe' )
-__sunstudio_functions=( '_sunstudio_load' '_sunstudio_unload' '_sunstudio_setpath' '_sunstudio_usage' '_sunstudio_complete' )
+__sunstudio_functions=( '_sunstudio_load' '_sunstudio_unload' '_sunstudio_setpath' '_sunstudio_info' '_sunstudio_complete' )
 
 _sunstudio_load ()
 {
@@ -63,9 +63,9 @@ _sunstudio_setpath ()
 	fi
 }
 
-_sunstudio_usage ()
+_sunstudio_info ()
 {
-	echo "no usage info"
+	echo "Configures paths for Sun Studio development tools."
 }
 
 _sunstudio_complete()

@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __vim_dependencies=( 'mbe' )
-__vim_functions=( '_vim_load' '_vim_unload' '_vim_setpath' '_vim_usage' '_vim_complete')
+__vim_functions=( '_vim_load' '_vim_unload' '_vim_setpath' '_vim_info' '_vim_complete')
 
 _vim_load ()
 {
@@ -50,9 +50,9 @@ _vim_setpath ()
 	fi
 }
 
-vim_usage ()
+vim_info ()
 {
-	echo "no usage info"
+	echo "Configures GNU ViM"
 }
 
 _vim_complete()

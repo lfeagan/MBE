@@ -25,7 +25,7 @@
 ###############################################################################
 
 __usrlocalbin_dependencies=( 'mbe' )
-__usrlocalbin_functions=( '_usrlocalbin_load' '_usrlocalbin_unload' '_usrlocalbin_setpath' '_usrlocalbin_usage' '_usrlocalbin_complete' )
+__usrlocalbin_functions=( '_usrlocalbin_load' '_usrlocalbin_unload' '_usrlocalbin_setpath' '_usrlocalbin_info' '_usrlocalbin_complete' )
 
 _usrlocalbin_load ()
 {
@@ -66,9 +66,10 @@ _usrlocalbin_setpath ()
 	done
 }
 
-_usrlocalbin_usage ()
+_usrlocalbin_info ()
 {
-	echo "no usage info"
+	echo "Adds /usr and /opt directories to PATH, MANPATH, and LD_LIBRARY_PATH"
+	echo "Directories processed include: /usr, /usr/local, /usr/share, /opt/local, and /opt/freeware"
 }
 
 _usrlocalbin_complete()

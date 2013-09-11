@@ -30,7 +30,7 @@
 # %s/xcode/newname/gc
 
 __xcode_dependencies=( 'mbe' )
-__xcode_functions=( '_xcode_load' '_xcode_unload' '_xcode_setpath' '_xcode_usage' '_xcode_complete' )
+__xcode_functions=( '_xcode_load' '_xcode_unload' '_xcode_setpath' '_xcode_info' '_xcode_complete' )
 
 _xcode_load ()
 {
@@ -62,8 +62,9 @@ _xcode_setpath ()
 	fi
 }
 
-_xcode_usage ()
+_xcode_info ()
 {
+	echo "Configures Apple XCode"
 	echo "XCode module has no special commands or configuration at this time"
 }
 

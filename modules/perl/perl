@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __perl_dependencies=( 'mbe' )
-__perl_functions=( '_perl_load' '_perl_unload' '_perl_setpath' '_perl_usage' '_perl_complete' )
+__perl_functions=( '_perl_load' '_perl_unload' '_perl_setpath' '_perl_info' '_perl_complete' )
 
 _perl_load ()
 {
@@ -93,9 +93,9 @@ _perl_setpath ()
 		fi
 }
 
-_perl_usage ()
+_perl_info ()
 {
-	echo "no usage info"
+	echo "Configures Perl"
 }
 
 _perl_complete()

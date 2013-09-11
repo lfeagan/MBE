@@ -2,7 +2,7 @@
 # vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
 
 __maven_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-__maven_functions=( _maven_load _maven_unload _maven_setpath _maven_usage _maven_env _maven_config _maven_list _maven_listVersions _maven_complete )
+__maven_functions=( _maven_load _maven_unload _maven_setpath _maven_info _maven_env _maven_config _maven_list _maven_listVersions _maven_complete )
 
 # Environment Variables:
 # MAVEN_PRODUCT
@@ -58,9 +58,10 @@ _maven_setpath ()
 	fi
 }
 
-_maven_usage ()
+_maven_info ()
 {
 	local module="maven"
+	echo "Configures Apache Maven"
 }
 
 _maven_env ()

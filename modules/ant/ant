@@ -2,7 +2,7 @@
 # vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
 
 __ant_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-__ant_functions=(_ant_load _ant_unload _ant_setpath _ant_usage _ant_env _ant_config _ant_list _ant_listVersions _ant_complete)
+__ant_functions=(_ant_load _ant_unload _ant_setpath _ant_info _ant_env _ant_config _ant_list _ant_listVersions _ant_complete)
 
 # Environment Variables:
 # ANT_PRODUCT
@@ -57,9 +57,10 @@ _ant_setpath ()
 	fi
 }
 
-_ant_usage ()
+_ant_info ()
 {
 	local module="ant"
+	echo "Configures Apache Ant"
 }
 
 _ant_env ()

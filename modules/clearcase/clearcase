@@ -22,7 +22,7 @@
 #---------------------------------------------
 
 _clearcase_dependencies=( 'mbe' )
-_clearcase_functions=( '_clearcase_load' '_clearcase_unload' '_clearcase_setpath' '_clearcase_usage' '_clearcase_complete' 'ct' 'csv' 'prefiff' 'myviews' 'codir' )
+_clearcase_functions=( '_clearcase_load' '_clearcase_unload' '_clearcase_setpath' '_clearcase_info' '_clearcase_complete' 'ct' 'csv' 'prefiff' 'myviews' 'codir' )
 
 _clearcase_load ()
 {
@@ -54,9 +54,9 @@ _clearcase_setpath ()
 	fi
 }
 
-_clearcase_usage ()
+_clearcase_info ()
 {
-	echo "no usage info"
+	echo "Configures IBM Rational ClearCase"
 }
 
 _clearcase_complete()
