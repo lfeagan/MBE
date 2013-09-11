@@ -30,7 +30,7 @@
 # %s/oldname/newname/gc
 
 oldname_dependencies=( 'mbe' )
-oldname_functions=( 'oldname_load' 'oldname_unload' 'oldname_setpath' 'oldname_usage' )
+oldname_functions=( 'oldname_load' 'oldname_unload' 'oldname_setpath' 'oldname_info' 'oldname_complete' )
 
 oldname_load ()
 {
@@ -58,7 +58,55 @@ oldname_setpath ()
 
 }
 
-oldname_usage ()
+oldname_info ()
 {
 
+}
+
+_oldname_complete()
+{
+	COMPREPLY=( )
+
+	if [ $COMP_CWORD -eq 2 ]; then
+		funcs="cd config env list"
+		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		return 0
+	fi
+
+	case "${module_function}" in
+		cd|cdworkspace|env)
+			COMPREPLY=( )
+			return 0
+			;;
+		list)
+			COMPREPLY=( versions )
+			return 0
+			;;
+		config|run)
+			# when previous is the function, list the possible flags
+			# when previous is a flag, generate possible flag arguments
+			case "${prev}" in
+				-b)
+					local bits="32 64"
+					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					return 0
+					;;
+				-v)
+					local versions="$(_oldname_listVersions)"
+					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					return 0
+					;;
+				config|run|*)
+					# flags are: "-b -v "
+					_mbe_functionFlags=( '-b' '-v' )
+					local flags="$(_mbe_getRemainingConfigFlags)"
+					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					return 0
+					;;
+			esac
+			;;
+		esac
+
+	COMPREPLY=( )
+	return 0
 }
