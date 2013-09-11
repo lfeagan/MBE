@@ -1,0 +1,299 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+###############################################################################
+# Module: mongo
+# Description:
+# 	Defines ...
+# 	nextline
+###############################################################################
+
+_mongo_dependencies=( 'mbe' 'platform' )
+_mongo_functions=( '_mongo_load' '_mongo_unload' '_mongo_setpath' '_mongo_info' '_mongo_complete' '_mongo_listVersions' )
+_mongo_product_dir="Mongo"
+
+# Key Variables
+#
+# MONGO_HOME
+# MONGO_BITS
+# MONGO_VERSION
+#
+
+_mongo_load ()
+{
+	DEBUG echo "_mongo_load: enter"
+	local module="mongo"
+
+	# Load preferences
+	
+	# Configure module
+	MONGO_BITS="${KERNELBITS}"
+
+	DEBUG echo "_mongo_load: leave"
+}
+
+_mongo_unload ()
+{
+	local func
+	for func in "${_mongo_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+_mongo_setpath ()
+{
+	if [ -e "${ANT_HOME}" ]; then
+		PATH="${ANT_HOME}/bin:${PATH}"
+		#CLASSPATH="${ANT_HOME}/lib:${CLASSPATH}"
+		export ANT_OPTS="-Xms128m -Xmx512m -XX:MaxPermSize=128M"
+		export ANT_HOME
+	fi
+}
+
+_mongo_info ()
+{
+	echo ""
+
+}
+
+_mongo_env()
+{
+	echo "MONGO_HOME=${MONGO_HOME}"
+	echo "MONGO_BITS=${MONGO_BITS}"
+	echo "MONGO_VERSION=${MONGO_VERSION}"
+}
+
+_mongo_cd()
+{
+	if [ -z "${MONGO_HOME}" ]; then
+		_mongo_config
+	fi
+	cd "${MONGO_HOME}"
+}
+
+_mongo_complete()
+{
+	COMPREPLY=( )
+
+	if [ $COMP_CWORD -eq 2 ]; then
+		funcs="cd config env list"
+		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		return 0
+	fi
+
+	case "${module_function}" in
+		cd|env)
+			COMPREPLY=( )
+			return 0
+			;;
+		list)
+			case "${prev}" in
+				versions)
+					COMPREPLY=( )
+					return 0
+					;;
+				*)
+					COMPREPLY=( versions )
+					return 0
+					;;
+			esac
+			;;
+		config)
+			# when previous is the function, list the possible flags
+			# when previous is a flag, generate possible flag arguments
+			case "${prev}" in
+				-b)
+					local bits="32 64"
+					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					return 0
+					;;
+				-v)
+					local versions="$(_mongo_listVersions)"
+					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					return 0
+					;;
+				config|*)
+					# flags are: "-b -v "
+					_mbe_functionFlags=( '-b' '-v' )
+					local flags="$(_mbe_getRemainingConfigFlags)"
+					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					return 0
+					;;
+			esac
+			;;
+		esac
+
+	COMPREPLY=( )
+	return 0
+}
+
+_mongo_list()
+{
+	usage ()
+	{
+		echo "Usage: _mongo_list {versions}"
+	}
+
+	case "$1" in
+	versions)
+		_mongo_listVersions
+		;;
+	*)
+		echo "Unrecognized option $1"
+		return 1
+		;;
+	esac
+}
+
+_mongo_listVersions()
+{
+	local versions
+
+	usage ()
+	{
+		echo "Usage: _mongo_listVersions [-b <bits>]"
+		echo " Searches and lists the available Mongo versions."
+	}
+
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset print_usage
+	while getopts "b:h" option
+	do
+		case $option in
+			b  ) SEARCH_BITS=$OPTARG;;
+			h  ) print_usage="1";;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+	
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	SEARCH_BITS=${SEARCH_BITS:=${MONGO_BITS}}
+
+	if [[ "${SEARCH_BITS}" == "32" ]]; then
+		SEARCH_PATH="${TOOLSPATH32}/${_mongo_product_dir}"
+	elif [[ "${SEARCH_BITS}" == "64" ]]; then
+		SEARCH_PATH="${TOOLSPATH}/${_mongo_product_dir}"
+	else 
+		echo "MONGO_BITS of ${SEARCH_BITS} is not understood"
+		return 1
+	fi
+
+	declare -a versions=( $(find_eregex ${SEARCH_PATH} -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort) )
+
+	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
+
+	echo "${versions[@]}"
+}
+
+_mongo_config ()
+{
+	usage ()
+	{
+		echo "_mongo_config -b <Bits> -v <Version>"
+	}
+
+	# Arguments
+	# -b Bits
+	# -h Print usage
+	# -n Do not call buildpath
+	# -q Quiet; do not print any messages
+	# -v Version
+	# parse arguments with getopts
+	# reset getopts state variables
+	unset bits creator version
+	print_usage=0
+	suppress_buildpath=0
+	quiet=0
+	while getopts "b:c:hnqv:" option
+	do
+		case $option in
+			b  ) bits=$OPTARG;;
+			h  ) print_usage=1;;
+			n  ) suppress_buildpath=1;;
+			q  ) quiet=1;;
+			v  ) version=$OPTARG;;
+			\? ) print_usage="1";;
+			*  ) print_usage="1";;
+		esac
+	done
+	OPTIND=1 # Reset OPTIND
+
+	if [[ "$print_usage" == 1 ]]; then
+		usage
+		return 0
+	fi
+
+	bits="${bits-$MONGO_BITS}"
+	version="${version-$MONGO_VERSION}"
+
+	# Verify that requested change will succeed
+	local maybe_mongo_home="$(_mongo_buildhomepath ${bits} ${version})"
+	DEBUG echo "maybe_mongo_home=${maybe_mongo_home}"
+	if [ -n "${maybe_mongo_home}" ]; then
+		MONGO_BITS="${bits}"
+		MONGO_VERSION="${version}"
+		MONGO_HOME="${maybe_mongo_home}"
+		export MONGO_BITS MONGO_VERSION MONGO_HOME
+
+		# Export variables
+		if [[ "${suppress_buildpath}" != "1" ]]; then
+			_mbe_buildpath
+		fi
+	fi
+}
+
+_mongo_buildhomepath()
+{
+	# Takes two arguments, MONGO_BITS and MONGO_VERSION, and
+	# creates the string to be used for MONGO_HOME
+	if [[ -z "${1}" || -z "${2}" ]]; then
+		echo "Must supply two arguments"
+	fi
+	local bits="${1}"
+	local version="${2}"
+	local maybe_mongo_home
+
+	if [[ "${bits}" == 32 ]]; then
+		maybe_mongo_home="${TOOLSPATH32}"
+	elif [[ "${bits}" == 64 ]]; then
+		maybe_mongo_home="${TOOLSPATH}"
+	else
+		echo ""
+		return 1
+	fi
+
+	maybe_mongo_home="${maybe_mongo_home}/${_mongo_product_dir}/${version}"
+	DEBUG echo "maybe_mongo_home=${maybe_mongo_home}" 1>&2
+	if [[ -d "${maybe_mongo_home}" ]]; then
+		echo "${maybe_mongo_home}"
+		return 0
+	else
+		echo ""
+		return 1
+	fi
+}
+
