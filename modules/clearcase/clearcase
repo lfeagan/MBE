@@ -22,7 +22,7 @@
 #---------------------------------------------
 
 _clearcase_dependencies=( 'mbe' )
-_clearcase_functions=( '_clearcase_load' '_clearcase_unload' '_clearcase_setpath' '_clearcase_info' '_clearcase_complete' 'ct' 'csv' 'prefiff' 'myviews' 'codir' )
+_clearcase_functions=( '_clearcase_load' '_clearcase_unload' '_clearcase_setpath' '_clearcase_info' '_clearcase_complete' 'ct' 'csv' 'prefiff' '_clearcase_myviews' 'codir' '_clearcase_annotate' )
 
 _clearcase_load ()
 {
@@ -63,7 +63,7 @@ _clearcase_complete()
 {
 	local opts
 	COMPREPLY=( )
-	opts="cdview myviews"
+	opts="cdview myviews annotate"
 
 	case "${prev}" in
 		cdview|myviews)
@@ -73,6 +73,10 @@ _clearcase_complete()
 		codir)
 			local config_opts="-p -v -b -c -j -n"
 			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+			return 0
+			;;
+		annotate)
+			COMPREPLY=( $(compgen -o filenames -A file ${cur}) )
 			return 0
 			;;
 		esac
@@ -89,6 +93,11 @@ _clearcase_cdview ()
 _clearcase_myviews ()
 {
 	cleartool lsview "$@" |grep ${USER}
+}
+
+_clearcase_annotate ()
+{
+	cleartool annotate -out - -fmt "%Vn |" -rm -nheader "$@"
 }
 
 ct ()
