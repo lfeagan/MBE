@@ -85,23 +85,23 @@ ew () { ${EDITOR} `which "$@"`; }
 #ll () { ls --color=auto -FAql "$@"; }
 #lf () { ls --color=auto -FAq  "$@"; }
 function ll () { [[ "$OSTYPE" == linux* ]] && ls -FAql "$@" || ls -FAl "$@"; }
-lf () { [[ "$OSTYPE" == linux* ]] && ls -FAq "$@" || ls -FA "$@"; }
+function lf () { [[ "$OSTYPE" == linux* ]] && ls -FAq "$@" || ls -FA "$@"; }
 function la () { ls -A "$@"; }
 function l () { ls -CF "$@"; }
-l. () { ls -d .* "$@"; } 
-lk () { ls -lSrk "$@"; }
-lh () { ls -lSrh "$@"; }
-lt () { ls -ltr "$@"; }
-cls () { clear; ls "$@"; }
-cll () { clear; ll "$@"; }
+function l. () { ls -d .* "$@"; } 
+function lk () { ls -lSrk "$@"; }
+function lh () { ls -lSrh "$@"; }
+function lt () { ls -ltr "$@"; }
+function cls () { clear; ls "$@"; }
+function cll () { clear; ll "$@"; }
 function dir () { ls --color=auto --format=vertical; }
-vdir () { ls --color=auto --format=long; }
+function vdir () { ls --color=auto --format=long; }
 
 # Save the real which for a rainy day
 if [ -z "$whichbin" ]; then
 	whichbin="$(which which)"
 fi
-ewhich ()
+function ewhich ()
 {
 	if [[ "$OSTYPE" == linux* ]]; then
 		if [[ "$OSDISTRIBUTOR" == "Ubuntu" ]]; then
