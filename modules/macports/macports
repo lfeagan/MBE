@@ -58,6 +58,9 @@ _macports_setpath ()
   if [ -f /opt/local/etc/profile.d/bash_completion.sh ]; then
       . /opt/local/etc/profile.d/bash_completion.sh
   fi
+	if [ -f /opt/local/bin/hub ]; then
+		alias git=hub
+	fi
 }
 
 _macports_usage ()
