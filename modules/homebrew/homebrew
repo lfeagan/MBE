@@ -65,6 +65,9 @@ _homebrew_setpath ()
 	  export JAVA_HOME=$(/usr/libexec/java_home)
 	  export PATH="${JAVA_HOME}/bin:${PATH}"
 	fi
+	if [ -d "/usr/local/share/man" ]; then
+		export MANPATH="/usr/local/share/man":${MANPATH}
+	fi
 }
 
 _homebrew_usage ()
