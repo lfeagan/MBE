@@ -1,0 +1,84 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+###############################################################################
+# Module: intellij
+# Description:
+# 	Defines ...
+# 	nextline
+###############################################################################
+
+#
+# Template for new module creation.
+# Substitute the new module name for 'intellij'
+# %s/oldname/newname/gc
+
+intellij_dependencies=( 'mbe' )
+intellij_functions=( '_intellij_load' '_intellij_unload' '_intellij_setpath' '_intellij_info' '_intellij_complete' )
+intellij_aliases=( 'android-studio' 'clion' 'goland' 'intellij' )
+
+_intellij_load ()
+{
+	DEBUG echo "intellij_load: enter"
+	local module="intellij"
+
+	# Load preferences
+	
+	# Configure module
+
+	DEBUG echo "intellij_load: leave"
+}
+
+_intellij_unload ()
+{
+	local func
+	for func in "${intellij_functions[@]}"; do
+		unset "${func}"
+	done
+	for als in "${intellij_aliases[@]}"; do
+		unalias "${als}"
+	done
+	return 0
+}
+
+_intellij_setpath ()
+{
+	DEBUG echo "intellij_setpath: enter"
+
+  export JETBRAINS_TOOLBOX_DIR="${HOME}/Applications/JetBrains Toolbox"
+  # Android Studio.app		CLion.app			GoLand.app			IntelliJ IDEA Ultimate.app
+	if [ -d "${JETBRAINS_TOOLBOX_DIR}" ]; then
+	  alias android-studio='open -a "${JETBRAINS_TOOLBOX_DIR}/Android Studio.app"'
+	  alias intellij='open -a "${JETBRAINS_TOOLBOX_DIR}/IntelliJ IDEA Ultimate.app"'
+	  alias goland='open -a "${JETBRAINS_TOOLBOX_DIR}/GoLand.app"'
+	  alias clion='open -a "${JETBRAINS_TOOLBOX_DIR}/CLion.app"'
+  fi
+  DEBUG echo "intellij_setpath: leave"
+}
+
+_intellij_info ()
+{
+  DEBUG echo "intellij_info: leave"
+}
+
+_intellij_complete()
+{
+	COMPREPLY=( )
+	return 0
+}
