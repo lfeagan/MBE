@@ -62,12 +62,24 @@ _intellij_setpath ()
 	DEBUG echo "intellij_setpath: enter"
 
   export JETBRAINS_TOOLBOX_DIR="${HOME}/Applications/JetBrains Toolbox"
-  # Android Studio.app		CLion.app			GoLand.app			IntelliJ IDEA Ultimate.app
+  # Android Studio.app
+  # CLion.app
+  # DataGrip.app
+  # GoLand.app
+  # IntelliJ IDEA Ultimate.app
+  # PhpStorm.app
+  # PyCharm Professional.app
+  # WebStorm.app
+
 	if [ -d "${JETBRAINS_TOOLBOX_DIR}" ]; then
 	  alias android-studio='open -a "${JETBRAINS_TOOLBOX_DIR}/Android Studio.app"'
-	  alias intellij='open -a "${JETBRAINS_TOOLBOX_DIR}/IntelliJ IDEA Ultimate.app"'
-	  alias goland='open -a "${JETBRAINS_TOOLBOX_DIR}/GoLand.app"'
 	  alias clion='open -a "${JETBRAINS_TOOLBOX_DIR}/CLion.app"'
+	  alias datagrip='open -a "${JETBRAINS_TOOLBOX_DIR}/DataGrip.app"'
+	  alias goland='open -a "${JETBRAINS_TOOLBOX_DIR}/GoLand.app"'
+	  alias intellij='open -a "${JETBRAINS_TOOLBOX_DIR}/IntelliJ IDEA Ultimate.app"'
+	  alias phpstorm='open -a "${JETBRAINS_TOOLBOX_DIR}/PhpStorm.app"'
+	  alias pycharm='open -a "${JETBRAINS_TOOLBOX_DIR}/PyCharm Professional.app"'
+	  alias webstorm='open -a "${JETBRAINS_TOOLBOX_DIR}/WebStorm.app"'
   fi
   DEBUG echo "intellij_setpath: leave"
 }
