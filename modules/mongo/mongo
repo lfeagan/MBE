@@ -59,11 +59,14 @@ _mongo_unload ()
 
 _mongo_setpath ()
 {
-	if [ -e "${ANT_HOME}" ]; then
-		PATH="${ANT_HOME}/bin:${PATH}"
-		#CLASSPATH="${ANT_HOME}/lib:${CLASSPATH}"
-		export ANT_OPTS="-Xms128m -Xmx512m -XX:MaxPermSize=128M"
-		export ANT_HOME
+	# Configure MONGO_HOME, PATH,
+	local module="mongo"
+	MONGO_HOME=$(_mongo_buildhomepath ${MONGO_BITS} ${MONGO_VERSION})
+
+	if [ -e "${MONGO_HOME}" ]; then
+		PATH="${MONGO_HOME}/bin:${PATH}"
+		export MONGO_HOME
+		export PATH
 	fi
 }
 
