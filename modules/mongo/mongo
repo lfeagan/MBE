@@ -41,6 +41,7 @@ _mongo_load ()
 	local module="mongo"
 
 	# Load preferences
+	source "${MODULES_DIR}/${module}/${module}.conf"
 	
 	# Configure module
 	MONGO_BITS="${KERNELBITS}"
