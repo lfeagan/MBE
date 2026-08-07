@@ -1,4 +1,5 @@
 # .bash_profile
+# shellcheck shell=bash
 
 #------------------------------------------------------------------------------
 # Copyright 2009 Lance W. Feagan
