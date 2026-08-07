@@ -405,6 +405,45 @@ _mbe_activateModules ()
 	return
 }
 
+_mbe_findDependents ()
+{
+	# Given one or more module names, prints (one per line) every OTHER
+	# currently-active module that transitively depends on any of them --
+	# i.e. what would be left active-but-broken if the named modules were
+	# deactivated without also deactivating their dependents.
+	local targets=( "$@" )
+	local -A targetset=( )
+	local t
+	for t in "${targets[@]}"; do targetset[$t]=1; done
+
+	# Repeat until a full pass adds nothing new, so transitive dependents
+	# (X depends on maven, maven depends on java -- deactivating java must
+	# also catch X) are found, not just direct ones.
+	local changed=1
+	while (( changed == 1 )); do
+		changed=0
+		local activemodule
+		for activemodule in "${MODULES_ACTIVE[@]}"; do
+			[ -n "${targetset[$activemodule]}" ] && continue
+			local depsvar="__${activemodule}_dependencies[@]"
+			local dep
+			for dep in "${!depsvar}"; do
+				if [ -n "${targetset[$dep]}" ]; then
+					targetset[$activemodule]=1
+					changed=1
+					break
+				fi
+			done
+		done
+	done
+
+	for t in "${targets[@]}"; do unset "targetset[$t]"; done
+	local result
+	for result in "${!targetset[@]}"; do
+		echo "${result}"
+	done
+}
+
 _mbe_deactivateModules ()
 {
 	# Unloads one or more modules from mbe
@@ -414,6 +453,32 @@ _mbe_deactivateModules ()
 	fi
 	local oldmodule oldmodules
 	oldmodules=( "$@" )
+
+	local dependents
+	mapfile -t dependents < <(_mbe_findDependents "${oldmodules[@]}")
+	if (( ${#dependents[@]} > 0 )); then
+		echo "The following active modules depend on what you're deactivating and will also be deactivated:"
+		local d
+		for d in "${dependents[@]}"; do
+			echo "  ${d}"
+		done
+		local validInput=0
+		local confirmation
+		while (( validInput == 0 )); do
+			echo -n "Proceed? [y/n] and press [ENTER]: "
+			read -r confirmation
+			case "${confirmation}" in
+				y*|Y*)
+					validInput=1
+					oldmodules+=( "${dependents[@]}" )
+					;;
+				n*|N*)
+					echo "Aborted -- nothing was deactivated."
+					return 1
+					;;
+			esac
+		done
+	fi
 
 	for oldmodule in "${oldmodules[@]}"; do
 		_mbe_isModuleActive "$oldmodule"
