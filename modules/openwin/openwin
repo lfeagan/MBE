@@ -25,7 +25,6 @@
 ###############################################################################
 
 __openwin_dependencies=( 'mbe' )
-__openwin_functions=( '_openwin_load' '_openwin_unload' '_openwin_setpath' '_openwin_usage' '_openwin_complete' )
 
 _openwin_load ()
 {
@@ -41,10 +40,6 @@ _openwin_load ()
 
 _openwin_unload ()
 {
-	local func
-	for func in "${__openwin_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

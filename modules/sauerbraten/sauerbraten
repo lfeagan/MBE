@@ -31,11 +31,7 @@
 # Substitute the new module name for 'sauerbraten'
 # %s/sauerbraten/newname/gc
 
-__sauerbraten_dependencies=( 'mbe' )
-__sauerbraten_functions=( '_sauerbraten_load' '_sauerbraten_unload' \
-		'_sauerbraten_setpath' '_sauerbraten_usage' \
-		'_sauerbraten_listVersions' '_sauerbraten_run' \
-		'_sauerbraten_compressScreenshots' '_sauerbraten_complete' )
+__sauerbraten_dependencies=( 'mbe' 'platform' )
 
 _sauerbraten_load ()
 {
@@ -54,10 +50,6 @@ _sauerbraten_load ()
 _sauerbraten_unload ()
 {
 	local module="sauerbraten"
-	local func
-	for func in "${__sauerbraten_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

@@ -2,7 +2,6 @@
 # vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
 
 __maven_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-__maven_functions=( _maven_load _maven_unload _maven_setpath _maven_info _maven_env _maven_config _maven_list _maven_listVersions _maven_complete )
 
 # Environment Variables:
 # MAVEN_PRODUCT
@@ -39,10 +38,6 @@ _maven_load ()
 _maven_unload ()
 {
 	local module="maven"
-	local func
-	for func in "${__maven_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

@@ -30,7 +30,6 @@
 # %s/oldname/newname/gc
 
 oldname_dependencies=( 'mbe' )
-oldname_functions=( 'oldname_load' 'oldname_unload' 'oldname_setpath' 'oldname_info' 'oldname_complete' )
 
 oldname_load ()
 {
@@ -46,10 +45,6 @@ oldname_load ()
 
 oldname_unload ()
 {
-	local func
-	for func in "${oldname_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

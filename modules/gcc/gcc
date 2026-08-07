@@ -18,7 +18,6 @@
 #------------------------------------------------------------------------------
 
 __gcc_dependencies=( 'mbe' )
-__gcc_functions=( '_gcc_load' '_gcc_unload' '_gcc_setpath' '_gcc_info' '_gcc_complete' )
 
 _gcc_load ()
 {
@@ -34,10 +33,6 @@ _gcc_load ()
 
 _gcc_unload ()
 {
-	local func
-	for func in "${__gcc_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

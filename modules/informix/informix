@@ -8,10 +8,6 @@
 ##############################################################################
 
 __informix_dependencies=( 'mbe' 'platform' )
-__informix_functions=( '_informix_load' '_informix_unload' '_informix_setpath' \
-		'ifxmkrepo' 'ifxlist' 'ifxcd' 'ifxchrepobase' 'ifxenv' '_informix_log' 'ifxtestvobsconfig' \
-		'idslist' 'idscheckout' 'idsconfig' 'idsup' 'idsupi' 'idsdown' 'idscd' 'idstools_gui' 'idsddd' \
-		'csdklist' 'csdkconfig' '_informix_complete' )
 
 _informix_load ()
 {
@@ -25,10 +21,6 @@ _informix_load ()
 
 _informix_unload ()
 {
-	local func
-	for func in "${__informix_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

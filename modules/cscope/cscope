@@ -18,7 +18,6 @@
 #------------------------------------------------------------------------------
 
 __cscope_dependencies=( 'mbe' )
-__cscope_functions=( '_cscope_load' '_cscope_unload' '_cscope_setpath' '_cscope_info' '_cscope_complete' )
 
 _cscope_load ()
 {
@@ -34,10 +33,6 @@ _cscope_load ()
 
 _cscope_unload ()
 {
-	local func
-	for func in "${__cscope_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

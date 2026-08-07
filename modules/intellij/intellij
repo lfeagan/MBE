@@ -30,8 +30,7 @@
 # %s/oldname/newname/gc
 
 __intellij_dependencies=( 'mbe' )
-__intellij_functions=( '_intellij_load' '_intellij_unload' '_intellij_setpath' '_intellij_info' '_intellij_complete' '_intellij_idea' 'idea' )
-__intellij_aliases=( 'android-studio' 'clion' 'goland' 'intellij' )
+__intellij_aliases=( 'android-studio' 'clion' 'datagrip' 'goland' 'intellij' 'phpstorm' 'pycharm' 'webstorm' )
 
 _intellij_load ()
 {
@@ -48,10 +47,6 @@ _intellij_load ()
 
 _intellij_unload ()
 {
-	local func
-	for func in "${__intellij_functions[@]}"; do
-		unset "${func}"
-	done
 	for als in "${__intellij_aliases[@]}"; do
 		unalias "${als}"
 	done

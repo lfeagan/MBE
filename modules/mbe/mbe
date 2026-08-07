@@ -35,6 +35,30 @@ if ! declare -p MODULES_ACTIVE_SET >/dev/null 2>&1; then
 	declare -gA MODULES_ACTIVE_SET
 fi
 
+# MBE_MODULE_FUNCS (associative array, module name -> space-separated function
+# names) is derived automatically by _mbe_activateModules diffing `declare -F`
+# before/after sourcing+loading a module, instead of each module hand-
+# maintaining a __<name>_functions array (which drifted from reality in
+# numerous modules -- see CLAUDE.md). _mbe_deactivateModules reads this to
+# unset exactly the functions a module actually defined.
+# _MBE_ACTIVATE_DEPTH / _MBE_CLAIMED_FUNCS support this: _mbe_activateModules
+# recurses (a module's own _load activates its dependencies), so a naive
+# before/after diff around the outer call would also capture every function
+# a nested dependency defined. Each recursive frame claims its own functions
+# (removing them from _MBE_CLAIMED_FUNCS's complement) before returning, so
+# an outer frame's diff never includes what an inner frame already claimed.
+# The depth counter resets the claimed-set only when unwinding back to the
+# top of one _mbe_activateModules call tree, not on every nested call.
+if ! declare -p MBE_MODULE_FUNCS >/dev/null 2>&1; then
+	declare -gA MBE_MODULE_FUNCS
+fi
+if ! declare -p _MBE_ACTIVATE_DEPTH >/dev/null 2>&1; then
+	declare -gi _MBE_ACTIVATE_DEPTH=0
+fi
+if ! declare -p _MBE_CLAIMED_FUNCS >/dev/null 2>&1; then
+	declare -gA _MBE_CLAIMED_FUNCS
+fi
+
 _mbe_load ()
 {
 	local module="mbe"
@@ -333,6 +357,9 @@ _mbe_activateModules ()
 		echo "ERROR: Must provide at least 1 argument to _mbe_activateModules"
 		return 1
 	fi
+	(( _MBE_ACTIVATE_DEPTH++ ))
+	(( _MBE_ACTIVATE_DEPTH == 1 )) && _MBE_CLAIMED_FUNCS=()
+
 	local newmodule newmodules
 	newmodules=( "$@" )
 
@@ -346,13 +373,34 @@ _mbe_activateModules ()
 			DEBUG echo "_mbe_activateModule: activating $newmodule"
 			if [ -n "$MODULES_DIR" ]; then
 				DEBUG echo -e "_mbe_activateModules: source \"${MODULES_DIR}/${newmodule}/${newmodule}\""
+				local before after
+				before="$(declare -F | awk '{print $3}')"
 				source "${MODULES_DIR}/${newmodule}/${newmodule}"
 				"_${newmodule}_load"
+
+				# Diff declare -F before/after to discover exactly which functions this
+				# module (not a nested dependency it may have activated) just defined --
+				# see MBE_MODULE_FUNCS comment near the top of this file.
+				local -A beforeset=( ) ownfuncs=( )
+				local f
+				for f in $before; do beforeset[$f]=1; done
+				after="$(declare -F | awk '{print $3}')"
+				for f in $after; do
+					if [[ -z "${beforeset[$f]}" && -z "${_MBE_CLAIMED_FUNCS[$f]}" ]]; then
+						ownfuncs[$f]=1
+					fi
+				done
+				MBE_MODULE_FUNCS[${newmodule}]="${!ownfuncs[*]}"
+				for f in "${!ownfuncs[@]}"; do _MBE_CLAIMED_FUNCS[$f]=1; done
+
 				MODULES_ACTIVE=( "${MODULES_ACTIVE[@]}" "${newmodule}" )
 				MODULES_ACTIVE_SET[${newmodule}]=1
 			fi
 		fi
 	done
+
+	(( _MBE_ACTIVATE_DEPTH-- ))
+	(( _MBE_ACTIVATE_DEPTH == 0 )) && _MBE_CLAIMED_FUNCS=()
 	_mbe_buildpath
 	return
 }
@@ -376,6 +424,18 @@ _mbe_deactivateModules ()
 			# Module is not yet active
 			DEBUG echo "_mbe_deactivateModules: unloading $oldmodule"
 			"_${oldmodule}_unload"
+
+			# Unset exactly the functions this module defined, per the
+			# declare -F diff _mbe_activateModules recorded -- see
+			# MBE_MODULE_FUNCS comment near the top of this file. Any
+			# non-function cleanup (aliases, etc.) is still the module's own
+			# _unload's responsibility, called above.
+			local f
+			for f in ${MBE_MODULE_FUNCS[${oldmodule}]}; do
+				unset -f "${f}"
+			done
+			unset "MBE_MODULE_FUNCS[${oldmodule}]"
+
 			unset "MODULES_ACTIVE_SET[${oldmodule}]"
 			local remaining=( )
 			local activemodule

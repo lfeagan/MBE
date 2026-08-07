@@ -30,7 +30,6 @@
 # %s/utils/newname/gc
 
 __utils_dependencies=( 'mbe' 'platform' )
-__utils_functions=( '_utils_load' '_utils_unload' '_utils_setpath' '_utils_info' '_utils_complete' 'trimdirs' )
 
 _utils_load ()
 {
@@ -46,10 +45,6 @@ _utils_load ()
 
 _utils_unload ()
 {
-	local func
-	for func in "${__utils_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

@@ -17,12 +17,12 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-__scite_dependencies=( 'mbe' )
-__scite_functions=( '_scite_load' '_scite_unload' '_scite_setpath' '_scite_info' '_scite_compete')
+__scite_dependencies=( 'mbe' 'platform' )
 
 _scite_load ()
 {
 	DEBUG echo "_scite_load: enter"
+	_mbe_activateModules "${__scite_dependencies[@]}"
 	local module="scite"
 
 	# Load preferences
@@ -34,10 +34,6 @@ _scite_load ()
 
 _scite_unload ()
 {
-	local func
-	for func in "${__scite_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

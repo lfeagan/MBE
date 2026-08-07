@@ -25,7 +25,6 @@
 ###############################################################################
 
 __lotusnotes_dependencies=( 'mbe' )
-__lotusnotes_functions=( '_lotusnotes_load' '_lotusnotes_unload' '_lotusnotes_setpath' '_lotusnotes_usage' '_lotusnotes_run' '_lotusnotes_backupUserData' '_lotusnotes_complete' )
 
 _lotusnotes_load ()
 {
@@ -41,10 +40,6 @@ _lotusnotes_load ()
 
 _lotusnotes_unload ()
 {
-	local func
-	for func in "${__lotusnotes_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

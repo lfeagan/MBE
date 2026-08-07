@@ -29,12 +29,12 @@
 # Substitute the new module name for 'rar'
 # %s/rar/newname/gc
 
-__rar_dependencies=( 'mbe' )
-__rar_functions=( '_rar_load' '_rar_unload' '_rar_setpath' '_rar_usage' '_rar_complete' )
+__rar_dependencies=( 'mbe' 'platform' )
 
 _rar_load ()
 {
 	DEBUG echo "_rar_load: enter"
+	_mbe_activateModules "${__rar_dependencies[@]}"
 	local module="rar"
 
 	# Load preferences
@@ -46,10 +46,6 @@ _rar_load ()
 
 _rar_unload ()
 {
-	local func
-	for func in "${__rar_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

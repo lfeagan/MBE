@@ -28,7 +28,6 @@
 ###############################################################################
 
 __sdkman_dependencies=( 'mbe' )
-__sdkman_functions=( '_sdkman_load' '_sdkman_unload' '_sdkman_setpath' '_sdkman_info' '_sdkman_complete' '_sdkman_install' )
 
 _sdkman_load ()
 {
@@ -46,10 +45,6 @@ _sdkman_load ()
 
 _sdkman_unload ()
 {
-	local func
-	for func in "${__sdkman_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

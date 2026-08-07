@@ -30,25 +30,29 @@
 # %s/homebrew/newname/gc
 
 __homebrew_dependencies=( 'mbe' )
-__homebrew_functions=( '_homebrew_load' '_homebrew_unload' '_homebrew_setpath' '_homebrew_usage' '_homebrew_complete' '_homebrew_findbrew' )
+__homebrew_aliases=( 'git' )
 
 _homebrew_load ()
 {
 	DEBUG echo "_homebrew_load: enter"
 	local module="homebrew"
 
-	# Load preferences
-	
-	# Configure module
+	# Locate brew and cache its install prefix once here rather than in
+	# _setpath, which _mbe_buildpath calls on every path rebuild -- avoids
+	# forking "brew" (shellenv + --prefix) on every module (de)activation.
+	HOMEBREW_BREWBIN="$(_homebrew_findbrew)"
+	if [ -n "${HOMEBREW_BREWBIN}" ]; then
+		HOMEBREW_PREFIX="$("${HOMEBREW_BREWBIN}" --prefix)"
+	fi
 
 	DEBUG echo "_homebrew_load: leave"
 }
 
 _homebrew_unload ()
 {
-	local func
-	for func in "${__homebrew_functions[@]}"; do
-		unset "${func}"
+	local als
+	for als in "${__homebrew_aliases[@]}"; do
+		unalias "${als}" 2>/dev/null
 	done
 	return 0
 }
@@ -72,26 +76,22 @@ _homebrew_findbrew ()
 
 _homebrew_setpath ()
 {
-	local brewbin
-	brewbin="$(_homebrew_findbrew)"
-
-	if [ -n "${brewbin}" ]; then
+	if [ -n "${HOMEBREW_BREWBIN}" ]; then
 		# "brew shellenv" is Homebrew's own supported way to wire up
 		# PATH/MANPATH/INFOPATH -- avoids hardcoding install paths ourselves
 		# and avoids setting JAVA_HOME, which sdkman now owns exclusively
 		# (see the sdkman module) rather than /usr/libexec/java_home.
-		eval "$("${brewbin}" shellenv)"
+		# HOMEBREW_BREWBIN/HOMEBREW_PREFIX are resolved once in _homebrew_load,
+		# not re-derived here, since _setpath runs on every path rebuild.
+		eval "$("${HOMEBREW_BREWBIN}" shellenv)"
 
-		local homebrew_prefix
-		homebrew_prefix="$("${brewbin}" --prefix)"
-
-		if [ -d "${homebrew_prefix}/opt/libpq/bin" ]; then
-			export PATH="${homebrew_prefix}/opt/libpq/bin:${PATH}"
+		if [ -d "${HOMEBREW_PREFIX}/opt/libpq/bin" ]; then
+			export PATH="${HOMEBREW_PREFIX}/opt/libpq/bin:${PATH}"
 		fi
-		if [ -f "${homebrew_prefix}/etc/profile.d/bash_completion.sh" ]; then
-			. "${homebrew_prefix}/etc/profile.d/bash_completion.sh"
+		if [ -f "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]; then
+			. "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
 		fi
-		if [ -f "${homebrew_prefix}/bin/hub" ]; then
+		if [ -f "${HOMEBREW_PREFIX}/bin/hub" ]; then
 			alias git=hub
 		fi
 	fi

@@ -5,7 +5,6 @@
 # http://help.eclipse.org/help32/index.jsp?topic=/org.eclipse.platform.doc.isv/reference/misc/multi_user_installs.html
 
 __eclipse_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-__eclipse_functions=(_eclipse_load _eclipse_unload _eclipse_setpath _eclipse_setmozpath _eclipse_usage _eclipse_env _eclipse_config _eclipse_listVersions _eclipse_run _eclipse_cdworkspace sdp_run teamconcert_run )
 
 # Environment Variables:
 # ECLIPSE_PRODUCT
@@ -45,10 +44,6 @@ _eclipse_load ()
 _eclipse_unload ()
 {
 	local module="eclipse"
-	local func
-	for func in "${__eclipse_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

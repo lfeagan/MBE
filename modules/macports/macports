@@ -30,7 +30,7 @@
 # %s/macports/newname/gc
 
 __macports_dependencies=( 'mbe' )
-__macports_functions=( '_macports_load' '_macports_unload' '_macports_setpath' '_macports_usage' '_macports_complete' )
+__macports_aliases=( 'git' )
 
 _macports_load ()
 {
@@ -46,9 +46,9 @@ _macports_load ()
 
 _macports_unload ()
 {
-	local func
-	for func in "${__macports_functions[@]}"; do
-		unset "${func}"
+	local als
+	for als in "${__macports_aliases[@]}"; do
+		unalias "${als}" 2>/dev/null
 	done
 	return 0
 }

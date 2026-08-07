@@ -25,7 +25,6 @@
 ###############################################################################
 
 __dia_dependencies=( 'mbe' )
-__dia_functions=( '_dia_load' '_dia_unload' '_dia_setpath' '_dia_usage' '_dia_complete' )
 
 _dia_load ()
 {
@@ -41,10 +40,6 @@ _dia_load ()
 
 _dia_unload ()
 {
-	local func
-	for func in "${__dia_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

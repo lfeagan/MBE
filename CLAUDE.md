@@ -29,7 +29,7 @@ Every module lives at `modules/<name>/<name>` (the entry-point script) with an o
 A module defines these functions, all prefixed `_<name>_`:
 
 - `_<name>_load` — called on activation (from `_mbe_activateModules`, after the module script itself is sourced). Declares dependencies via `_mbe_activateModules "${__<name>_dependencies[@]}"` for any modules it needs (e.g. `java` depends on `mbe`, `platform`, `utils`), sources the module's own `.conf` if it has one, and sets up aliases/functions. Do not call `_mbe_buildpath` here directly — `_mbe_activateModules` does that once, after `_load` returns.
-- `_<name>_unload` — called on deactivation (from `_mbe_deactivateModules`). Iterates `__<name>_functions` and `unset`s each one; if the module defined aliases outside that array, unalias them too (see `intellij`).
+- `_<name>_unload` — called on deactivation (from `_mbe_deactivateModules`), *before* the framework unsets the module's functions (see "Automatic function tracking" below). Use it only for cleanup the framework can't derive automatically — e.g. `unalias`ing aliases the module defined (see `intellij`) or module-specific teardown (see `colors`'s `_colors_undefine` call). If a module defines only functions and nothing else needs cleanup, `_<name>_unload` can just be `{ return 0; }`.
 - `_<name>_setpath` — called by `_mbe_buildpath` for every *active* module, on every path rebuild (module (de)activation, or an explicit `_mbe_buildpath` call). Contributes to `PATH`/`LD_LIBRARY_PATH`/`MANPATH`/`INCLUDE` for this module only — never assign those variables outside this hook (see "Path management" below); everything else (e.g. `JAVA_HOME`) is fine to set here directly.
 - `_<name>_complete` — bash completion handler, dispatched by `mbe_completion`'s `_mbe_complete` when the user is tab-completing `mbe <name> ...`. Reads the completion globals `cur`, `prev`, `COMP_CWORD`, and `module_function` that `_mbe_complete` sets up before dispatching — a module's `_complete` does not set these itself.
 
@@ -40,10 +40,19 @@ Beyond the lifecycle functions, a module may define arbitrary subcommands invoke
 Module-local helper arrays are **always double-underscore-prefixed**, matching the framework's own `__mbe_features` (in `modules/mbe/mbe.conf`):
 
 - `__<name>_dependencies` — modules to activate before this one; passed straight to `_mbe_activateModules` in `_load`. Most single-dependency modules just list `'mbe'`.
-- `__<name>_functions` — every function name this module defines; `_unload` iterates this to `unset` them. **This array's declared name and the name `_unload` reads must match exactly** — a single vs. double underscore typo here means `unload` silently does nothing (found and fixed live instances of this in `developer`, `netclient`, and `clearcase`). When adding a function to a module, add it to this array too.
 - `__<name>_features` — only used by `mbe` and `developer` today; a list of sub-scripts within the module's own directory to source and `_load` as part of loading the module itself (see `_mbe_load` in `modules/mbe/mbe`). Most modules don't need this.
 
-A few modules (`clearcase`, `mongo`, `platform`, `intellij`) previously used single- or no-underscore names for these; they've been normalized to match the convention above. When writing a new module or fixing an old one, use `__<name>_dependencies` / `__<name>_functions` / `__<name>_features` — never `_<name>_...` or `<name>_...` for these specific arrays.
+A few modules (`clearcase`, `mongo`, `platform`, `intellij`) previously used single- or no-underscore names for these; they've been normalized to match the convention above. When writing a new module or fixing an old one, use `__<name>_dependencies` / `__<name>_features` — never `_<name>_...` or `<name>_...` for these specific arrays.
+
+There is deliberately no `__<name>_functions` array anymore. Modules used to hand-maintain one, listing every function they define so `_unload` could `unset` them — but that list drifted from reality constantly (found and fixed live instances of this in over a dozen modules, historically `developer`/`netclient`/`clearcase`, and later `vim`/`scite`/`icscope2`/`userid`/`dia`/`prompt`/`eclipse`/`clearcase`/`sauerbraten`), silently leaving stale functions defined after `mbe deactivate <name>`.
+
+#### Automatic function tracking
+
+`_mbe_activateModules` (in `modules/mbe/mbe`) now derives a module's function list itself: it snapshots `declare -F` immediately before and after sourcing the module's script and calling its `_load`, and the diff is exactly the set of functions that module just defined. This is stored in `MBE_MODULE_FUNCS` (a `declare -gA` associative array keyed by module name), which `_mbe_deactivateModules` reads to `unset` the right functions on deactivation — no array for module authors to maintain, and no way for it to drift.
+
+Because `_mbe_activateModules` is recursive (a module's own `_load` activates its declared dependencies before its own diff would otherwise be taken), a naive single before/after diff would misattribute a dependency's functions to the module that pulled it in. This is handled via `_MBE_ACTIVATE_DEPTH` and `_MBE_CLAIMED_FUNCS`: each recursive call claims its own newly-defined functions (removing them from consideration by any enclosing call) before returning, so an outer module's diff never includes what an inner dependency already claimed. Do not modify this recursion-safety mechanism without re-testing a real dependency chain (e.g. activate `eclipse`, which depends on `java`, `platform`, and `utils`, and confirm `MBE_MODULE_FUNCS[eclipse]` contains only eclipse's own functions).
+
+This only tracks *functions*. Aliases are not auto-tracked (a module's `_setpath` can run many times per session, unlike `_load`, so the same before/after diff trick doesn't directly apply) — modules that define aliases still need a manually-maintained `__<name>_aliases` array and an `unalias` loop in `_unload`, following the existing `intellij` pattern.
 
 ### Path management (critical invariant)
 

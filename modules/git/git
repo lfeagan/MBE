@@ -30,7 +30,6 @@
 # %s/git/newname/gc
 
 __git_dependencies=( 'mbe' )
-__git_functions=( '_git_load' '_git_unload' '_git_setpath' '_git_usage' '_git_complete' )
 
 _git_load ()
 {
@@ -49,10 +48,6 @@ _git_load ()
 
 _git_unload ()
 {
-	local func
-	for func in "${__git_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

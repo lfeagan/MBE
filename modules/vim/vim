@@ -17,12 +17,12 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-__vim_dependencies=( 'mbe' )
-__vim_functions=( '_vim_load' '_vim_unload' '_vim_setpath' '_vim_info' '_vim_complete')
+__vim_dependencies=( 'mbe' 'platform' )
 
 _vim_load ()
 {
 	DEBUG echo "_vim_load: enter"
+	_mbe_activateModules "${__vim_dependencies[@]}"
 	local module="vim"
 
 	# Load preferences
@@ -34,10 +34,6 @@ _vim_load ()
 
 _vim_unload ()
 {
-	local func
-	for func in "${__vim_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

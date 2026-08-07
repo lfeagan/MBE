@@ -25,7 +25,6 @@
 ###############################################################################
 
 __brlcad_dependencies=( 'mbe' )
-__brlcad_functions=( '_brlcad_load' '_brlcad_unload' '_brlcad_setpath' '_brlcad_info' '_brlcad_complete' )
 
 _brlcad_load ()
 {
@@ -41,10 +40,6 @@ _brlcad_load ()
 
 _brlcad_unload ()
 {
-	local func
-	for func in "${__brlcad_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

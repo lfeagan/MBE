@@ -17,12 +17,12 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-__perl_dependencies=( 'mbe' )
-__perl_functions=( '_perl_load' '_perl_unload' '_perl_setpath' '_perl_info' '_perl_complete' )
+__perl_dependencies=( 'mbe' 'platform' )
 
 _perl_load ()
 {
 	DEBUG echo "_perl_load: enter"
+	_mbe_activateModules "${__perl_dependencies[@]}"
 	local module="perl"
 
 	# Load preferences
@@ -34,10 +34,6 @@ _perl_load ()
 
 _perl_unload ()
 {
-	local func
-	for func in "${__perl_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

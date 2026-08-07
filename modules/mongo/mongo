@@ -25,7 +25,6 @@
 ###############################################################################
 
 __mongo_dependencies=( 'mbe' 'platform' )
-__mongo_functions=( '_mongo_load' '_mongo_unload' '_mongo_setpath' '_mongo_info' '_mongo_complete' '_mongo_listVersions' )
 _mongo_product_dir="Mongo"
 
 # Key Variables
@@ -51,10 +50,6 @@ _mongo_load ()
 
 _mongo_unload ()
 {
-	local func
-	for func in "${__mongo_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

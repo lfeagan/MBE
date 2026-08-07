@@ -2,7 +2,6 @@
 # vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
 
 __ant_dependencies=( 'mbe' 'platform' 'utils' 'java' )
-__ant_functions=(_ant_load _ant_unload _ant_setpath _ant_info _ant_env _ant_config _ant_list _ant_listVersions _ant_complete)
 
 # Environment Variables:
 # ANT_PRODUCT
@@ -38,10 +37,6 @@ _ant_load ()
 _ant_unload ()
 {
 	local module="ant"
-	local func
-	for func in "${__ant_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

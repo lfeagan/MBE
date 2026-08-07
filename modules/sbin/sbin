@@ -25,7 +25,6 @@
 ###############################################################################
 
 __sbin_dependencies=( 'mbe' )
-__sbin_functions=( '_sbin_load' '_sbin_unload' '_sbin_setpath' '_sbin_info' '_sbin_complete' )
 
 _sbin_load ()
 {
@@ -41,10 +40,6 @@ _sbin_load ()
 
 _sbin_unload ()
 {
-	local func
-	for func in "${__sbin_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

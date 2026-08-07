@@ -29,12 +29,12 @@
 # Substitute the new module name for 'rtc'
 # %s/rtc/newname/gc
 
-__rtc_dependencies=( 'mbe' )
-__rtc_functions=( '_rtc_load' '_rtc_unload' '_rtc_setpath' '_rtc_info' '_rtc_loadWorkspace' '_rtc_complete' )
+__rtc_dependencies=( 'mbe' 'platform' )
 
 _rtc_load ()
 {
 	DEBUG echo "_rtc_load: enter"
+	_mbe_activateModules "${__rtc_dependencies[@]}"
 	local module="rtc"
 
 	# Load preferences
@@ -46,10 +46,6 @@ _rtc_load ()
 
 _rtc_unload ()
 {
-	local func
-	for func in "${__rtc_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 
@@ -134,11 +130,6 @@ _rtc_config ()
 		fi
 	fi
 
-}
-
-_rtc_scmtools_buildpath ()
-{
-	echo -ne ""
 }
 
 _rtc_listWorkspaces ()

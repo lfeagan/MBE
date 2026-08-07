@@ -35,10 +35,6 @@
 ############################################################
 
 __platform_dependencies=( 'mbe' )
-__platform_functions=( '_platform_load' '_platform_unload' '_platform_setpath' \
-		'_platform_config' '_platform_platformpath' '_platform_toolspath' '_platform_desc'
-		'_platform_mkdirs' '_platform_complete'
-		'cdtools' 'cdtools32' 'cdtoolsgeneric' )
 
 _platform_load ()
 {
@@ -51,10 +47,6 @@ _platform_load ()
 
 _platform_unload ()
 {
-	local func
-	for func in "${__platform_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

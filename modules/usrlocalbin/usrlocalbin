@@ -25,7 +25,6 @@
 ###############################################################################
 
 __usrlocalbin_dependencies=( 'mbe' )
-__usrlocalbin_functions=( '_usrlocalbin_load' '_usrlocalbin_unload' '_usrlocalbin_setpath' '_usrlocalbin_info' '_usrlocalbin_complete' )
 
 _usrlocalbin_load ()
 {
@@ -41,10 +40,6 @@ _usrlocalbin_load ()
 
 _usrlocalbin_unload ()
 {
-	local func
-	for func in "${__usrlocalbin_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

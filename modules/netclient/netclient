@@ -25,7 +25,6 @@
 ###############################################################################
 
 __netclient_dependencies=( 'mbe' )
-__netclient_functions=( '_netclient_load' '_netclient_unload' '_netclient_setpath' '_netclient_usage' '_netclient_complete' )
 
 _netclient_load ()
 {
@@ -41,10 +40,6 @@ _netclient_load ()
 
 _netclient_unload ()
 {
-	local func
-	for func in "${__netclient_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

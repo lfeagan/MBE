@@ -30,7 +30,6 @@
 # %s/userid/newname/gc
 
 __userid_dependencies=( 'mbe' )
-__userid_functions=( '_userid_load' '_userid_unload' '_userid_setpath' '_userid_info' 'ur' )
 
 _userid_load ()
 {
@@ -46,10 +45,6 @@ _userid_load ()
 
 _userid_unload ()
 {
-	local func
-	for func in "${__userid_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 

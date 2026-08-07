@@ -30,7 +30,6 @@
 # %s/xcode/newname/gc
 
 __xcode_dependencies=( 'mbe' )
-__xcode_functions=( '_xcode_load' '_xcode_unload' '_xcode_setpath' '_xcode_info' '_xcode_complete' )
 
 _xcode_load ()
 {
@@ -46,10 +45,6 @@ _xcode_load ()
 
 _xcode_unload ()
 {
-	local func
-	for func in "${__xcode_functions[@]}"; do
-		unset "${func}"
-	done
 	return 0
 }
 
