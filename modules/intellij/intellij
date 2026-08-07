@@ -30,7 +30,7 @@
 # %s/oldname/newname/gc
 
 __intellij_dependencies=( 'mbe' )
-__intellij_functions=( '_intellij_load' '_intellij_unload' '_intellij_setpath' '_intellij_info' '_intellij_complete' )
+__intellij_functions=( '_intellij_load' '_intellij_unload' '_intellij_setpath' '_intellij_info' '_intellij_complete' '_intellij_idea' 'idea' )
 __intellij_aliases=( 'android-studio' 'clion' 'goland' 'intellij' )
 
 _intellij_load ()
@@ -39,7 +39,8 @@ _intellij_load ()
 	local module="intellij"
 
 	# Load preferences
-	
+	source "${MODULES_DIR}/${module}/${module}.conf"
+
 	# Configure module
 
 	DEBUG echo "intellij_load: leave"
@@ -88,6 +89,53 @@ _intellij_info ()
 {
   DEBUG echo "intellij_info: leave"
 }
+
+_intellij_idea ()
+{
+	# Opens a repo by name in IntelliJ IDEA.
+	# Usage: mbe intellij idea <repo-name> (substring match, searched across
+	# INTELLIJ_IDEA_SEARCH_ROOTS up to 4 levels deep; only matches git repos.)
+	local query="$1"
+	if [ -z "${query}" ]; then
+		echo "Usage: mbe intellij idea <repo-name>" >&2
+		return 1
+	fi
+
+	local matches=( )
+	local root dir
+	for root in "${INTELLIJ_IDEA_SEARCH_ROOTS[@]}"; do
+		[ -d "${root}" ] || continue
+		while IFS= read -r dir; do
+			[ -e "${dir}/.git" ] && matches+=("${dir}")
+		done < <(find "${root}" -mindepth 1 -maxdepth 4 -type d -iname "*${query}*" 2>/dev/null | sort)
+	done
+
+	if [ "${#matches[@]}" -eq 0 ]; then
+		echo "No git repo matching '${query}' found." >&2
+		return 1
+	elif [ "${#matches[@]}" -eq 1 ]; then
+		echo "Opening ${matches[0]}"
+		open -na "${INTELLIJ_IDEA_APP}" --args "${matches[0]}"
+	else
+		echo "Multiple matches -- pick one:"
+		local i
+		for i in "${!matches[@]}"; do
+			echo "  $(( i + 1 ))) ${matches[$i]}"
+		done
+		local choice
+		printf "Enter number: "
+		read -r choice </dev/tty
+		if [[ "${choice}" =~ ^[0-9]+$ ]] && [ "${choice}" -ge 1 ] && [ "${choice}" -le "${#matches[@]}" ]; then
+			echo "Opening ${matches[$(( choice - 1 ))]}"
+			open -na "${INTELLIJ_IDEA_APP}" --args "${matches[$(( choice - 1 ))]}"
+		else
+			echo "Invalid selection." >&2
+			return 1
+		fi
+	fi
+}
+
+idea () { _intellij_idea "$@"; }
 
 _intellij_complete()
 {

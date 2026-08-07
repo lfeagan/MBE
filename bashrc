@@ -40,7 +40,7 @@ fi
 ################################
 export MBE_DIR="${HOME}/.mbe"
 export MODULES_DIR="${MBE_DIR}/modules"
-export MODULES_INIT=("mbe" "platform" "utils" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "maven" "informix" )
+export MODULES_INIT=("mbe" "platform" "utils" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "maven" "informix" "intellij" )
 # Loaded modules are stored in MODULES_ACTIVE
 
 source "${MODULES_DIR}/mbe/mbe.conf"
