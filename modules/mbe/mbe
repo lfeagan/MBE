@@ -809,50 +809,31 @@ fi
 
 _mbe_cleanpath ()
 {
-	# Removes path elements that do not exist from a colon-delimited string
-	uncleanpath="$1"
-	pathelems=( ${uncleanpath//:/ } )
-	pathelems_clean=( )
-	#echo "#numelems=${#pathelems[*]}"
-	for pathelem in "${pathelems[@]}"; do
-		# check for pathelem already being in pathelems_clean
-		(( dupfound=0 ))
-		for pathelem_clean in "${pathelems_clean[@]}"; do
-			if [ "${pathelem}" == "${pathelem_clean}" ]; then
-				(( dupfound=1 ))
-				break
-			fi
-		done
-		# if no duplicate was found, then check for directory existence
-		if (( dupfound == 0 )); then
-			if [ -d "${pathelem}" ]; then
-				pathelems_clean[${#pathelems_clean[@]}]="${pathelem}"
-			fi
-		fi
-	done
-	#echo "${pathelems_clean[@]}"
+	# Removes duplicate and nonexistent path elements from a colon-delimited
+	# string. Splits on ":" specifically via IFS scoped to this one "read"
+	# (rather than the previous unquoted ${var//:/ } expansion, which split
+	# on whitespace too and would silently break a path element containing
+	# a space, e.g. "/Applications/JetBrains Toolbox/bin").
+	local uncleanpath="$1"
+	local -a pathelems
+	IFS=':' read -ra pathelems <<< "${uncleanpath}"
 
-	# Algorithm could user either numelems or lastelem to determine delimiter insertion
-	(( idx=0 ))
-	(( numelems=${#pathelems_clean[*]} ))
-	#echo "numelems=$numelems"
-	cleanpath=""
-	if (( numelems > 0 )); then # There is at least one arary element
-		if (( numelems == 1 )); then # There is only one array element
-			echo "${pathelems_clean[0]}"
-		else # There is more than one path element
-			cleanpath="${pathelems_clean[$idx]}"
-			(( idx+=1 ))
-			while (( idx < numelems )); do
-					#echo "idx=$idx"
-					cleanpath="${cleanpath}:${pathelems_clean[$idx]}"
-				(( idx+=1 ))
-			done
-			echo "$cleanpath"
-		fi
-	else # There are zero array elements
-		echo ""
-	fi
+	local -A seen
+	local -a pathelems_clean=( )
+	local pathelem
+	for pathelem in "${pathelems[@]}"; do
+		# Skip empty elements (from a leading/trailing/doubled ":") outright:
+		# bash's associative-array subscript syntax chokes on an empty-string
+		# key ("bad array subscript"), and an empty PATH element traditionally
+		# means "current directory" -- not something to silently reintroduce.
+		[ -z "${pathelem}" ] && continue
+		[ -n "${seen[${pathelem}]}" ] && continue
+		seen[${pathelem}]=1
+		[ -d "${pathelem}" ] && pathelems_clean+=( "${pathelem}" )
+	done
+
+	local IFS=':'
+	echo "${pathelems_clean[*]}"
 }
 
 _mbe_buildpath ()

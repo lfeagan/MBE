@@ -380,8 +380,7 @@ _eclipse_listVersions ()
 _eclipse_run()
 {
 	if (( "${#@}" > 0)); then
-		cmd="_eclipse_config $*"
-		eval "${cmd}"
+		_eclipse_config "$@"
 	elif [[ -z "${ECLIPSE_SUBDIR}" ]]; then
 		_eclipse_config
 	fi
@@ -403,9 +402,13 @@ _eclipse_run()
 		# Linux/PPC64 Issue Fixes
 		# If using IBM 1.5 VM on Linux GTK PPC and typing in an editor crashes, add "-Xnojit"
 		# If Eclipse fails to create a lock file with the reason "No lock available", add "-Dosgi.locking=none"
-		RUN="${ECLIPSE_HOME}/eclipse ${ECLIPSE_ARGS}"
 		pushd "${ECLIPSE_HOME}" || return
-		eval "${RUN}"
+		# ECLIPSE_ARGS is a plain space-separated flags string, deliberately
+		# unquoted here so it word-splits into separate arguments -- eval
+		# would additionally re-interpret shell metacharacters in it, which
+		# this doesn't need and shouldn't risk.
+		# shellcheck disable=SC2086
+		./eclipse ${ECLIPSE_ARGS}
 		popd || return
 
 		#	./eclipse -vm "${JAVA_HOME}/bin/java" \
