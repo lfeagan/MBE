@@ -30,7 +30,7 @@ mkdir -p "${cachedir}" 2>/dev/null
 
 age=$(( maxage + 1 ))
 if [ -f "${cachefile}" ]; then
-	mtime=$(stat -f %m "${cachefile}" 2>/dev/null || stat -c %Y "${cachefile}" 2>/dev/null)
+	mtime=$(stat -c %Y "${cachefile}" 2>/dev/null || stat -f %m "${cachefile}" 2>/dev/null)
 	if [ -n "${mtime}" ]; then
 		age=$(( $(date +%s) - mtime ))
 	fi
