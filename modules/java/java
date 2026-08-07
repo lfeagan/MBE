@@ -44,9 +44,11 @@ _java_setpath ()
 {
 	# Configure JAVA_HOME, PATH, MANPATH, LD_LIBRARY_PATH
 	local module="java"
-	JAVA_HOME=$(_java_buildjavahomestring "${JAVA_BITS}" "${JAVA_CREATOR}" "${JAVA_VERSION}")
+	local maybe_java_home
+	maybe_java_home=$(_java_buildjavahomestring "${JAVA_BITS}" "${JAVA_CREATOR}" "${JAVA_VERSION}")
 
-	if [ -e "${JAVA_HOME}" ]; then
+	if [ -e "${maybe_java_home}" ]; then
+		JAVA_HOME="${maybe_java_home}"
 		PATH="${JAVA_HOME}/bin:${PATH}"
 		MANPATH="${JAVA_HOME}/man:$MANPATH"
 		LD_LIBRARY_PATH="${JAVA_HOME}/lib:${LD_LIBRARY_PATH}"

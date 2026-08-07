@@ -59,6 +59,42 @@ if ! declare -p _MBE_CLAIMED_FUNCS >/dev/null 2>&1; then
 	declare -gA _MBE_CLAIMED_FUNCS
 fi
 
+# MBE_MODULE_VARS (associative array, module name -> space-separated variable
+# names) is the same idea as MBE_MODULE_FUNCS above, but for environment
+# variables a module's _load/_setpath sets (e.g. java's JAVA_HOME, platform's
+# TOOLSPATH/KERNELNAME) instead of functions it defines. _mbe_deactivateModules
+# reads this to unset exactly the variables a module actually set, instead of
+# leaving them stale forever after deactivation.
+#
+# Two different diff windows are needed, since variables get set in two
+# different places with different call semantics:
+#  - _load-time vars are captured in the same before/after window
+#    _mbe_activateModules already uses for functions, and have the exact same
+#    recursion risk (a dependency's _load-time vars would otherwise be
+#    misattributed to the module that pulled it in) -- so this reuses
+#    _MBE_ACTIVATE_DEPTH and a parallel claimed-set, _MBE_CLAIMED_VARS.
+#  - _setpath-time vars are captured inside _mbe_buildpath's loop over
+#    MODULES_ACTIVE, one before/after snapshot per module's _setpath call.
+#    This loop is NOT recursive (no module's _setpath calls _mbe_buildpath or
+#    _mbe_activateModules), so no claimed-set/depth-guard is needed there --
+#    a flat per-module diff is sufficient.
+#
+# Attribution is by VALUE CHANGE, not just a variable's name appearing: a
+# module only claims a variable if its value differs after the module's
+# window vs. before. This is what correctly excludes a module that merely
+# re-exports (no reassignment) a variable a dependency already set -- no
+# special-case logic needed, the value comparison handles it for free.
+#
+# PATH/LD_LIBRARY_PATH/MANPATH/INCLUDE are deliberately excluded from both
+# windows: _mbe_buildpath already resets these from ORIG_* on every rebuild,
+# so tracking them here would be pure noise and could fight with that reset.
+if ! declare -p MBE_MODULE_VARS >/dev/null 2>&1; then
+	declare -gA MBE_MODULE_VARS
+fi
+if ! declare -p _MBE_CLAIMED_VARS >/dev/null 2>&1; then
+	declare -gA _MBE_CLAIMED_VARS
+fi
+
 _mbe_load ()
 {
 	local module="mbe"
@@ -123,6 +159,14 @@ mbe ()
 	if [ $# -eq 0 ]; then
 		_mbe_usage
 		return
+	elif [ "$1" == "deactivate" ]; then
+		# deactivate <module name>... [-y] -- accepts any number of module
+		# names plus an optional -y (skip the dependent-cascade confirmation
+		# prompt), so this is checked before the fixed-arg-count dispatch
+		# below rather than assuming exactly 2 args.
+		shift
+		_mbe_deactivateModules "$@"
+		return
 	elif [ $# -eq 1 ]; then
 		# no-argument commands are:
 		# list
@@ -133,12 +177,8 @@ mbe ()
 	elif [ $# -eq 2 ]; then
 		# commands are:
 		# activate <module name>
-		# deactivate <module name>
 		if [ "$1" == "activate" ]; then
 			_mbe_activateModules "$2"
-			return
-		elif [ "$1" == "deactivate" ]; then
-			_mbe_deactivateModules "$2"
 			return
 		elif [ "$1" == "list" ]; then
 			_mbe_list "$2"
@@ -375,6 +415,15 @@ _mbe_activateModules ()
 				DEBUG echo -e "_mbe_activateModules: source \"${MODULES_DIR}/${newmodule}/${newmodule}\""
 				local before after
 				before="$(declare -F | awk '{print $3}')"
+				# compgen -e (exported vars only) rather than -v: bash's
+				# `local` scoping is dynamic, so -v would also pick up every
+				# local variable on the current call stack (this function's
+				# own scaffolding, and any locals in whatever called us) --
+				# none of that is module-owned state. Every real var a
+				# module sets (JAVA_HOME, TOOLSPATH, etc.) is exported.
+				local -A varbefore=( )
+				local v
+				for v in $(compgen -e); do varbefore[$v]="${!v}"; done
 				source "${MODULES_DIR}/${newmodule}/${newmodule}"
 				"_${newmodule}_load"
 
@@ -393,6 +442,25 @@ _mbe_activateModules ()
 				MBE_MODULE_FUNCS[${newmodule}]="${!ownfuncs[*]}"
 				for f in "${!ownfuncs[@]}"; do _MBE_CLAIMED_FUNCS[$f]=1; done
 
+				# Same idea for variables -- see MBE_MODULE_VARS comment near
+				# the top of this file. A module claims a var only if its
+				# value changed (covers newly-set AND reassigned), not merely
+				# because the name is present -- this is what correctly
+				# excludes a module that only re-exports (no reassignment) a
+				# variable a dependency already set.
+				local -A ownvars=( )
+				for v in $(compgen -e); do
+					case "$v" in
+						PATH|LD_LIBRARY_PATH|MANPATH|INCLUDE) continue ;;
+					esac
+					if [[ "${varbefore[$v]+set}" != "set" || "${varbefore[$v]}" != "${!v}" ]] \
+						&& [[ -z "${_MBE_CLAIMED_VARS[$v]}" ]]; then
+						ownvars[$v]=1
+					fi
+				done
+				MBE_MODULE_VARS[${newmodule}]="${!ownvars[*]}"
+				for v in "${!ownvars[@]}"; do _MBE_CLAIMED_VARS[$v]=1; done
+
 				MODULES_ACTIVE=( "${MODULES_ACTIVE[@]}" "${newmodule}" )
 				MODULES_ACTIVE_SET[${newmodule}]=1
 			fi
@@ -400,8 +468,19 @@ _mbe_activateModules ()
 	done
 
 	(( _MBE_ACTIVATE_DEPTH-- ))
-	(( _MBE_ACTIVATE_DEPTH == 0 )) && _MBE_CLAIMED_FUNCS=()
-	_mbe_buildpath
+	if (( _MBE_ACTIVATE_DEPTH == 0 )); then
+		_MBE_CLAIMED_FUNCS=()
+		_MBE_CLAIMED_VARS=()
+		# Only rebuild the path once, when unwinding back to the top of one
+		# _mbe_activateModules call tree -- not on every nested return.
+		# Besides being redundant work, calling _mbe_buildpath from a nested
+		# frame runs every active module's _setpath (including ones this
+		# call tree hasn't finished activating yet) before an enclosing
+		# frame's own "after" var-diff snapshot is taken, which would
+		# misattribute _setpath-time vars (e.g. platform's TOOLSPATH) to
+		# whichever outer module happened to still be inside its _load.
+		_mbe_buildpath
+	fi
 	return
 }
 
@@ -446,13 +525,24 @@ _mbe_findDependents ()
 
 _mbe_deactivateModules ()
 {
-	# Unloads one or more modules from mbe
-	if (( $# < 1 )); then
-		echo "ERROR: Must provide at least 1 argument to _mbe_deactivateModules"
+	# Unloads one or more modules from mbe. Accepts an optional -y anywhere
+	# in the argument list to assume "yes" and skip the dependent-cascade
+	# confirmation prompt below (for scripting/non-interactive use).
+	local oldmodule oldmodules
+	oldmodules=( )
+	local assumeyes=0
+	for oldmodule in "$@"; do
+		if [ "${oldmodule}" == "-y" ]; then
+			assumeyes=1
+		else
+			oldmodules+=( "${oldmodule}" )
+		fi
+	done
+
+	if (( ${#oldmodules[@]} < 1 )); then
+		echo "ERROR: Must provide at least 1 module argument to _mbe_deactivateModules"
 		return 1
 	fi
-	local oldmodule oldmodules
-	oldmodules=( "$@" )
 
 	local dependents
 	mapfile -t dependents < <(_mbe_findDependents "${oldmodules[@]}")
@@ -462,22 +552,26 @@ _mbe_deactivateModules ()
 		for d in "${dependents[@]}"; do
 			echo "  ${d}"
 		done
-		local validInput=0
-		local confirmation
-		while (( validInput == 0 )); do
-			echo -n "Proceed? [y/n] and press [ENTER]: "
-			read -r confirmation
-			case "${confirmation}" in
-				y*|Y*)
-					validInput=1
-					oldmodules+=( "${dependents[@]}" )
-					;;
-				n*|N*)
-					echo "Aborted -- nothing was deactivated."
-					return 1
-					;;
-			esac
-		done
+		if (( assumeyes == 1 )); then
+			oldmodules+=( "${dependents[@]}" )
+		else
+			local validInput=0
+			local confirmation
+			while (( validInput == 0 )); do
+				echo -n "Proceed? [y/n] and press [ENTER]: "
+				read -r confirmation
+				case "${confirmation}" in
+					y*|Y*)
+						validInput=1
+						oldmodules+=( "${dependents[@]}" )
+						;;
+					n*|N*)
+						echo "Aborted -- nothing was deactivated."
+						return 1
+						;;
+				esac
+			done
+		fi
 	fi
 
 	for oldmodule in "${oldmodules[@]}"; do
@@ -500,6 +594,14 @@ _mbe_deactivateModules ()
 				unset -f "${f}"
 			done
 			unset "MBE_MODULE_FUNCS[${oldmodule}]"
+
+			# Same idea for the variables this module set -- see
+			# MBE_MODULE_VARS comment near the top of this file.
+			local v
+			for v in ${MBE_MODULE_VARS[${oldmodule}]}; do
+				unset "${v}"
+			done
+			unset "MBE_MODULE_VARS[${oldmodule}]"
 
 			unset "MODULES_ACTIVE_SET[${oldmodule}]"
 			local remaining=( )
@@ -766,7 +868,30 @@ _mbe_buildpath ()
 	local module
 	for module in "${MODULES_ACTIVE[@]}"; do
 		DEBUG echo "_mbe_buildpath: _${module}_setpath"
+
+		# Diff exported vars before/after this module's _setpath to catch
+		# vars it sets there rather than in _load (e.g. java's JAVA_HOME,
+		# platform's TOOLSPATH) -- see MBE_MODULE_VARS comment near the top
+		# of this file. Unlike the _load-time diff in _mbe_activateModules,
+		# no depth/claimed-set guard is needed here: this loop calls each
+		# module's _setpath directly in sequence, and no module's _setpath
+		# calls _mbe_buildpath or _mbe_activateModules, so there is no
+		# nested nesting to misattribute across.
+		local -A spvarbefore=( )
+		local v
+		for v in $(compgen -e); do spvarbefore[$v]="${!v}"; done
 		"_${module}_setpath"
+		for v in $(compgen -e); do
+			case "$v" in
+				PATH|LD_LIBRARY_PATH|MANPATH|INCLUDE) continue ;;
+			esac
+			if [[ "${spvarbefore[$v]+set}" != "set" || "${spvarbefore[$v]}" != "${!v}" ]]; then
+				case " ${MBE_MODULE_VARS[$module]} " in
+					*" ${v} "*) ;; # already recorded (e.g. from _load, or a prior rebuild)
+					*) MBE_MODULE_VARS[$module]="${MBE_MODULE_VARS[$module]}${MBE_MODULE_VARS[$module]:+ }${v}" ;;
+				esac
+			fi
+		done
 	done
 
 	# Prepend USER_PATHS elements
