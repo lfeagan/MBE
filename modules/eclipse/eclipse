@@ -15,7 +15,6 @@ __eclipse_dependencies=( 'mbe' 'platform' 'utils' 'java' )
 # ECLIPSE_JAVA_BITS
 
 _eclipse_localesArray=( cs de es fr hu it ja ko pl pt_BR ru sk zh zh_TW )
-_eclipse_localesString="cs de es fr hu it ja ko pl pt_BR ru sk zh zh_TW"
 
 _eclipse_load ()
 {
@@ -147,7 +146,7 @@ _eclipse_complete()
 					return 0
 					;;
 				-n)
-					mapfile -t COMPREPLY < <(compgen -W "${_eclipse_localesString}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${_eclipse_localesArray[*]}" -- "${cur}")
 					return 0
 					;;
 				-p)
