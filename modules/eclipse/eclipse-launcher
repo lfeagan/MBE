@@ -24,6 +24,16 @@ if [ -e "$HOME/.bashrc" ]; then
  source "$HOME/.bashrc"
 fi
 
+# This script isn't an MBE module -- it relies on .bashrc having already
+# activated the "platform" module to populate TOOLSPATH/TOOLSPATH32. Fail
+# with a clear message rather than silently proceeding with an empty
+# TOOLSPATH, which would otherwise surface later as a confusing
+# "ECLIPSE_HOME does not exist" error instead of naming the real cause.
+if [ -z "$TOOLSPATH" ]; then
+	echo "ERROR: TOOLSPATH is not set -- is the \"platform\" MBE module activated in \$HOME/.bashrc?" >&2
+	exit 1
+fi
+
 # Define TOOLSPATH,JAVA_HOME based on the OSTYPE, HOSTTYPE, and HOSTNAME
 if [ "$OSTYPE" == 'linux' ]; then
 	if [ "$HOSTTYPE" == 'ppc64' ]; then
