@@ -29,15 +29,19 @@
 # Substitute the new module name for 'git'
 # %s/git/newname/gc
 
-__git_dependencies=( 'mbe' )
+__git_dependencies=( 'mbe' 'homebrew' )
 
 _git_load ()
 {
 	DEBUG echo "_git_load: enter"
+	_mbe_activateModules "${__git_dependencies[@]}"
 	local module="git"
 
 	# Load preferences
-	
+
+	# Install git via Homebrew if nothing named "git" is on PATH at all.
+	_homebrew_ensureInstalled git
+
 	# Configure module
 
 	alias glgga="git log --graph --all --decorate"

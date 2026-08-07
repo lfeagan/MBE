@@ -74,6 +74,34 @@ _homebrew_findbrew ()
 	command -v brew 2>/dev/null
 }
 
+_homebrew_ensureInstalled ()
+{
+	# Usage: _homebrew_ensureInstalled <formula> [<binary-to-check>]
+	# Checks whether <binary-to-check> (defaults to <formula>) is already
+	# on PATH; if not, installs <formula> via "brew install". Other modules
+	# (vim, git, ...) call this from their own _load instead of each
+	# duplicating brew-install logic themselves.
+	local formula="$1"
+	local binary="${2:-${1}}"
+
+	if [ -z "${formula}" ]; then
+		echo "Usage: _homebrew_ensureInstalled <formula> [<binary-to-check>]" >&2
+		return 1
+	fi
+
+	if command -v "${binary}" >/dev/null 2>&1; then
+		return 0
+	fi
+
+	if [ -z "${HOMEBREW_BREWBIN}" ]; then
+		echo "_homebrew_ensureInstalled: \"${binary}\" not found and no brew available to install \"${formula}\"" >&2
+		return 1
+	fi
+
+	echo "_homebrew_ensureInstalled: \"${binary}\" not found -- installing \"${formula}\" via brew..."
+	"${HOMEBREW_BREWBIN}" install "${formula}"
+}
+
 _homebrew_setpath ()
 {
 	if [ -n "${HOMEBREW_BREWBIN}" ]; then

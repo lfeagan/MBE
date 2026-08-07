@@ -17,7 +17,7 @@
 # limitations under the License. 
 #------------------------------------------------------------------------------
 
-__vim_dependencies=( 'mbe' 'platform' )
+__vim_dependencies=( 'mbe' 'platform' 'homebrew' )
 
 _vim_load ()
 {
@@ -26,7 +26,12 @@ _vim_load ()
 	local module="vim"
 
 	# Load preferences
-	
+
+	# Install vim via Homebrew if nothing named "vim" is on PATH at all --
+	# does not affect the custom-build-under-TOOLSPATH logic in _setpath,
+	# which still takes precedence when present.
+	_homebrew_ensureInstalled vim
+
 	# Configure module
 
 	DEBUG echo "_vim_load: leave"
