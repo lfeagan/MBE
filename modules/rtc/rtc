@@ -29,7 +29,7 @@
 # Substitute the new module name for 'rtc'
 # %s/rtc/newname/gc
 
-__rtc_dependencies=( 'mbe' 'platform' )
+__rtc_dependencies=( 'mbe' 'platform' 'java' )
 
 _rtc_load ()
 {
