@@ -37,6 +37,7 @@
 __platform_dependencies=( 'mbe' )
 __platform_functions=( '_platform_load' '_platform_unload' '_platform_setpath' \
 		'_platform_config' '_platform_platformpath' '_platform_toolspath' '_platform_desc'
+		'_platform_mkdirs' '_platform_complete'
 		'cdtools' 'cdtools32' 'cdtoolsgeneric' )
 
 _platform_load ()
@@ -117,6 +118,7 @@ _platform_mkdirs ()
 	local PLATFORM_OSF1_KERNELBITS=( "64" )
 	local PLATFORM_OSF1_64_CPUTYPE=( "alpha" )
 
+	local dircount=0
 	for name in "${PLATFORM_KERNELNAME[@]}"
 	do
 		# Work-around for "HP-UX"
@@ -127,15 +129,25 @@ _platform_mkdirs ()
 		else
 			lname="${name}"
 		fi
+
 		local bitsarrayname="PLATFORM_${lname}_KERNELBITS"
-#		for bits in "${PLATFORM_${lname}_KERNELBITS[@]"
-#		do
-#
-#		done
-
+		local -n bitsref="${bitsarrayname}"
+		local bits
+		for bits in "${bitsref[@]}"
+		do
+			local cputypearrayname="PLATFORM_${lname}_${bits}_CPUTYPE"
+			local -n cputyperef="${cputypearrayname}"
+			local cputype
+			for cputype in "${cputyperef[@]}"
+			do
+				local dir="${TOOLSPATH_BASE}/${name}/${bits}/${cputype}"
+				DEBUG echo "_platform_mkdirs: mkdir -p ${dir}"
+				mkdir -p "${dir}"
+				dircount=$(( dircount + 1 ))
+			done
+		done
 	done
-
-	
+	echo "_platform_mkdirs: created/verified ${dircount} directories under ${TOOLSPATH_BASE}"
 }
 
 _platform_config ()
