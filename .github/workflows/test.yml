@@ -12,7 +12,7 @@ jobs:
     # floor), so no setup step is needed for either.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -27,7 +27,7 @@ jobs:
     # that can exercise that path without faking BASH_VERSINFO.
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: bash 3.2 falls back to a bare prompt with no errors
         run: |
