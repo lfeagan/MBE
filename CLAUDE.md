@@ -22,7 +22,7 @@ There is no build/lint/test tooling. The only meaningful commands are:
 
 ### Module contract
 
-Every module lives at `modules/<name>/<name>` (the entry-point script) with an optional `modules/<name>/<name>.conf` (user-overridable preferences, sourced before the module script). `modules/mbe/template` is the canonical skeleton for creating a new module — copy it and do a `%s/oldname/newname/gc`.
+Every module lives at `modules/<name>/<name>` (the entry-point script) with an optional `modules/<name>/<name>.conf` (user-overridable preferences, sourced before the module script). `modules/mbe/template.skel` is the canonical skeleton for creating a new module — copy it to `modules/<name>/<name>` and do a `%s/oldname/newname/gc`. It's deliberately named `.skel` rather than `template` so it's not shaped like `modules/<name>/<name>` and can never be picked up by `_mbe_listAllModules` or activated as a real module.
 
 #### Lifecycle functions
 
@@ -70,4 +70,4 @@ This only tracks *functions*. Aliases are not auto-tracked (a module's `_setpath
 
 - Private/callable functions use a single leading underscore, e.g. `_mbe_activateModules`, `_<name>_load`; module-internal arrays use double underscore (`__<name>_...`) as described above.
 - `DEBUG echo "..."` (defined in `modules/mbe/mbe`) is the standard trace-logging idiom, gated on `_DEBUG=on`; prefer it over ad hoc `echo` when adding diagnostics.
-- Every file carries the Apache 2.0 license header block — keep it when creating new module files (base new ones on `modules/mbe/template`, not a blank file).
+- Every file carries the Apache 2.0 license header block — keep it when creating new module files (base new ones on `modules/mbe/template.skel`, not a blank file).
