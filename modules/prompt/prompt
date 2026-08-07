@@ -18,7 +18,7 @@
 #------------------------------------------------------------------------------
 
 __prompt_dependencies=( 'mbe' 'colors' )
-__prompt_functions=( '_prompt_load' '_prompt_unload' '_prompt_setpath' '_prompt_usage' '_prompt_complete' )
+__prompt_functions=( '_prompt_load' '_prompt_unload' '_prompt_setpath' '_prompt_usage' '_prompt_complete' '_prompt_detectbackground' '_prompt_weatheron' '_prompt_weatheroff' )
 
 _prompt_load ()
 {
@@ -28,6 +28,9 @@ _prompt_load ()
 	local module="prompt"
 	# Load preferences
 	source "${MODULES_DIR}/${module}/${module}.conf"
+	if [ "${PROMPT_AUTODETECT_ENABLE}" == "1" ]; then
+		_prompt_detectbackground
+	fi
 	_prompt_configure
 	return 0
 }
@@ -52,26 +55,31 @@ _prompt_command ()
 	local module="prompt"
 	# XTerm supports a titlebar
 	local titlebartext
+	local has_titlebar=0
 	case $TERM in
-		"xterm" | "vt100" ) titlebartext="${PROMPT_TITLEBARTEXT}";;
+		xterm* | vt100 )
+			has_titlebar=1
+			titlebartext="${PROMPT_TITLEBARTEXT}"
+			if [ "${PROMPT_WEATHER_ENABLE}" -eq "1" ] && [ -x "${PROMPT_WEATHER_COMMAND}" ]; then
+				local weather
+				weather="$( "${PROMPT_WEATHER_COMMAND}" )"
+				titlebartext="${titlebartext} ${weather}"
+			fi
+			;;
 	esac
 
-	if [ -n "${titlebartext}" ]; then
+	if [ "${has_titlebar}" -eq 1 ]; then
 		# Escape sequence to start writing to the terminal window titlebar
 		local titlebar_start='\[\e]0;'
 		# Escape sequence to finish writing to the terminal window titlebar
 		local titlebar_end=" \a"
 
-		if [ "${PROMPT_WEATHER_ENABLE}" -eq "1" ]; then
-			if [ -f "${PROMPT_WEATHER_COMMAND}" ]; then
-				local weather
-				weather="$( ${PROMPT_WEATHER_COMMAND} )"
-				titlebartext="${titlebartext} ${weather}"
-			fi
-		fi
-
-		# Prepend the titlebar variables to generate PS1
+		# Always (re-)send the titlebar sequence, even with empty text, since
+		# terminal titles are sticky -- omitting the sequence would leave
+		# whatever text (e.g. weather) was sent on a previous call stuck.
 		PS1="${titlebar_start}${titlebartext}${titlebar_end}${PROMPT_BASE}"
+	else
+		PS1="${PROMPT_BASE}"
 	fi
 		
 	# Conditionally, prepend TABCOLOR (only for use with Konsole) to PS1
@@ -80,6 +88,50 @@ _prompt_command ()
 	if [[ "${PROMPT_TABCOLOR_ENABLE}" == 1 ]]; then
 		PS1="${PROMPT_TABCOLOR}${PS1}"
 	fi
+}
+
+_prompt_detectbackground ()
+{
+	local module="prompt"
+	local is_light=""
+
+	if [ -n "${COLORFGBG}" ]; then
+		# COLORFGBG is "foreground;background" as ANSI palette indices (0-15).
+		# Set by iTerm2, Ghostty, rxvt/urxvt and others. Not set by Terminal.app.
+		local bgindex="${COLORFGBG##*;}"
+		case "${bgindex}" in
+			0|1|2|3|4|5|6|8) is_light=0;;
+			*) is_light=1;;
+		esac
+	elif [ "${TERM_PROGRAM}" == "Apple_Terminal" ]; then
+		# Terminal.app sets neither COLORFGBG nor answers OSC 11; ask it directly.
+		local rgb
+		rgb="$(osascript -e 'tell application "Terminal" to get background color of selected tab of front window' 2>/dev/null)"
+		if [ -n "${rgb}" ]; then
+			local parts r g b
+			IFS=',' read -ra parts <<< "${rgb}"
+			r="${parts[0]//[[:space:]]/}"
+			g="${parts[1]//[[:space:]]/}"
+			b="${parts[2]//[[:space:]]/}"
+			if [ -n "${r}" ] && [ -n "${g}" ] && [ -n "${b}" ]; then
+				if [ $(( (r + g + b) / 3 )) -ge 32768 ]; then
+					is_light=1
+				else
+					is_light=0
+				fi
+			fi
+		fi
+	fi
+
+	if [ -n "${is_light}" ]; then
+		if [ "${is_light}" -eq 1 ]; then
+			PROMPT_INPUT_COLOR="black"
+		else
+			PROMPT_INPUT_COLOR="white"
+		fi
+	fi
+	# If detection failed (unknown terminal, tmux/screen eating env vars,
+	# osascript denied/errored), fall through and keep the .conf default.
 }
 
 _prompt_configure ()
@@ -108,10 +160,10 @@ _prompt_complete()
 {
 	local opts
 	COMPREPLY=( )
-	opts="swcolor"
+	opts="swcolor weatheron weatheroff"
 
 	case "${prev}" in
-		swcolor)
+		swcolor|weatheron|weatheroff)
 			COMPREPLY=( )
 			return 0
 			;;
@@ -129,4 +181,14 @@ _prompt_swcolor ()
 		* ) PROMPT_INPUT_COLOR="__colors_black";;
 	esac
 	_prompt_configure
+}
+
+_prompt_weatheron ()
+{
+	export PROMPT_WEATHER_ENABLE="1"
+}
+
+_prompt_weatheroff ()
+{
+	export PROMPT_WEATHER_ENABLE="0"
 }

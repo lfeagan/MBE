@@ -1,0 +1,45 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#------------------------------------------------------------------------------
+
+# Prints the last cached weather string, refreshing the cache in the
+# background if it is missing or older than PROMPT_WEATHER_REFRESH_SECONDS.
+# Always returns immediately -- never blocks the prompt on the network.
+
+url="${PROMPT_WEATHER_URL:-wttr.in/?format=3}"
+maxage="${PROMPT_WEATHER_REFRESH_SECONDS:-3600}"
+cachedir="${MBE_DIR:-${HOME}/.mbe}/cache"
+cachefile="${cachedir}/weather"
+
+mkdir -p "${cachedir}" 2>/dev/null
+
+age=$(( maxage + 1 ))
+if [ -f "${cachefile}" ]; then
+	mtime=$(stat -f %m "${cachefile}" 2>/dev/null || stat -c %Y "${cachefile}" 2>/dev/null)
+	if [ -n "${mtime}" ]; then
+		age=$(( $(date +%s) - mtime ))
+	fi
+fi
+
+if [ "${age}" -ge "${maxage}" ]; then
+	( curl -s --max-time 5 "${url}" > "${cachefile}.tmp" 2>/dev/null && mv "${cachefile}.tmp" "${cachefile}" ) &
+	disown 2>/dev/null
+fi
+
+[ -f "${cachefile}" ] && cat "${cachefile}"
+exit 0

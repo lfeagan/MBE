@@ -3,42 +3,52 @@
 #------------------------------------------------------------------------------
 # Copyright 2009 Lance W. Feagan
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License. 
-# You may obtain a copy of the License at 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
 #	http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-# See the License for the specific language governing permissions and 
-# limitations under the License. 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #------------------------------------------------------------------------------
 
 # Installs bash RC files under a target directory, by default $HOME
 
-# (1) Backup the existing files (if they exist)
-# (2) Copy in the new files
+# (1) Backup any existing file about to be overwritten (timestamped, never clobbered)
+# (2) Detect drift: skip (by default) any installed file that was hand-edited since
+#     the last install, rather than silently overwriting it
+# (3) Copy in the new files, recording what was installed in a manifest for next time
 
 usage ()
 {
-	echo "Usage: install [-b] [-B]"
+	echo "Usage: install [-b] [-B] [-s] [-f] [-t target] [-d]"
 	echo "  -b disable backup file creation"
-	echo "  -B enable backup file creation (default)"
-	echo "  -d print debug information"
+	echo "  -B enable backup file creation (default). Backups are timestamped and never overwritten."
+	echo "  -s symlink installed files back to this checkout instead of copying"
+	echo "     (fast iteration on a dev machine; requires this checkout to stay put)"
+	echo "  -f force overwrite of files that have drifted from what was last installed"
+	echo "     (without -f, drifted files -- e.g. hand-edited .conf files -- are left alone)"
+	echo "  -d dry run: show what would change (including diffs) without modifying anything"
 }
 
 target="${HOME}"
 print_usage=0
 dobackup=1
+dosymlink=0
+doforce=0
 debug=0
 
-while getopts ":hbBt:id" option
+while getopts ":hbBsft:d" option
 do
  case $option in
   b  ) dobackup=0;;
   B  ) dobackup=1;;
+  s  ) dosymlink=1;;
+  f  ) doforce=1;;
   t  ) target=$OPTARG;;
   d  ) debug=1;;
   h  ) print_usage=1;;
@@ -72,6 +82,18 @@ done
 MBE_DIR="${target}/.mbe"
 MBE_MODULES_DIR="${MBE_DIR}/modules"
 MBE_BACKUP_DIR="${MBE_DIR}/backup"
+MBE_MANIFEST="${MBE_DIR}/.install_manifest"
+MBE_INSTALL_LOG="${MBE_DIR}/install.log"
+
+install_ts="$(date +%Y%m%d%H%M%S)"
+backup_dir="${MBE_BACKUP_DIR}/${install_ts}"
+
+count_new=0
+count_installed=0
+count_unchanged=0
+count_drifted_skipped=0
+count_drifted_forced=0
+NEW_MANIFEST_LINES=( )
 
 # Create folder $MBE_DIR if it does not yet exist
 if [ ! -d "${MBE_DIR}" ]; then
@@ -84,50 +106,166 @@ if [ ! -d "${MBE_MODULES_DIR}" ]; then
 	[ $debug -eq 0 ] && mkdir "${MBE_MODULES_DIR}"
 fi
 
-# Perform backup of files if requested
-if [ $dobackup -eq 1 ]; then
-	if [ ! -d "${MBE_BACKUP_DIR}" ]; then
-		echo "Creating backup directory ${MBE_BACKUP_DIR}"
-		[ $debug -eq 0 ] && mkdir -p "${MBE_BACKUP_DIR}"
+_checksum ()
+{
+	if command -v sha256sum >/dev/null 2>&1; then
+		sha256sum "$1" | awk '{print $1}'
+	else
+		shasum -a 256 "$1" | awk '{print $1}'
 	fi
+}
 
-	backupfile ()
-	{
-		file=$1
-		if [ -n "$file" ]; then
-			if [ -f "${file}" ]; then
-				echo -e "Found existing $file. Backing up to ${MBE_BACKUP_DIR}"
-				[ $debug -eq 0 ] && mv "${file}" "${MBE_BACKUP_DIR}"
+_log ()
+{
+	echo "$1"
+	if [ $debug -eq 0 ]; then
+		mkdir -p "${MBE_DIR}"
+		echo "$(date '+%Y-%m-%d %H:%M:%S') $1" >> "${MBE_INSTALL_LOG}"
+	fi
+}
+
+# Prints the manifest-recorded hash for a given destination path (from the
+# previous install), if any. Returns 1 if there is no manifest or no entry.
+_manifest_hash ()
+{
+	local dest="$1"
+	[ -f "${MBE_MANIFEST}" ] || return 1
+	awk -F'\t' -v d="$dest" '$1==d { print $2; found=1 } END { exit !found }' "${MBE_MANIFEST}"
+}
+
+# installfile SRC DST
+# Copies SRC to DST with timestamped backup and drift detection:
+#  - identical content: no-op
+#  - DST missing: install
+#  - DST present, unchanged since last install: backup (if enabled) + overwrite
+#  - DST present, hand-edited since last install (drifted): skip unless -f
+installfile ()
+{
+	local src="$1"
+	local dst="$2"
+	local srchash dsthash lasthash drifted=0
+
+	srchash="$(_checksum "${src}")"
+
+	if [ -f "${dst}" ]; then
+		dsthash="$(_checksum "${dst}")"
+
+		if [ "${dsthash}" == "${srchash}" ]; then
+			count_unchanged=$(( count_unchanged + 1 ))
+			NEW_MANIFEST_LINES+=("${dst}	${srchash}")
+			return 0
+		fi
+
+		lasthash="$(_manifest_hash "${dst}")"
+		if [ -n "${lasthash}" ] && [ "${lasthash}" != "${dsthash}" ]; then
+			drifted=1
+		fi
+
+		if [ "${drifted}" -eq 1 ] && [ "${doforce}" -eq 0 ]; then
+			_log "DRIFT: ${dst} was hand-edited since the last install -- skipping (use -f to overwrite anyway)"
+			count_drifted_skipped=$(( count_drifted_skipped + 1 ))
+			# Keep the manifest pointed at the drifted (currently installed) hash,
+			# not the source hash, since we did not touch the file.
+			NEW_MANIFEST_LINES+=("${dst}	${dsthash}")
+			return 0
+		fi
+
+		if [ "${drifted}" -eq 1 ]; then
+			_log "DRIFT: ${dst} was hand-edited since the last install -- overwriting anyway due to -f"
+			count_drifted_forced=$(( count_drifted_forced + 1 ))
+		fi
+
+		if [ $debug -eq 1 ]; then
+			_log "Would update: ${dst}"
+			if command -v diff >/dev/null 2>&1; then
+				diff -u "${dst}" "${src}" 2>/dev/null | sed 's/^/    /'
 			fi
 		else
-			echo "ERROR: Attempted backup of file $file failed"
-			return 1
+			if [ $dobackup -eq 1 ]; then
+				mkdir -p "${backup_dir}"
+				cp -p "${dst}" "${backup_dir}/$(basename "${dst}")"
+				_log "Backed up ${dst} -> ${backup_dir}/$(basename "${dst}")"
+			fi
+			mkdir -p "$(dirname "${dst}")"
+			cp -p "${src}" "${dst}"
+			_log "Installed: ${dst}"
+		fi
+		count_installed=$(( count_installed + 1 ))
+	else
+		_log "Installing new file: ${dst}"
+		if [ $debug -eq 0 ]; then
+			mkdir -p "$(dirname "${dst}")"
+			cp -p "${src}" "${dst}"
+		fi
+		count_new=$(( count_new + 1 ))
+	fi
+
+	NEW_MANIFEST_LINES+=("${dst}	${srchash}")
+}
+
+copydir="${0%/*}"
+copydir="$(cd "${copydir}" && pwd)"
+
+if [ $dosymlink -eq 1 ]; then
+	echo "Symlinking files from $copydir (edits to this checkout take effect immediately, no re-install needed)"
+
+	linkfile ()
+	{
+		src="$1"
+		dst="$2"
+		echo -e "Linking \"${dst}\" -> \"${src}\""
+		if [ $debug -eq 0 ]; then
+			# dst may be a real (non-symlink) directory left over from a prior
+			# copy-based install -- rm -f alone won't remove those.
+			if [ -d "${dst}" ] && [ ! -L "${dst}" ]; then
+				rm -rf "${dst}"
+			else
+				rm -f "${dst}"
+			fi
+			ln -s "${src}" "${dst}"
 		fi
 	}
 
-	backupfile "${target}/.bashrc"
-	backupfile "${target}/.bash_aliases"
-	backupfile "${target}/.bash_profile"
+	linkfile "${copydir}/bashrc" "${target}/.bashrc"
+	linkfile "${copydir}/bash_aliases" "${target}/.bash_aliases"
+	linkfile "${copydir}/bash_profile" "${target}/.bash_profile"
+	linkfile "${copydir}/mbe_completion" "${MBE_DIR}/mbe_completion"
+
+	# Symlink each module directory individually rather than the whole modules/
+	# dir, so MBE_MODULES_DIR keeps existing as a real directory MBE can write to.
+	echo -e "Linking modules from \"${copydir}/modules/*\" to \"${MBE_MODULES_DIR}\""
+	for moduledir in "${copydir}"/modules/*/; do
+		modulename="$(basename "${moduledir}")"
+		linkfile "${copydir}/modules/${modulename}" "${MBE_MODULES_DIR}/${modulename}"
+	done
+else
+	if [ $debug -eq 1 ]; then
+		echo "Dry run -- no changes will be made. Showing what would happen:"
+	fi
+	echo "Copying files from $copydir"
+
+	installfile "${copydir}/bashrc" "${target}/.bashrc"
+	installfile "${copydir}/bash_aliases" "${target}/.bash_aliases"
+	installfile "${copydir}/bash_profile" "${target}/.bash_profile"
+	installfile "${copydir}/mbe_completion" "${MBE_DIR}/mbe_completion"
+
+	# Copy contents of modules folder, file by file, so backups/drift-detection
+	# apply per file instead of blindly overwriting the whole tree.
+	echo -e "Copying modules from \"${copydir}/modules/*\" to \"${MBE_MODULES_DIR}\""
+	while IFS= read -r srcfile; do
+		relpath="${srcfile#"${copydir}"/modules/}"
+		installfile "${srcfile}" "${MBE_MODULES_DIR}/${relpath}"
+	done < <(find "${copydir}/modules" -type f)
+
+	if [ $debug -eq 0 ]; then
+		printf '%s\n' "${NEW_MANIFEST_LINES[@]}" > "${MBE_MANIFEST}"
+	fi
+
+	echo ""
+	echo "Summary: ${count_new} new, ${count_installed} updated, ${count_unchanged} unchanged, ${count_drifted_skipped} drifted (skipped), ${count_drifted_forced} drifted (forced)"
+	if [ "${count_drifted_skipped}" -gt 0 ]; then
+		echo "Some installed files were hand-edited since the last install and were left alone -- see above, or re-run with -f to overwrite them."
+	fi
 fi
 
-copydir="${0%/*}"
-echo "Copying files from $copydir"
-
-echo -e "Copying \"${copydir}/bashrc\" to \"${target}/.bashrc\""
-[ $debug -eq 0 ] && cp "${copydir}/bashrc" "${target}/.bashrc"
-
-echo -e "Copying \"${copydir}/bash_aliases\" to \"${target}/.bash_aliases\""
-[ $debug -eq 0 ] && cp "${copydir}/bash_aliases" "${target}/.bash_aliases"
-
-echo -e "Copying \"${copydir}/bash_profile\" to \"${target}/.bash_profile\""
-[ $debug -eq 0 ] && cp "${copydir}/bash_profile" "${target}/.bash_profile"
-
-echo -e "Copying \"${copydir}/mbe_completion\" to \"${MBE_DIR}/mbe_completion\""
-[ $debug -eq 0 ] && cp "${copydir}/mbe_completion" "${MBE_DIR}/mbe_completion"
-
-# Copy contents of modules folder
-echo -e "Copying modules from \"${copydir}/modules/*\" to \"${MBE_MODULES_DIR}\""
-[ $debug -eq 0 ] && rsync -r -C "${copydir}"/modules/ "${MBE_MODULES_DIR}"
-
 echo "Installation completed successfully"
-

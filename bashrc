@@ -238,6 +238,7 @@ fi
 
 bind '"\C-t": possible-completions' # replaces 'transpose-chars'
 bind '"\M-t": menu-complete'        # replaces 'transpose-words'
+bind -x '"\C-xc": _prompt_swcolor'  # manual fallback when background auto-detect gets it wrong
 
 # Source global definitions
 #if [ -f /etc/bashrc ]; then
