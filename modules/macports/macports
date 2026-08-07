@@ -30,7 +30,6 @@
 # %s/macports/newname/gc
 
 __macports_dependencies=( 'mbe' )
-__macports_aliases=( 'git' )
 
 _macports_load ()
 {
@@ -38,7 +37,7 @@ _macports_load ()
 	local module="macports"
 
 	# Load preferences
-	
+
 	# Configure module
 
 	DEBUG echo "_macports_load: leave"
@@ -46,10 +45,6 @@ _macports_load ()
 
 _macports_unload ()
 {
-	local als
-	for als in "${__macports_aliases[@]}"; do
-		unalias "${als}" 2>/dev/null
-	done
 	return 0
 }
 
@@ -58,9 +53,6 @@ _macports_setpath ()
   if [ -f /opt/local/etc/profile.d/bash_completion.sh ]; then
       . /opt/local/etc/profile.d/bash_completion.sh
   fi
-	if [ -f /opt/local/bin/hub ]; then
-		alias git=hub
-	fi
 }
 
 _macports_usage ()
