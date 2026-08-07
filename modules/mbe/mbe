@@ -23,6 +23,18 @@
 #  environment, including modules, debugging, and logging.
 ############################################################
 
+# MODULES_ACTIVE (indexed array) preserves activation order, which
+# _mbe_buildpath relies on to build PATH/LD_LIBRARY_PATH/MANPATH/INCLUDE with
+# later-activated modules taking precedence over earlier ones.
+# MODULES_ACTIVE_SET (associative array) mirrors the same membership as an
+# O(1) lookup table for _mbe_isModuleActive, since bash associative arrays
+# do not guarantee iteration order and so cannot replace MODULES_ACTIVE
+# outright. Guarded like ORIG_PATH below so re-sourcing this file (e.g. via
+# `resource`) does not wipe out already-active modules.
+if ! declare -p MODULES_ACTIVE_SET >/dev/null 2>&1; then
+	declare -gA MODULES_ACTIVE_SET
+fi
+
 _mbe_load ()
 {
 	local module="mbe"
@@ -337,6 +349,7 @@ _mbe_activateModules ()
 				source "${MODULES_DIR}/${newmodule}/${newmodule}"
 				"_${newmodule}_load"
 				MODULES_ACTIVE=( "${MODULES_ACTIVE[@]}" "${newmodule}" )
+				MODULES_ACTIVE_SET[${newmodule}]=1
 			fi
 		fi
 	done
@@ -363,7 +376,13 @@ _mbe_deactivateModules ()
 			# Module is not yet active
 			DEBUG echo "_mbe_deactivateModules: unloading $oldmodule"
 			"_${oldmodule}_unload"
-			MODULES_ACTIVE=( "${MODULES_ACTIVE[@]/$oldmodule/}" )
+			unset "MODULES_ACTIVE_SET[${oldmodule}]"
+			local remaining=( )
+			local activemodule
+			for activemodule in "${MODULES_ACTIVE[@]}"; do
+				[ "${activemodule}" == "${oldmodule}" ] || remaining+=("${activemodule}")
+			done
+			MODULES_ACTIVE=( "${remaining[@]}" )
 		fi
 	done
 	_mbe_buildpath
@@ -397,12 +416,9 @@ _mbe_isModuleActive ()
 		return 1
 	fi
 
-	local name
-	for name in "${MODULES_ACTIVE[@]}"; do
-		if [ "$1" == "$name" ]; then
-			return 1
-		fi
-	done
+	if [ -n "${MODULES_ACTIVE_SET[$1]}" ]; then
+		return 1
+	fi
 	return 0
 }
 
