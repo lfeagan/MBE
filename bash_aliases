@@ -22,7 +22,7 @@
  
 alias md='mkdir'
 alias rd='rmdir'
-alias +='pushd .'
+alias '+'='pushd .'
 alias pu='pushd'
 alias po='popd'
 alias ugly='nice -n -200'
@@ -79,13 +79,13 @@ fi
 
 addkey () { ssh-agent sh -c 'ssh-add < /dev/null && bash'; }
 xtermb () { xterm -fg 'white' -bg 'black'; }
-ew () { ${EDITOR} `which "$@"`; }
+ew () { ${EDITOR} "$(which "$@")"; }
 
 # Modified listing commands
 #ll () { ls --color=auto -FAql "$@"; }
 #lf () { ls --color=auto -FAq  "$@"; }
-function ll () { [[ "$OSTYPE" == linux* ]] && ls -FAql "$@" || ls -FAl "$@"; }
-function lf () { [[ "$OSTYPE" == linux* ]] && ls -FAq "$@" || ls -FA "$@"; }
+function ll () { if [[ "$OSTYPE" == linux* ]]; then ls -FAql "$@"; else ls -FAl "$@"; fi; }
+function lf () { if [[ "$OSTYPE" == linux* ]]; then ls -FAq "$@"; else ls -FA "$@"; fi; }
 function la () { ls -A "$@"; }
 function l () { ls -CF "$@"; }
 function l. () { ls -d .* "$@"; } 
@@ -105,12 +105,12 @@ function ewhich ()
 {
 	if [[ "$OSTYPE" == linux* ]]; then
 		if [[ "$OSDISTRIBUTOR" == "Ubuntu" ]]; then
-			$(echo $whichbin) "$@"
+			"$whichbin" "$@"
 		else
-			(alias; declare -f) | $(echo $whichbin) --tty-only --read-alias --read-functions --show-tilde --show-dot "$@"
+			(alias; declare -f) | "$whichbin" --tty-only --read-alias --read-functions --show-tilde --show-dot "$@"
 		fi
 	else
-		$(echo $whichbin) "$@"
+		"$whichbin" "$@"
 	fi
 }
 
@@ -135,10 +135,11 @@ whichvi ()
 {
 	local usage="Usage: whichvi <executable file>"
 	if [ -n "$1" ]; then
-		local path="$($whichbin $1)"
+		local path
+		path="$("$whichbin" "$1")"
 		DEBUG echo "path=$path"
 		if [[ -n "$path" ]]; then
-			vi $path
+			vi "$path"
 		else
 			echo -e "Error: Command '${1} not found"
 		fi
@@ -171,8 +172,7 @@ filereplace ()
   # parse arguments with getopts
   # reset getopts state variables
 	unset source
-	unset target
-	unset sourcedir
+	unset targetdir
 	unset sourcefile
 	unset backups
   unset print_usage
@@ -210,18 +210,20 @@ filereplace ()
 	fi
 	# Target must be a directory
 	if [[ ! ( -d "${targetdir}" ) ]]; then
-		echo "ERROR: Target ${target} is non-directory or does not exist"
+		echo "ERROR: Target ${targetdir} is non-directory or does not exist"
 		print_usage="1"
 	fi
 
-	# Break apart source into directory and file components
-	sourcedir="${source%/*}"
+	# Break apart source into its file component
 	sourcefile="${source##*/}"
 
 	DEBUG echo -e "Target directory: \"${targetdir}\""
 	DEBUG echo "Searching for file: ${sourcefile}"
-	targetfiles=( $(find ${targetdir} -name ${sourcefile} -printf "%p\n" ) )
-	DEBUG echo "targetfiles=${targetfiles[@]}"
+	targetfiles=( )
+	while IFS= read -r targetfile_line; do
+		targetfiles+=( "$targetfile_line" )
+	done < <(find "${targetdir}" -name "${sourcefile}" -printf "%p\n")
+	DEBUG echo "targetfiles=${targetfiles[*]}"
 	for targetfile in "${targetfiles[@]}"; do
 		# Do backup creation before over-writing
 		# !!! WARNING !!!
@@ -271,14 +273,14 @@ msshfs ()
  # Lastly, it might be nice to make it easy to mount something other than your home directly, such as the root of the remote filesystem. This could be implemented as a simple option, perhaps using a -r="/remote/path/to/mount" option.
  # The above items 
 
- sshfs ${remotehost}: ${HOME}/${SSHFS_LOCALDIR};
+ sshfs "${remotehost}": "${HOME}/${SSHFS_LOCALDIR}";
 }
 umsshfs ()
 {
-	fusermount -u ${HOME}/${SSHFS_LOCALDIR};
+	fusermount -u "${HOME}/${SSHFS_LOCALDIR}";
 }
 # GSA (Austin)
-cdgsa () { pushd .; cd /gsa/ausgsa/home/$(echo ${USER} | cut -c 1)/$(echo ${USER} | cut -c 2)/${USER}; }
+cdgsa () { pushd . || return; cd "/gsa/ausgsa/home/$(echo "${USER}" | cut -c 1)/$(echo "${USER}" | cut -c 2)/${USER}" || return; }
 # Floppy
 mfloppy () { mount /dev/fd0 /mnt/floppy; }
 umfloppy () { umount /mnt/floppy; }
@@ -332,7 +334,7 @@ shells () { p /etc/shells; }
 lfstab () { p /etc/fstab; }
 lxconf () { p /etc/X11/xorg.conf; }
 
-if [ "`${IDPROG_USERID}`" -eq 0 ]
+if [ "$(${IDPROG_USERID})" -eq 0 ]
 then
     efstab () { e /etc/fstab; }
     exconf () { e /etc/X11/xorg.conf; }
@@ -352,19 +354,19 @@ startvnc ()
 # similiarly named local directory, without all of the usual wget path trash.
 wget-dir()
 {
-  #OPTARGS="--continue --tries=100 --recursive --level=inf --no-parent --page-requisites --no-host-directories"
-  OPTARGS="--continue --tries=100 --recursive --level=inf --no-parent --no-directories"
+  #OPTARGS=(--continue --tries=100 --recursive --level=inf --no-parent --page-requisites --no-host-directories)
+  OPTARGS=(--continue --tries=100 --recursive --level=inf --no-parent --no-directories)
   # if no arguments are given, print out the usage
-  if [[ ( "$#" < 1) || ( "$#" > 2 ) ]]
+  if [[ ( "$#" -lt 1) || ( "$#" -gt 2 ) ]]
   then
     echo "Usage: wget-dir <address> [<filename extension>]"
   else
     # if the second argument does not exist, simply retrieve all files in from the address listed
     if [ -z "$2" ]
     then
-      wget $OPTARGS $1
+      wget "${OPTARGS[@]}" "$1"
     else
-      wget $OPTARGS --ignore-case -A $2 $1
+      wget "${OPTARGS[@]}" --ignore-case -A "$2" "$1"
     fi
   fi
   # wget -r -l1 --no-parent -A.rpm http://linuxsrv1.zurich.ibm.com/linux/updates/yum/SLED/10/i386/hannover/
@@ -381,32 +383,28 @@ find-large ()
   # usage message printed to help users
   usage="Usage: find-large -p <path to search under> -s <minimum_size>"
 
-  # When used as a function, do not call exit as it will exit the shell instead
-  OPTERROR=33
-
-  if [ -z $1 ] # Exit and complain if no argument(s) given.
+  if [ -z "$1" ] # Exit and complain if no argument(s) given.
   then
-   echo $usage
-   #exit $OPTERROR
+   echo "$usage"
   else
    # parse arguments with getopts
-   while getopts ":p:s:" option
+   while getopts ":hp:s:" option
    do
     case $option in
      p  ) search_path=$OPTARG;;
      s  ) min_size=$OPTARG;;
-     h  ) echo $usage
+     h  ) echo "$usage"
           return;;
-     \? ) echo $usage
+     \? ) echo "$usage"
           return;;
-     *  ) echo $usage
+     *  ) echo "$usage"
           return;;
     esac
    done
    # reset OPTIND to 1
    OPTIND=1
 
-   shift $(($OPTIND - 1))
+   shift $((OPTIND - 1))
    # Decrements the argument pointer
    # so it points to next argument.
 
@@ -425,12 +423,14 @@ searchpath ()
 {
  # Copy PATH so we can strip off elements from it
  path=$PATH
- while [ $path ]; do
+ while [ -n "$path" ]; do
   ls "${path%%:*}\n"
 
-  # Delete the first element from path
-  path="${path#*:}"
+  # Delete the first element from path; once no ":" remains, we're on
+  # the last element, so clear path to terminate the loop
+  case "$path" in
+   *:*) path="${path#*:}" ;;
+   *) path="" ;;
+  esac
  done
-
- return ""
 }

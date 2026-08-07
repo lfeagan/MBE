@@ -7,12 +7,12 @@ _mbe_complete()
 #	local cur prev opts base module
 	COMPREPLY=( )
 	cur="${COMP_WORDS[COMP_CWORD]}"
-	if [ ${COMP_CWORD} -ge 2 ]; then
+	if [ "${COMP_CWORD}" -ge 2 ]; then
 		prev="${COMP_WORDS[COMP_CWORD-1]}"
 	else
 		prev=""
 	fi
-	opts="list activate deactivate version `_mbe_listActiveModules`"
+	opts="list activate deactivate version $(_mbe_listActiveModules)"
 
 	# The command structure is: mbe <module> <function> [<arg1> <arg2> ...]
 	# COMP_CWORD == 0 --> is always 'mbe'
@@ -35,7 +35,7 @@ _mbe_complete()
 			if [ $retval -ne 1 ]; then
 				module=""
 			else
-				if [ ${COMP_CWORD} -ge 2 ]; then
+				if [ "${COMP_CWORD}" -ge 2 ]; then
 					module_function="${COMP_WORDS[2]}"
 				else
 					module_function=""
@@ -44,42 +44,33 @@ _mbe_complete()
 		fi
 	fi
 
-	if [ $COMP_CWORD -eq "1" ]; then
-		COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	if [ "$COMP_CWORD" -eq "1" ]; then
+		_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 		return 0
 	elif [ -z "${module}" ]; then
 		case "${prev}" in
 			list)
-				COMPREPLY=( $(compgen -W "all active inactive" -- ${cur}) )
+				_mbe_readlines COMPREPLY < <(compgen -W "all active inactive" -- "${cur}")
 				return 0
 				;;
 			activate)
-				local disabled=`_mbe_listInactiveModules`
-				COMPREPLY=( $(compgen -W "${disabled}" -- ${cur})  )
+				local disabled
+				disabled=$(_mbe_listInactiveModules)
+				_mbe_readlines COMPREPLY < <(compgen -W "${disabled}" -- "${cur}")
 				return 0
 				;;
 			deactivate)
-				local enabled=`_mbe_listActiveModules`
-				COMPREPLY=( $(compgen -W "${enabled}" -- ${cur})  )
+				local enabled
+				enabled=$(_mbe_listActiveModules)
+				_mbe_readlines COMPREPLY < <(compgen -W "${enabled}" -- "${cur}")
 				return 0
 				;;
 		esac
 		return 0
 	else
-		_${module}_complete
+		"_${module}_complete"
 		return 0
 	fi
-
-	if [ -z "${cur}" ]; then
-		COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-		return 0
-	else
-		local enabled=`_mbe_listActiveModules`
-		_eclipse_complete
-	fi
-
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-	return 0
 }
 complete -F _mbe_complete mbe
 
@@ -92,18 +83,17 @@ _mbe_getRemainingConfigFlags ()
 	local result=""
 
 	if [ -z "${_mbe_functionFlags}" ]; then
-		echo $result
+		echo "$result"
 		return 1
 	fi
 
 	for flag in "${_mbe_functionFlags[@]}"; do
-		_mbe_compWordsContains "${flag}"
-		if [ $? -eq 1 ]; then
+		if ! _mbe_compWordsContains "${flag}"; then
 			result="$result$flag "
 #			echo -e "\nadding $flag" >&2
 		fi
 	done
-	echo $result
+	echo "$result"
 	return 0
 }
 
@@ -124,10 +114,10 @@ _mbe_compWordsContains ()
 	fi
 	while [ "$idx" -lt "$COMP_CWORD" ]; do
 		local arg="${COMP_WORDS[idx]}"
-		if [ $arg = $1 ]; then
+		if [ "$arg" = "$1" ]; then
 			return 0
 		fi
-		let idx+=1
+		(( idx+=1 ))
 	done
 	return 1
 }

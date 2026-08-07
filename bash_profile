@@ -28,10 +28,9 @@
 # fi
 
 if [ -f "/etc/motd" ]; then
-  cmp -s $HOME/.hushlogin /etc/motd
-  if [ $? != 0 ]; then
-    tee $HOME/.hushlogin < /etc/motd
-    echo -n "Press Enter to continue: " && read ans
+  if ! cmp -s "$HOME/.hushlogin" /etc/motd; then
+    tee "$HOME/.hushlogin" < /etc/motd
+    echo -n "Press Enter to continue: " && read -r
   fi
 fi
 

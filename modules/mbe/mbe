@@ -31,7 +31,7 @@ _mbe_load ()
 	# Load the features specified in preferences file
 	for feature in "${__mbe_features[@]}"; do
 		source "${MODULES_DIR}/${module}/${feature}"
-		_${module}_${feature}_load
+		"_${module}_${feature}_load"
 	done
 
 	export MBE_LOGFILE_NAME="${MBE_LOGFILE_NAME-mbe.log}"
@@ -99,13 +99,13 @@ mbe ()
 		# activate <module name>
 		# deactivate <module name>
 		if [ "$1" == "activate" ]; then
-			_mbe_activateModules $2
+			_mbe_activateModules "$2"
 			return
 		elif [ "$1" == "deactivate" ]; then
-			_mbe_deactivateModules $2
+			_mbe_deactivateModules "$2"
 			return
 		elif [ "$1" == "list" ]; then
-			_mbe_list $2
+			_mbe_list "$2"
 			return
 		else
 			local module_name=$1
@@ -119,7 +119,7 @@ mbe ()
 		command="_${module_name}_${module_command}"
 		shift
 		shift
-		${command} $@
+		"${command}" "$@"
 	fi
 }
 
@@ -131,7 +131,7 @@ mbe ()
 ############################################################
 _mbe_log_info ()
 {
-	echo -ne "INFO: ${@}\n" >> "${MBE_LOGFILE}"
+	echo -ne "INFO: ${*}\n" >> "${MBE_LOGFILE}"
 }
 
 ############################################################
@@ -142,7 +142,7 @@ _mbe_log_info ()
 ############################################################
 _mbe_log_error ()
 {
-	echo -ne "ERROR: ${@}\n" >> "${MBE_LOGFILE}"
+	echo -ne "ERROR: ${*}\n" >> "${MBE_LOGFILE}"
 }
 
 ############################################################
@@ -154,6 +154,25 @@ _mbe_log_error ()
 timestamp ()
 {
 	date '+%Y.%m.%d_%H:%M:%S.%N'
+}
+
+############################################################
+# Function: _mbe_readlines
+# Description:
+#  Portable replacement for 'mapfile -t', since mapfile
+#  requires bash >= 4 and this environment targets much
+#  older bash releases (e.g. bash 3.2 on macOS, AIX, HP-UX).
+#  $1 is the name of the array variable to populate; the
+#  remaining arguments are ignored, input is read from stdin.
+############################################################
+_mbe_readlines ()
+{
+	local __mbe_readlines_var="$1"
+	local __mbe_readlines_line
+	eval "${__mbe_readlines_var}=()"
+	while IFS= read -r __mbe_readlines_line; do
+		eval "${__mbe_readlines_var}+=(\"\${__mbe_readlines_line}\")"
+	done
 }
 
 ############################################################
@@ -174,22 +193,22 @@ _mbe_envpathsearch ()
 	local progs_len=$1; shift;
   
 	local progs=( )
-	local idx='0'
+	local idx=0
 	until [ "$idx" -eq "$progs_len" ] # Read progs to be searched for
 	do
-		progs[$idx]="$1"
-		DEBUG echo "progs=${progs[@]}"
-		let 'idx += 1'
+		progs[idx]="$1"
+		DEBUG echo "progs=${progs[*]}"
+		(( idx += 1 ))
 		shift
 	done
 
 	local paths=( )
-	local idx='0'
+	local idx=0
 	until [ -z "$1" ] # Read paths to search beneath until no more arguments remain
 	do
-		paths[$idx]="$1"
-		DEBUG echo "paths=${paths[@]}"
-		let 'idx += 1'
+		paths[idx]="$1"
+		DEBUG echo "paths=${paths[*]}"
+		(( idx += 1 ))
 		shift
 	done
 
@@ -216,17 +235,15 @@ _mbe_envpathsearch ()
 ############################################################
 _mbe_updatembe ()
 {
-	pushd $HOME
+	pushd "$HOME" || return
 	local outdir="mbe-update"
-	svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk ${HOME}/.mbe/update
-    local retval="$?"
-    if [[ "$retval" == "0" ]]; then
-        ${outdir}/.mbe/trunk/install
-        rm -rf ${outdir}
-    else
-        echo "ERROR:  Failed to checkout bash files for updating."
-    fi
-    popd
+	if svn co https://mbe.svn.sourceforge.net/svnroot/mbe/trunk "${HOME}/.mbe/update"; then
+		"${outdir}/.mbe/trunk/install"
+		rm -rf "${outdir}"
+	else
+		echo "ERROR:  Failed to checkout bash files for updating."
+	fi
+	popd || return
 }
 
 _mbe_checkout ()
@@ -237,11 +254,14 @@ _mbe_checkout ()
 
 _mbe_createModuleConfBackups ()
 {
-	local ts=$(date '+%Y.%m.%d_%H:%M')
-	local modules=( $(_mbe_listAllModules) )
+	local ts
+	ts=$(date '+%Y.%m.%d_%H:%M')
+	local modules
+	_mbe_readlines modules < <(_mbe_listAllModules)
 	local module
 	for module in "${modules[@]}"; do
-		local modulePath="$(_mbe_getModulePath ${module})"
+		local modulePath
+		modulePath="$(_mbe_getModulePath "${module}")"
 		if [ -f "${modulePath}/${module}.conf" ]; then
 			echo "Creating backup of ${module}.conf to ${module}.conf.${ts}"
 			cp "${modulePath}/${module}.conf" "${modulePath}/${module}.conf.${ts}"
@@ -251,8 +271,8 @@ _mbe_createModuleConfBackups ()
 
 _mbe_removeModuleConfBackups ()
 {
-	local modules=( $(_mbe_listAllModules) )
-	local backupConfs=( $(find "${MODULES_DIR}" -regex '.*[a-z0-9A-Z]+\.conf\..*' -printf "%p\n") )
+	local backupConfs
+	_mbe_readlines backupConfs < <(find "${MODULES_DIR}" -regex '.*[a-z0-9A-Z]+\.conf\..*' -printf "%p\n")
 
 	if (( ${#backupConfs[*]} == 0 )); then
 		echo "No preferences are available for removal"
@@ -268,7 +288,7 @@ _mbe_removeModuleConfBackups ()
 		while (( validInput == 0 ));
 		do
 			echo -n "Confirm that you want to remove all of these files [yes/no] and press [ENTER]: "
-			read removalConfirmation
+			read -r removalConfirmation
 	
 			if [[ "${removalConfirmation}" == "yes" ]]; then
 				validInput=1
@@ -321,7 +341,7 @@ _mbe_activateModules ()
 		return 1
 	fi
 	local newmodule newmodules
-	newmodules=( $@ )
+	newmodules=( "$@" )
 
 	for newmodule in "${newmodules[@]}"; do
 		_mbe_isModuleActive "$newmodule"
@@ -335,7 +355,7 @@ _mbe_activateModules ()
 				DEBUG echo -e "_mbe_activateModules: source \"${MODULES_DIR}/${newmodule}/${newmodule}\""
 				source "${MODULES_DIR}/${newmodule}/${newmodule}"
 				"_${newmodule}_load"
-				MODULES_ACTIVE=( ${MODULES_ACTIVE[@]} ${newmodule} )
+				MODULES_ACTIVE=( "${MODULES_ACTIVE[@]}" "${newmodule}" )
 			fi
 		fi
 	done
@@ -351,7 +371,7 @@ _mbe_deactivateModules ()
 		return 1
 	fi
 	local oldmodule oldmodules
-	oldmodules=( $@ )
+	oldmodules=( "$@" )
 
 	for oldmodule in "${oldmodules[@]}"; do
 		_mbe_isModuleActive "$oldmodule"
@@ -362,7 +382,7 @@ _mbe_deactivateModules ()
 			# Module is not yet active
 			DEBUG echo "_mbe_deactivateModules: unloading $oldmodule"
 			"_${oldmodule}_unload"
-			MODULES_ACTIVE=( ${MODULES_ACTIVE[@]/$oldmodule/} )
+			MODULES_ACTIVE=( "${MODULES_ACTIVE[@]/$oldmodule/}" )
 		fi
 	done
 	_mbe_buildpath
@@ -384,7 +404,7 @@ _mbe_reactivateModules ()
 _mbe_activateAllModules ()
 {
 	local modules
-	modules=( $(_mbe_listAllModules) )
+	_mbe_readlines modules < <(_mbe_listAllModules)
 	_mbe_activateModules "${modules[@]}"
 }
 
@@ -407,7 +427,7 @@ _mbe_isModuleActive ()
 
 _mbe_list ()
 {
-	if [ -z $1 ]; then
+	if [ -z "$1" ]; then
 		echo "Must specify all, active, or inactive"
 		return 1
 	fi
@@ -446,7 +466,7 @@ _mbe_listAllModules ()
 	if [ -n "$MODULES_DIR" ]; then
 		#pushd "$MODULES_DIR" > /dev/null
 		#read -r -a modules <<< $(ls -1 ${MODULES_DIR})
-		modules=( ${MODULES_DIR}/* )
+		modules=( "${MODULES_DIR}"/* )
 		local module
 		local result=()
 		for module in "${modules[@]}"; do
@@ -570,39 +590,39 @@ _mbe_cleanpath ()
 	pathelems=( ${uncleanpath//:/ } )
 	pathelems_clean=( )
 	#echo "#numelems=${#pathelems[*]}"
-	for pathelem in ${pathelems[*]}; do
+	for pathelem in "${pathelems[@]}"; do
 		# check for pathelem already being in pathelems_clean
-		let dupfound=0
-		for pathelem_clean in ${pathelems_clean[@]}; do
+		(( dupfound=0 ))
+		for pathelem_clean in "${pathelems_clean[@]}"; do
 			if [ "${pathelem}" == "${pathelem_clean}" ]; then
-				let dupfound=1
+				(( dupfound=1 ))
 				break
 			fi
 		done
 		# if no duplicate was found, then check for directory existence
-		if (( $dupfound == 0 )); then
+		if (( dupfound == 0 )); then
 			if [ -d "${pathelem}" ]; then
 				pathelems_clean[${#pathelems_clean[@]}]="${pathelem}"
 			fi
 		fi
 	done
 	#echo "${pathelems_clean[@]}"
-		
+
 	# Algorithm could user either numelems or lastelem to determine delimiter insertion
-	let idx=0
- 	let numelems=${#pathelems_clean[*]}
+	(( idx=0 ))
+	(( numelems=${#pathelems_clean[*]} ))
 	#echo "numelems=$numelems"
 	cleanpath=""
-	if (( $numelems > 0 )); then # There is at least one arary element
-		if (( $numelems == 1 )); then # There is only one array element
-			echo "${pathelems_clean[$lastelemidx]}"
+	if (( numelems > 0 )); then # There is at least one arary element
+		if (( numelems == 1 )); then # There is only one array element
+			echo "${pathelems_clean[0]}"
 		else # There is more than one path element
 			cleanpath="${pathelems_clean[$idx]}"
-			let "idx+=1"
-			while (( $idx < $numelems )); do
+			(( idx+=1 ))
+			while (( idx < numelems )); do
 					#echo "idx=$idx"
 					cleanpath="${cleanpath}:${pathelems_clean[$idx]}"
-				let "idx+=1"
+				(( idx+=1 ))
 			done
 			echo "$cleanpath"
 		fi
@@ -624,12 +644,12 @@ _mbe_buildpath ()
 	local module
 	for module in "${MODULES_ACTIVE[@]}"; do
 		DEBUG echo "_mbe_buildpath: _${module}_setpath"
-		_${module}_setpath
+		"_${module}_setpath"
 	done
 
 	# Prepend USER_PATHS elements
 	if [ "${#USER_PATHS[*]}" -gt 0 ]; then
-		for user_path in ${USER_PATHS[@]}; do
+		for user_path in "${USER_PATHS[@]}"; do
 #			if [ -d "${user_path}" ]; then
 				PATH="${user_path}:${PATH}"
 #			fi
@@ -637,7 +657,7 @@ _mbe_buildpath ()
 	fi
 	# Prepend USER_LD_LIBRARY_PATHS elements
 	if [ "${#USER_LD_LIBRARY_PATHS[*]}" -gt 0 ]; then
-		for user_ld_library_path in ${USER_LD_LIBRARY_PATHS[@]}; do
+		for user_ld_library_path in "${USER_LD_LIBRARY_PATHS[@]}"; do
 #if [ -d "${user_ld_library_path}" ]; then
 				LD_LIBRARY_PATH="${user_ld_library_path}:${LD_LIBRARY_PATH}"
 #			fi
@@ -645,7 +665,7 @@ _mbe_buildpath ()
 	fi
 	# Prepend USER_MANPATHS elements
 	if [ "${#USER_MANPATHS[*]}" -gt 0 ]; then
-		for user_manpath in ${USER_MANPATHS[@]}; do
+		for user_manpath in "${USER_MANPATHS[@]}"; do
 #			if [ -d "${user_manpath}" ]; then
 				MANPATH="${user_manpath}:${MANPATH}"
 #			fi
@@ -655,7 +675,7 @@ _mbe_buildpath ()
 	# Cleanup unavailable path elements
 	PATH=$(_mbe_cleanpath "${PATH}")
 	LD_LIBRARY_PATH=$(_mbe_cleanpath "${LD_LIBRARY_PATH}")
-	MANPATH=$(_mbe_cleanpath ${MANPATH})
+	MANPATH=$(_mbe_cleanpath "${MANPATH}")
 
 	# Perform exports
 	export INCLUDE

@@ -21,8 +21,8 @@
 # ------ ClearCase Tools Related -------------
 #---------------------------------------------
 
-_clearcase_dependencies=( 'mbe' )
-_clearcase_functions=( '_clearcase_load' '_clearcase_unload' '_clearcase_setpath' '_clearcase_info' '_clearcase_complete' 'ct' 'csv' 'prefiff' '_clearcase_myviews' 'codir' '_clearcase_annotate' )
+__clearcase_dependencies=( 'mbe' )
+__clearcase_functions=( '_clearcase_load' '_clearcase_unload' '_clearcase_setpath' '_clearcase_info' '_clearcase_complete' 'ct' 'csv' 'prefiff' '_clearcase_myviews' 'codir' '_clearcase_annotate' )
 
 _clearcase_load ()
 {
@@ -72,16 +72,16 @@ _clearcase_complete()
 			;;
 		codir)
 			local config_opts="-p -v -b -c -j -n"
-			COMPREPLY=( $(compgen -W "${config_opts}" -- ${cur})  )
+			_mbe_readlines COMPREPLY < <(compgen -W "${config_opts}" -- "${cur}")
 			return 0
 			;;
 		annotate)
-			COMPREPLY=( $(compgen -o filenames -A file ${cur}) )
+			_mbe_readlines COMPREPLY < <(compgen -o filenames -A file "${cur}")
 			return 0
 			;;
 		esac
 
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }
 
@@ -92,7 +92,7 @@ _clearcase_cdview ()
 
 _clearcase_myviews ()
 {
-	cleartool lsview "$@" |grep ${USER}
+	cleartool lsview "$@" |grep "${USER}"
 }
 
 _clearcase_annotate ()
@@ -118,7 +118,7 @@ prediff ()
 codir ()
 {
 	usage="Usage: codir [-p <path to checkout under>] [-c <checkout comment>] [-i] [-d]"
-	checkout_path=`pwd`
+	checkout_path=$(pwd)
 	xargs_interactive=0
 	debug=0
 
@@ -129,11 +129,11 @@ codir ()
 			c  ) checkout_comment="${OPTARG}";;
 			i  ) xargs_interactive=1;;
 			d  ) debug=1;;
-			h  ) echo $usage;;
-			\? ) echo $usage
+			h  ) echo "$usage";;
+			\? ) echo "$usage"
 			     OPTIND=1
 			     return;;
-			*  ) echo $usage
+			*  ) echo "$usage"
 			     OPTIND=1
 			     return;;
 		esac

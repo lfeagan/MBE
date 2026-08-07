@@ -65,7 +65,7 @@ _utils_info ()
 
 trimdirs ()
 {
-	if (( $BSDARGS )); then
+	if (( BSDARGS )); then
 		sed -E 's/.*\///g'
 	else
 		sed -r 's/.*\///g'
@@ -74,7 +74,7 @@ trimdirs ()
 
 find_eregex ()
 {
-	if (( $BSDARGS )); then
+	if (( BSDARGS )); then
 		find -E "${@}"
 	else
 		find "${@}"

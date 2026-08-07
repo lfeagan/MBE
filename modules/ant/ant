@@ -79,7 +79,7 @@ _ant_cd()
 	if [ -z "${ANT_HOME}" ]; then
 		_ant_config
 	fi
-	cd "${ANT_HOME}"
+	cd "${ANT_HOME}" || return
 }
 
 _ant_config ()
@@ -156,9 +156,9 @@ _ant_complete()
 {
 	COMPREPLY=( )
 
-	if [ $COMP_CWORD -eq 2 ]; then
+	if [ "$COMP_CWORD" -eq 2 ]; then
 		funcs="cd config env list"
-		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		_mbe_readlines COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
 		return 0
 	fi
 
@@ -177,34 +177,38 @@ _ant_complete()
 			case "${prev}" in
 				-b)
 					local bits="32 64"
-					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					_mbe_readlines COMPREPLY < <(compgen -W "${bits}" -- "${cur}")
 					return 0
 					;;
 				-c)
-					local creators="$(_java_listCreators)"
-					COMPREPLY=( $(compgen -W "${creators}" -- ${cur})  )
+					local creators
+					creators="$(_java_listCreators)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${creators}" -- "${cur}")
 					return 0
 					;;
 				-j)
-					local versions="$(_java_listVersions)"
-					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					local versions
+					versions="$(_java_listVersions)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 				-p)
 					local products="apache-ant"
-					COMPREPLY=( $(compgen -W "${products}" -- ${cur})  )
+					_mbe_readlines COMPREPLY < <(compgen -W "${products}" -- "${cur}")
 					return 0
 					;;
 				-v)
-					local versions="$(_ant_listVersions)"
-					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					local versions
+					versions="$(_ant_listVersions)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 				config|run|*)
 					# flags are: "-b -c -j -n -p -v "
 					_mbe_functionFlags=( '-b' '-c' '-j' '-p' '-v' )
-					local flags="$(_mbe_getRemainingConfigFlags)"
-					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					local flags
+					flags="$(_mbe_getRemainingConfigFlags)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
 					return 0
 					;;
 			esac
@@ -224,7 +228,7 @@ _ant_list()
 
 	case "$1" in
 	versions)
-		_ant_listVersions $2
+		_ant_listVersions "$2"
 		;;
 	*)
 		echo "Unrecognized option"
@@ -265,7 +269,8 @@ _ant_listVersions ()
 	SEARCH_PRODUCT=${SEARCH_PRODUCT:=${ANT_PRODUCT}}
 	SEARCH_PATH="${TOOLSPATHGENERIC}/${SEARCH_PRODUCT}"
 
-	declare -a versions=( $(find_eregex ${SEARCH_PATH} -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort) )
+	declare -a versions
+	_mbe_readlines versions < <(find_eregex "${SEARCH_PATH}" -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort)
 
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 

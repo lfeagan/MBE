@@ -120,7 +120,8 @@ _rtc_config ()
 
 	# Verify that requested change will succeed
 	local maybe_rtc_scmtools_dir="${TOOLSPATH32}/scmtools"
-	local maybe_java_home="$(java_buildjavahomestring ${bits} ${creator} ${version})"
+	local maybe_java_home
+	maybe_java_home="$(_java_buildjavahomestring "${bits}" "${creator}" "${version}")"
 	DEBUG echo "maybe_java_home=${maybe_java_home}"
 	if [ -n "${maybe_java_home}" ]; then
 		RTC_SCMTOOLS_DIR=""
@@ -147,7 +148,13 @@ _rtc_listWorkspaces ()
 
 _rtc_loadWorkspace ()
 {
-	echo -ne ""
+	if [ -z "${1}" ]; then
+		echo "Must specify a workspace name to be loaded."
+		return 1
+	fi
+	local workspace_name="${1}"
+
+	"${RTC_SCMTOOLS_DIR}/scm" load --all -d "${RTC_TARGET_DIR}" -f -i -u "${RTC_USERNAME}" -P "${RTC_PASSWORD}" -r "${RTC_REPOSITORY_URI}" "${workspace_name}"
 }
 
 _rtc_scmtools_buildpath ()
@@ -167,11 +174,11 @@ _rtc_scmtools_buildpath ()
 			echo ""
 			return 1
 		fi
-		java_isValidCreator ${creator}
+		_java_isValidCreator "${creator}"
 		if [[ "$?" == 1 ]]; then
-			java_isValidVersion ${creator} ${version}
+			_java_isValidVersion "${creator}" "${version}"
 			if [[ "$?" == 1 ]]; then
-				maybe_java_home="${maybe_java_home}/${java_javadir}/${creator}/${version}"
+				maybe_java_home="${maybe_java_home}/${__java_javadir}/${creator}/${version}"
 				if [[ -d "${maybe_java_home}" ]]; then
 					echo "${maybe_java_home}"
 				fi
@@ -181,15 +188,6 @@ _rtc_scmtools_buildpath ()
 	echo ""
 	return 1
 }
-
-if [ -z "${1}" ]; then
-	echo "Must specify a workspace name to be loaded."
-	exit 1
-else
-	WORKSPACE_NAME="${1}"
-fi
-
-"${SCMTOOLS_DIR}/scm" load --all -d "${TARGET_DIR}" -f -i -u "${USERNAME}" -P "${PASSWORD}" -r "${REPOSITORY_URI}" "${WORKSPACE_NAME}"
 
 #Help on load
 #Load the contents of the specified workspace into the local filesystem. By default, the workspace is loaded into a subdirectory of the current working directory named the same as the provided workspace selector

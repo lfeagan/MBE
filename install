@@ -60,7 +60,7 @@ confirmed=0
 while [ "$confirmed" == 0 ]; do
 	echo "Installing to $target"
 	echo "Are you sure you want to do this? [y/n]"
-	read input
+	read -r input
 	if [[ "$input" == y* ]]; then
 		confirmed=1
 	elif [[ "$input" == n* ]]; then
@@ -100,7 +100,7 @@ if [ $dobackup -eq 1 ]; then
 				[ $debug -eq 0 ] && mv "${file}" "${MBE_BACKUP_DIR}"
 			fi
 		else
-			echo "ERROR: Attempted backup of file $sourcefile failed"
+			echo "ERROR: Attempted backup of file $file failed"
 			return 1
 		fi
 	}
@@ -127,7 +127,7 @@ echo -e "Copying \"${copydir}/mbe_completion\" to \"${MBE_DIR}/mbe_completion\""
 
 # Copy contents of modules folder
 echo -e "Copying modules from \"${copydir}/modules/*\" to \"${MBE_MODULES_DIR}\""
-[ $debug -eq 0 ] && rsync -r -C ${copydir}/modules/ "${MBE_MODULES_DIR}"
+[ $debug -eq 0 ] && rsync -r -C "${copydir}"/modules/ "${MBE_MODULES_DIR}"
 
 echo "Installation completed successfully"
 

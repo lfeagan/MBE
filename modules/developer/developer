@@ -36,7 +36,7 @@ _developer_load ()
 	# Load preferences file
 	source "${MODULES_DIR}/${module}/${module}.conf"
 	# Source the features specified in preferences file
-	DEBUG echo "_developer_load: developer_features=${__developer_features[@]}"
+	DEBUG echo "_developer_load: developer_features=${__developer_features[*]}"
 	local feature
 	for feature in "${__developer_features[@]}"; do
 		source "${MODULES_DIR}/${module}/${feature}"
@@ -58,11 +58,11 @@ _developer_setpath ()
 {
 	DEBUG echo "_developer_setpath: enter"
 	local module="developer"
-	DEBUG echo "_developer_setpath: developer_features=${__developer_features[@]}"
+	DEBUG echo "_developer_setpath: developer_features=${__developer_features[*]}"
 	local feature
 	for feature in "${__developer_features[@]}"; do
-		DEBUG echo ${module}_${feature}_setpath
-		${module}_${feature}_setpath
+		DEBUG echo "${module}_${feature}_setpath"
+		"${module}_${feature}_setpath"
 	done
 	DEBUG echo "_developer_setpath: leave"
 	return 0

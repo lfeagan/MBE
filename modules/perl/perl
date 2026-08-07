@@ -54,7 +54,7 @@ _perl_setpath ()
 	fi
 
 	# Perl
-	if [ -e ${TOOLSPATH}/perl/5.8.8 ]; then
+	if [ -e "${TOOLSPATH}"/perl/5.8.8 ]; then
 		PATH="${TOOLSPATH}/perl/5.8.8/bin:${PATH}" 
 		MANPATH="${TOOLSPATH}/perl/5.8.8/man:${MANPATH}"
 	fi
@@ -72,8 +72,8 @@ _perl_setpath ()
 
 	local PERL_LIB_PATH="${TOOLSPATH}/perl/${PERL_VERSION}"
 	# Check that the Perl version exists
-	if [ -d "${PERL_PATH}/lib" ]; then
-		PERL5LIB="${PERL_PATH}/lib:${PERL5LIB}"
+	if [ -d "${PERL_LIB_PATH}/lib" ]; then
+		PERL5LIB="${PERL_LIB_PATH}/lib:${PERL5LIB}"
 	fi
 
 	# Check for a site

@@ -62,7 +62,8 @@ _homebrew_setpath ()
 		alias git=hub
 	fi
 	if [ -f "/usr/libexec/java_home" ]; then
-	  export JAVA_HOME=$(/usr/libexec/java_home)
+	  JAVA_HOME=$(/usr/libexec/java_home)
+	  export JAVA_HOME
 	  export PATH="${JAVA_HOME}/bin:${PATH}"
 	fi
 	if [ -d "/usr/local/share/man" ]; then

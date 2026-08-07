@@ -21,13 +21,13 @@
 
 #set -v # Enable verbose script execution (print every line)
 
-if [ -e "~/.bashrc" ]; then
- source "~/.bashrc"
+if [ -e "$HOME/.bashrc" ]; then
+ source "$HOME/.bashrc"
 fi
 
 # Customization
 declare USERJVM_ENABLE="1"
-declare USERJVM=""
+declare -a USERJVM=()
 
 # Define TOOLSPATH,JAVA_HOME based on the OSTYPE, HOSTTYPE, and HOSTNAME
 if [ "$OSTYPE" == 'linux' ]; then
@@ -46,7 +46,7 @@ if [[ "$USERJVM_ENABLE" == 1 ]]; then
 	# if [ -z "$JAVA_HOME" ]; then # Check if JAVA_HOME is already configured
 	JAVA_HOME="${TOOLSPATH}/java/latest"
 	if [ -d "$JAVA_HOME" ]; then
-		USERJVM="-vm ${JAVA_HOME}/bin/java"
+		USERJVM=( -vm "${JAVA_HOME}/bin/java" )
 	fi
 	export JAVA_HOME
 fi
@@ -74,13 +74,13 @@ echo "ECLIPSE_HOME=$ECLIPSE_HOME"
 export ECLIPSE_HOME
 
 if [ -e "$ECLIPSE_HOME" ]; then
-  pushd .
-  cd "$ECLIPSE_HOME"
-   ./eclipse ${USERJVM} \
-   -user @user.home/eclipse/${ECLIPSE_VER}/user -configuration @user.home/eclipse/${ECLIPSE_VER}/conf -data @user.home/eclipse/${ECLIPSE_VER}/workspace \
+  pushd . || exit
+  cd "$ECLIPSE_HOME" || exit
+   ./eclipse "${USERJVM[@]}" \
+   -user @user.home/eclipse/"${ECLIPSE_VER}"/user -configuration @user.home/eclipse/"${ECLIPSE_VER}"/conf -data @user.home/eclipse/"${ECLIPSE_VER}"/workspace \
    -Dosgi.locking=none -Xnojit \
    -vmargs -Xmx256M
-  popd
+  popd || exit
 else
   echo "ERROR: Location ${ECLIPSE_HOME} does not exist"
 fi

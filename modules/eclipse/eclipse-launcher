@@ -20,8 +20,8 @@
 # Customized based on the Eclipse Mutli-User Install Guide at:
 # http://help.eclipse.org/help32/index.jsp?topic=/org.eclipse.platform.doc.isv/reference/misc/multi_user_installs.html
 
-if [ -e "~/.bashrc" ]; then
- source "~/.bashrc"
+if [ -e "$HOME/.bashrc" ]; then
+ source "$HOME/.bashrc"
 fi
 
 # Define TOOLSPATH,JAVA_HOME based on the OSTYPE, HOSTTYPE, and HOSTNAME
@@ -41,7 +41,7 @@ if [ -z "$1" ]; then
  # ...run the latest version
  ECLIPSE_HOME="${TOOLSPATH}/eclipse/latest"
  if [[ -e "${ECLIPSE_HOME}" ]]; then
-  ECLIPSE_VER="$(readlink ${ECLIPSE_HOME})"
+  ECLIPSE_VER="$(readlink "${ECLIPSE_HOME}")"
  fi
 else # If $1 has been set, the user is attempting to run a specific version of Eclipse
  ECLIPSE_VER="$1"
@@ -56,13 +56,13 @@ export JAVA_HOME
 export ECLIPSE_HOME
 
 if [ -e "$ECLIPSE_HOME" ]; then
-  pushd .
-  cd "$ECLIPSE_HOME"
+  pushd . || exit
+  cd "$ECLIPSE_HOME" || exit
    ./eclipse -vm "${JAVA_HOME}/bin/java" \
-   -user @user.home/eclipse/${ECLIPSE_VER}/user -configuration @user.home/eclipse/${ECLIPSE_VER}/conf -data @user.home/eclipse/${ECLIPSE_VER}/workspace \
+   -user @user.home/eclipse/"${ECLIPSE_VER}"/user -configuration @user.home/eclipse/"${ECLIPSE_VER}"/conf -data @user.home/eclipse/"${ECLIPSE_VER}"/workspace \
    -Dosgi.locking=none -Xnojit \
    -vmargs -Xmx256M
-  popd
+  popd || exit
 else
   echo "ERROR: Location ${ECLIPSE_HOME} does not exist"
 fi

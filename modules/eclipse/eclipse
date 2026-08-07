@@ -74,8 +74,8 @@ _eclipse_setmozpath()
 	fi
 
 	# Build list of library directories to search
-	# Uses sub-shells for globbing directories
-	local LIB_DIRS=("${LIBDIR}/mozilla" "${LIBDIR}/firefox" $(echo "${LIBDIR}/xulrunner*") "${LIBDIR}/mozilla-firefox" $(echo "${LIBDIR}/thunderbird*") )
+	# Globs are expanded directly (unquoted) so bash matches directory names
+	local LIB_DIRS=("${LIBDIR}/mozilla" "${LIBDIR}/firefox" "${LIBDIR}"/xulrunner* "${LIBDIR}/mozilla-firefox" "${LIBDIR}"/thunderbird* )
 	# The libraries to search for
 	local LIBS=("libgtkembedmoz.so" "libxul.so")
 
@@ -115,9 +115,9 @@ _eclipse_complete()
 {
 	COMPREPLY=( )
 
-	if [ $COMP_CWORD -eq 2 ]; then
+	if [ "$COMP_CWORD" -eq 2 ]; then
 		funcs="cd cdworkspace config env list run"
-		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		_mbe_readlines COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
 		return 0
 	fi
 
@@ -136,38 +136,42 @@ _eclipse_complete()
 			case "${prev}" in
 				-b)
 					local bits="32 64"
-					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					_mbe_readlines COMPREPLY < <(compgen -W "${bits}" -- "${cur}")
 					return 0
 					;;
 				-c)
-					local creators="$(_java_listCreators)"
-					COMPREPLY=( $(compgen -W "${creators}" -- ${cur})  )
+					local creators
+					creators="$(_java_listCreators)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${creators}" -- "${cur}")
 					return 0
 					;;
 				-j)
-					local versions="$(_java_listVersions)"
-					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					local versions
+					versions="$(_java_listVersions)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 				-n)
-					COMPREPLY=( $(compgen -W "${_eclipse_localesString}" -- ${cur})  )
+					_mbe_readlines COMPREPLY < <(compgen -W "${_eclipse_localesString}" -- "${cur}")
 					return 0
 					;;
 				-p)
 					local products="Eclipse"
-					COMPREPLY=( $(compgen -W "${products}" -- ${cur})  )
+					_mbe_readlines COMPREPLY < <(compgen -W "${products}" -- "${cur}")
 					return 0
 					;;
 				-v)
-					local versions="$(_eclipse_listVersions)"
-					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					local versions
+					versions="$(_eclipse_listVersions)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 				config|run|*)
 					# flags are: "-b -c -j -n -p -v "
 					_mbe_functionFlags=( '-b' '-c' '-j' '-n' '-p' '-v' )
-					local flags="$(_mbe_getRemainingConfigFlags)"
-					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					local flags
+					flags="$(_mbe_getRemainingConfigFlags)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
 					return 0
 					;;
 			esac
@@ -368,7 +372,7 @@ _eclipse_listVersions ()
 		return 1
 	fi
 
-	declare -a versions=( $(find_eregex ${SEARCH_PATH} -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort) )
+	_mbe_readlines versions < <(find_eregex "${SEARCH_PATH}" -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort)
 
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 
@@ -381,13 +385,13 @@ _eclipse_listVersions ()
 _eclipse_run()
 {
 	if (( "${#@}" > 0)); then
-		cmd="_eclipse_config ${@}"
+		cmd="_eclipse_config $*"
 		eval "${cmd}"
 	elif [[ -z "${ECLIPSE_SUBDIR}" ]]; then
 		_eclipse_config
 	fi
 
-	echo ${ECLIPSE_HOME}
+	echo "${ECLIPSE_HOME}"
 	if [ ! -d "${ECLIPSE_HOME}" ]; then
 		echo "Unable to run: No Eclipse home configured"
 	else
@@ -405,9 +409,9 @@ _eclipse_run()
 		# If using IBM 1.5 VM on Linux GTK PPC and typing in an editor crashes, add "-Xnojit"
 		# If Eclipse fails to create a lock file with the reason "No lock available", add "-Dosgi.locking=none"
 		RUN="${ECLIPSE_HOME}/eclipse ${ECLIPSE_ARGS}"
-		pushd "${ECLIPSE_HOME}"
+		pushd "${ECLIPSE_HOME}" || return
 		eval "${RUN}"
-		popd
+		popd || return
 
 		#	./eclipse -vm "${JAVA_HOME}/bin/java" \
 		#	-data "${ECLIPSE_DATAHOME}" \
@@ -420,7 +424,7 @@ _eclipse_cdworkspace()
 	if [ -z "${ECLIPSE_SUBDIR}" ]; then
 		_eclipse_config
 	fi
-	cd "${HOME}/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/workspace"
+	cd "${HOME}/${ECLIPSE_WORKDIR}/${ECLIPSE_SUBDIR}/workspace" || return
 }
 
 _eclipse_cd()
@@ -428,7 +432,7 @@ _eclipse_cd()
 	if [ -z "${ECLIPSE_SUBDIR}" ]; then
 		_eclipse_config
 	fi
-	cd "${ECLIPSE_HOME}"
+	cd "${ECLIPSE_HOME}" || return
 }
 
 _sdp_run()

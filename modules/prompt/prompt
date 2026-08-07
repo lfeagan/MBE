@@ -64,7 +64,8 @@ _prompt_command ()
 
 		if [ "${PROMPT_WEATHER_ENABLE}" -eq "1" ]; then
 			if [ -f "${PROMPT_WEATHER_COMMAND}" ]; then
-				local weather="$( ${PROMPT_WEATHER_COMMAND} )"
+				local weather
+				weather="$( ${PROMPT_WEATHER_COMMAND} )"
 				titlebartext="${titlebartext} ${weather}"
 			fi
 		fi
@@ -116,7 +117,7 @@ _prompt_complete()
 			;;
 		esac
 
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }
 

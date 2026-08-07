@@ -134,7 +134,7 @@ fi
 
 # dircolors works much better than the antiquated exports used below
 if [ -f /usr/bin/dircolors ]; then
-	eval $(dircolors -b)
+	eval "$(dircolors -b)"
 else
 	export LS_COLORS='no=01;37:fi=01;37:di=01;34:ln=01;36:pi=01;32:so=01;35:do=01;35:bd=01;33:cd=01;33:ex=01;31:mi=00;37:or=00;36:'
 fi
@@ -143,19 +143,19 @@ fi
 if [ -z "${USER_PAGERS[*]}" ]; then
 	__mbe_pager_choices=("less" "more")
 else
-	__mbe_pager_choices=( $(echo "${USER_PAGERS[*]}") )
+	__mbe_pager_choices=( "${USER_PAGERS[@]}" )
 fi
-_mbe_envpathsearch PAGER ${#USER_PAGERS[@]} `echo ${__mbe_pager_choices[@]} ${std_bin_paths[@]}`
-[ -n "$RETVAL" ] && $(echo $RETVAL)
+_mbe_envpathsearch PAGER "${#USER_PAGERS[@]}" "${__mbe_pager_choices[@]}" "${std_bin_paths[@]}"
+[ -n "$RETVAL" ] && eval "$RETVAL"
 
 # Editors
 if [ -z "${USER_EDITORS[*]}" ]; then
 	__mbe_editor_choices=("vim" "vi" "emacs")
 else
-	__mbe_editor_choices=( $(echo "${USER_EDITORS[*]}") )
+	__mbe_editor_choices=( "${USER_EDITORS[@]}" )
 fi
-_mbe_envpathsearch EDITOR ${#USER_EDITORS[@]} `echo ${__mbe_editor_choices[@]} ${std_bin_paths[@]}`
-[ -n "$RETVAL" ] && $(echo $RETVAL)
+_mbe_envpathsearch EDITOR "${#USER_EDITORS[@]}" "${__mbe_editor_choices[@]}" "${std_bin_paths[@]}"
+[ -n "$RETVAL" ] && eval "$RETVAL"
 export CVSEDITOR="${EDITOR}"
 export FCEDIT="${EDITOR}"
 export SVN_EDITOR="${EDITOR}"
@@ -260,8 +260,8 @@ fi
 resource ()
 {
 	#_mbe_reloadModules
-	source ${HOME}/.bashrc; 
-	source ${HOME}/.bash_aliases;
+	source "${HOME}/.bashrc"
+	source "${HOME}/.bash_aliases"
 }
 
 #######################

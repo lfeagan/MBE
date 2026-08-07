@@ -29,9 +29,9 @@
 # Substitute the new module name for 'intellij'
 # %s/oldname/newname/gc
 
-intellij_dependencies=( 'mbe' )
-intellij_functions=( '_intellij_load' '_intellij_unload' '_intellij_setpath' '_intellij_info' '_intellij_complete' )
-intellij_aliases=( 'android-studio' 'clion' 'goland' 'intellij' )
+__intellij_dependencies=( 'mbe' )
+__intellij_functions=( '_intellij_load' '_intellij_unload' '_intellij_setpath' '_intellij_info' '_intellij_complete' )
+__intellij_aliases=( 'android-studio' 'clion' 'goland' 'intellij' )
 
 _intellij_load ()
 {
@@ -48,10 +48,10 @@ _intellij_load ()
 _intellij_unload ()
 {
 	local func
-	for func in "${intellij_functions[@]}"; do
+	for func in "${__intellij_functions[@]}"; do
 		unset "${func}"
 	done
-	for als in "${intellij_aliases[@]}"; do
+	for als in "${__intellij_aliases[@]}"; do
 		unalias "${als}"
 	done
 	return 0

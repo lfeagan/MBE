@@ -55,21 +55,21 @@ oldname_unload ()
 
 oldname_setpath ()
 {
-
+	:
 }
 
 oldname_info ()
 {
-
+	:
 }
 
 _oldname_complete()
 {
 	COMPREPLY=( )
 
-	if [ $COMP_CWORD -eq 2 ]; then
+	if [ "$COMP_CWORD" -eq 2 ]; then
 		funcs="cd config env list"
-		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		_mbe_readlines COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
 		return 0
 	fi
 
@@ -88,19 +88,21 @@ _oldname_complete()
 			case "${prev}" in
 				-b)
 					local bits="32 64"
-					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					_mbe_readlines COMPREPLY < <(compgen -W "${bits}" -- "${cur}")
 					return 0
 					;;
 				-v)
-					local versions="$(_oldname_listVersions)"
-					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					local versions
+					versions="$(_oldname_listVersions)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 				config|run|*)
 					# flags are: "-b -v "
 					_mbe_functionFlags=( '-b' '-v' )
-					local flags="$(_mbe_getRemainingConfigFlags)"
-					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					local flags
+					flags="$(_mbe_getRemainingConfigFlags)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
 					return 0
 					;;
 			esac

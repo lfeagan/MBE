@@ -34,16 +34,15 @@
 # 
 ############################################################
 
-_platform_dependencies=( 'mbe' )
-_platform_functions=( '_platform_load' '_platform_unload' '_platform_setpath' \
+__platform_dependencies=( 'mbe' )
+__platform_functions=( '_platform_load' '_platform_unload' '_platform_setpath' \
 		'_platform_config' '_platform_platformpath' '_platform_toolspath' '_platform_desc'
 		'cdtools' 'cdtools32' 'cdtoolsgeneric' )
 
 _platform_load ()
 {
-	local module="platform"
 	# Load preferences file
-	#source "${MODULES_DIR}/${module}/${module}.conf"
+	#source "${MODULES_DIR}/platform/platform.conf"
 	# Define exports that cannot change after module load
 	_platform_config
 	_platform_platformpath
@@ -51,9 +50,8 @@ _platform_load ()
 
 _platform_unload ()
 {
-	local module="platform"
 	local func
-	for func in "${_platform_functions[@]}"; do
+	for func in "${__platform_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
@@ -61,7 +59,6 @@ _platform_unload ()
 
 _platform_setpath ()
 {
-	local module="platform"
 	_platform_toolspath
 	_platform_distributor
 }
@@ -152,10 +149,10 @@ _platform_config ()
 	BSDARGS=0
 
 	# Given a KERNELNAME, can reliably determine how to figure out CPUTYPE and KERNELBITS
-	KERNELNAME=`uname -s`
+	KERNELNAME=$(uname -s)
 	if [[ "$KERNELNAME" == "AIX" ]]; then
-		CPUTYPE=`/usr/bin/uname -p`
-		KERNELBITS=`/usr/bin/getconf KERNEL_BITMODE`
+		CPUTYPE=$(/usr/bin/uname -p)
+		KERNELBITS=$(/usr/bin/getconf KERNEL_BITMODE)
 		BSDARGS=0
 	elif [[ "$KERNELNAME" == "CYGWIN_NT-5.1" ]]; then
 		CPUTYPE="$(uname -m)"
@@ -166,7 +163,7 @@ _platform_config ()
 		fi
 		BSDARGS=0
 	elif [[ "$KERNELNAME" == "Darwin" ]]; then
-		CPUTYPE=`/usr/bin/uname -p`
+		CPUTYPE=$(/usr/bin/uname -p)
 		KERNELBITS=64
 		BSDARGS=1
 	elif [[ "$KERNELNAME" == "HP-UX" ]]; then
@@ -175,21 +172,21 @@ _platform_config ()
 		# `model` = r?XXYY, where ? = "p" (PA-RISC) or "x" (Itanium)
 		# `getconf CPU_VERSION` @see /usr/include/sys/unistd.h for usage
 		# `getconf CPU_CHIP_TYPE`
- 		CPUTYPE=`uname -m`
+ 		CPUTYPE=$(uname -m)
 		if [[ "$CPUTYPE" != "ia64" ]]; then
 		  CPUTYPE="pa"
 		fi
-		KERNELBITS=`/usr/bin/getconf KERNEL_BITS`
+		KERNELBITS=$(/usr/bin/getconf KERNEL_BITS)
 		BSDARGS=1
 	elif [[ "$KERNELNAME" == "IRIX64" ]]; then
-		CPUTYPE=`/usr/bin/uname -p`
+		CPUTYPE=$(/usr/bin/uname -p)
 		KERNELBITS=64
 		BSDARGS=0
 	elif [[ "$KERNELNAME" == "Linux" ]]; then
-		CPUTYPE=`/bin/uname -p`
+		CPUTYPE=$(/bin/uname -p)
 		# On Ubuntu/Debian systems, reports "unknown", try again with -m for machine type
 		if [[ "${CPUTYPE}" == "unknown" ]]; then
-			CPUTYPE=`/bin/uname -m`
+			CPUTYPE=$(/bin/uname -m)
 		fi
 		if [[ "$CPUTYPE" == "athlon" ]]; then
 			CPUTYPE="i686"
@@ -198,19 +195,19 @@ _platform_config ()
 		if [[ "$CPUTYPE" == "ppc64" ]]; then
 		  KERNELBITS=64
 		else
-			KERNELBITS=`/usr/bin/getconf LONG_BIT`
+			KERNELBITS=$(/usr/bin/getconf LONG_BIT)
 		fi
 		BSDARGS=0
 	elif [[ "$KERNELNAME" == "SunOS" ]]; then
-		CPUTYPE=`/usr/bin/uname -p`
-		KERNELBITS=`isainfo -b`
+		CPUTYPE=$(/usr/bin/uname -p)
+		KERNELBITS=$(isainfo -b)
 		BSDARGS=0
 	elif [[ "$KERNELNAME" == "OSF1" ]]; then
-		CPUTYPE=`/usr/bin/uname -p`
+		CPUTYPE=$(/usr/bin/uname -p)
 		KERNELBITS=64
 		BSDARGS=0
 	elif [[ "$KERNELNAME" == "Windows_NT" ]]; then
-		CPUTYPE=`uname -p`
+		CPUTYPE=$(uname -p)
 		if [[ "${CPUTYPE}" == "586" ]]; then
 			CPUTYPE="i686"
 			KERNELBITS=32
@@ -221,7 +218,7 @@ _platform_config ()
 		BSDARGS=0
 	else
 		#echo "Unrecognized OS: $KERNELNAME"
-		CPUTYPE=`/usr/bin/uname -p`
+		CPUTYPE=$(/usr/bin/uname -p)
 		KERNELBITS=64
 	fi
 	export CPUTYPE KERNELNAME KERNELBITS BSDARGS
@@ -338,10 +335,10 @@ _platform_complete()
 			;;
 		esac
 
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }
 
-cdtools () { cd "${TOOLSPATH}"; }
-cdtools32 () { cd "${TOOLSPATH32}"; }
-cdtoolsgeneric () { cd "${TOOLSPATHGENERIC}"; }
+cdtools () { cd "${TOOLSPATH}" || return; }
+cdtools32 () { cd "${TOOLSPATH32}" || return; }
+cdtoolsgeneric () { cd "${TOOLSPATHGENERIC}" || return; }

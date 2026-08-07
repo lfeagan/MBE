@@ -98,9 +98,9 @@ _sauerbraten_run ()
 	gamebin="sauerbraten_unix"
 
 	logdir="${SAUERBRATEN_LOG_DIR}"
-	logfile="$(date ${SAUERBRATEN_LOG_FILE_DATE})"
+	logfile="$(date "${SAUERBRATEN_LOG_FILE_DATE}")"
 	logpath="${logdir}/${logfile}"
-	timestamp="$(date ${SAUERBRATEN_LOG_TIMESTAMP})"
+	timestamp="$(date "${SAUERBRATEN_LOG_TIMESTAMP}")"
 
 	# configure logdir
 	# if logdir does not exist, create it
@@ -120,7 +120,7 @@ _sauerbraten_run ()
 	fi
 
 	# run game
-	pushd "${gamedir}"
+	pushd "${gamedir}" || return
 	if ${SAUERBRATEN_LOG}; then
 		echo "Logging: Enabled"
 		echo "Logging to: ${logpath}"
@@ -143,19 +143,19 @@ _sauerbraten_run ()
 			./${gamebin} "$*"
 		fi
 	fi
-	popd
+	popd || return
 }
 
 _sauerbraten_compressScreenshots ()
 {
-	pushd "${SAUERBRATEN_HOME_DIR}"
+	pushd "${SAUERBRATEN_HOME_DIR}" || return
 	mogrify -path "${SAUERBRATEN_HOME_DIR}/screenshots" -format jpg -resize 50% "*.png"
 	if [ $? -eq 0 ]; then
 		rm *.png
 	else
 		echo "Morgify exited with non-zero return. Leaving png files."
 	fi
-	popd
+	popd || return
 }
 
 _sauerbraten_complete()
@@ -171,11 +171,11 @@ _sauerbraten_complete()
 			;;
 		list)
 			local list_opts="versions"
-			COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
+			_mbe_readlines COMPREPLY < <(compgen -W "${list_opts}" -- "${cur}")
 			return 0
 			;;
 		esac
 
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }

@@ -49,7 +49,7 @@ _java_setpath ()
 {
 	# Configure JAVA_HOME, PATH, MANPATH, LD_LIBRARY_PATH
 	local module="java"
-	JAVA_HOME=$(_java_buildjavahomestring ${JAVA_BITS} ${JAVA_CREATOR} ${JAVA_VERSION})
+	JAVA_HOME=$(_java_buildjavahomestring "${JAVA_BITS}" "${JAVA_CREATOR}" "${JAVA_VERSION}")
 
 	if [ -e "${JAVA_HOME}" ]; then
 		PATH="${JAVA_HOME}/bin:${PATH}"
@@ -69,10 +69,9 @@ _java_complete()
 {
 	COMPREPLY=( )
 
-	if [ $COMP_CWORD -eq 2 ]; then
-		opts="config env list"
+	if [ "$COMP_CWORD" -eq 2 ]; then
 		funcs="cd config env list"
-		COMPREPLY=( $(compgen -W "${funcs}" -- ${cur}) )
+		_mbe_readlines COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
 		return 0
 	fi
 
@@ -87,38 +86,42 @@ _java_complete()
 			case "${prev}" in
 				-b)
 					local bits="32 64"
-					COMPREPLY=( $(compgen -W "${bits}" -- ${cur})  )
+					_mbe_readlines COMPREPLY < <(compgen -W "${bits}" -- "${cur}")
 					return 0
 					;;
 				-c)
-					local creators="$(_java_listCreators)"
-					COMPREPLY=( $(compgen -W "${creators}" -- ${cur})  )
+					local creators
+					creators="$(_java_listCreators)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${creators}" -- "${cur}")
 					return 0
 					;;
 				-v)
-					local versions="$(_java_listVersions)"
-					COMPREPLY=( $(compgen -W "${versions}" -- ${cur})  )
+					local versions
+					versions="$(_java_listVersions)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 			config|*)
 					# flags are: "-b -c -h -v "
 					_mbe_functionFlags=( '-b' '-c' '-h' '-v' )
-					local flags="$(_mbe_getRemainingConfigFlags)"
-					COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+					local flags
+					flags="$(_mbe_getRemainingConfigFlags)"
+					_mbe_readlines COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
 					return 0
 					;;
 			esac
 			;;
 		env)
 			_mbe_functionFlags=( '-i' '-h' '-p' )
-			local flags="$(_mbe_getRemainingConfigFlags)"
-			COMPREPLY=( $(compgen -W "${flags}" -- ${cur})  )
+			local flags
+			flags="$(_mbe_getRemainingConfigFlags)"
+			_mbe_readlines COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
 			return 0
 			;;
 		list)
 			if [ "$prev" = "list" ]; then
 				local list_opts="versions creators"
-				COMPREPLY=( $(compgen -W "${list_opts}" -- ${cur})  )
+				_mbe_readlines COMPREPLY < <(compgen -W "${list_opts}" -- "${cur}")
 				return 0
 			else
 				COMPREPLY=( )
@@ -132,7 +135,7 @@ _java_complete()
 
 _java_cd ()
 {
-	cd "${JAVA_HOME}"
+	cd "${JAVA_HOME}" || return
 }
 
 _java_buildjavahomestring ()
@@ -152,9 +155,9 @@ _java_buildjavahomestring ()
 			echo ""
 			return 1
 		fi
-		_java_isValidCreator ${creator}
+		_java_isValidCreator "${creator}"
 		if [[ "$?" == 1 ]]; then
-			_java_isValidVersion ${creator} ${version}
+			_java_isValidVersion "${creator}" "${version}"
 			if [[ "$?" == 1 ]]; then
 				maybe_java_home="${maybe_java_home}/${__java_javadir}/${creator}/${version}"
 				if [[ -d "${maybe_java_home}" ]]; then
@@ -212,7 +215,8 @@ _java_config ()
 	version="${version-$JAVA_VERSION}"
 
 	# Verify that requested change will succeed
-	local maybe_java_home="$(_java_buildjavahomestring ${bits} ${creator} ${version})"
+	local maybe_java_home
+	maybe_java_home="$(_java_buildjavahomestring "${bits}" "${creator}" "${version}")"
 	DEBUG echo "maybe_java_home=${maybe_java_home}"
 	if [ -n "${maybe_java_home}" ]; then
 		JAVA_BITS="${bits}"
@@ -240,7 +244,7 @@ _java_list()
 		_java_listCreators
 		;;
 	versions)
-		_java_listVersions $2
+		_java_listVersions "$2"
 		;;
 	*)
 		echo "Unrecognized option"
@@ -262,7 +266,8 @@ _java_listCreators ()
 		searchpath="${TOOLSPATH}/${__java_javadir}"
 	fi
 	# FIXME: redirecting stderr to devnull should likely have an actual if statement to guard against
-	local creators=( $(find_eregex "${searchpath}" -mindepth 1 -maxdepth 1 -regex '.*/*' 2>/dev/null | trimdirs | sort) )
+	local creators
+	_mbe_readlines creators < <(find_eregex "${searchpath}" -mindepth 1 -maxdepth 1 -regex '.*/*' 2>/dev/null | trimdirs | sort)
 	echo "${creators[*]}"
 }
 
@@ -272,7 +277,8 @@ _java_isValidCreator ()
 	{
 		echo "Usage: _java_isValidCreator CREATOR"
 	}
-	local creators=( $(_java_listCreators) )
+	local creators
+	_mbe_readlines creators < <(_java_listCreators)
 	for creator in "${creators[@]}"; do
 		if [[ "${1}" == "${creator}" ]]; then
 			return 1
@@ -303,7 +309,8 @@ _java_listVersions ()
 	else
 		searchpath="${TOOLSPATH}/${__java_javadir}/${creator}"
 	fi
-	local versions=( $(find_eregex "${searchpath}" -maxdepth 1 -regex '.*/*[0-9].[0-9]*' 2>/dev/null | trimdirs | sort) )
+	local versions
+	_mbe_readlines versions < <(find_eregex "${searchpath}" -maxdepth 1 -regex '.*/*[0-9].[0-9]*' 2>/dev/null | trimdirs | sort)
 	echo "${versions[*]}"
 }
 
@@ -316,9 +323,10 @@ _java_isValidVersion ()
 	# Process arguments
 	# First argument is the creator name
 	if [[ -n "${1}" && -n "${2}" ]]; then
-		_java_isValidCreator ${1}
+		_java_isValidCreator "${1}"
 		if [[ "$?" == 1 ]]; then
-			local versions=( $(_java_listVersions ${1}) )
+			local versions
+			_mbe_readlines versions < <(_java_listVersions "${1}")
 			for version in "${versions[@]}"; do
 				if [[ "${2}" == "${version}" ]]; then
 					return 1

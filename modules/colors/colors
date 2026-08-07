@@ -67,7 +67,7 @@ _colors_complete()
 			;;
 		esac
 
-	COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }
 

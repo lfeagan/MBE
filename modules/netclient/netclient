@@ -42,7 +42,7 @@ _netclient_load ()
 _netclient_unload ()
 {
 	local func
-	for func in "${_netclient_functions[@]}"; do
+	for func in "${__netclient_functions[@]}"; do
 		unset "${func}"
 	done
 	return 0
