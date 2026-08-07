@@ -397,15 +397,24 @@ _mbe_activateModules ()
 		echo "ERROR: Must provide at least 1 argument to _mbe_activateModules"
 		return 1
 	fi
-	(( _MBE_ACTIVATE_DEPTH++ ))
+	# Assignment form, not (( _MBE_ACTIVATE_DEPTH++ )): the post-increment
+	# expression's value is the PRE-increment value, so incrementing from 0
+	# evaluates to 0 (bash false) and ((...))'s exit status follows that
+	# value -- fatal under set -e (e.g. bats test bodies) despite the
+	# increment itself succeeding.
+	_MBE_ACTIVATE_DEPTH=$(( _MBE_ACTIVATE_DEPTH + 1 ))
 	(( _MBE_ACTIVATE_DEPTH == 1 )) && _MBE_CLAIMED_FUNCS=()
 
 	local newmodule newmodules
 	newmodules=( "$@" )
 
 	for newmodule in "${newmodules[@]}"; do
-		_mbe_isModuleActive "$newmodule"
-		if [ "$?" == "1" ]; then
+		# Call directly in the if, not as a bare statement checked via a
+		# separate `if [ "$?" == ... ]` -- the latter is fatal under set -e
+		# (e.g. bats test bodies) the instant the function returns nonzero,
+		# before the $? check ever runs. _mbe_isModuleActive's exit code is
+		# inverted (returns 1/failure when the module IS active), hence !.
+		if ! _mbe_isModuleActive "$newmodule"; then
 			# Module is already active
 			continue
 		else
@@ -467,7 +476,8 @@ _mbe_activateModules ()
 		fi
 	done
 
-	(( _MBE_ACTIVATE_DEPTH-- ))
+	# Assignment form -- see the matching comment on the increment above.
+	_MBE_ACTIVATE_DEPTH=$(( _MBE_ACTIVATE_DEPTH - 1 ))
 	if (( _MBE_ACTIVATE_DEPTH == 0 )); then
 		_MBE_CLAIMED_FUNCS=()
 		_MBE_CLAIMED_VARS=()
@@ -575,12 +585,19 @@ _mbe_deactivateModules ()
 	fi
 
 	for oldmodule in "${oldmodules[@]}"; do
-		_mbe_isModuleActive "$oldmodule"
-		if [ "$?" == "0" ]; then
-			# Module is already active
+		# Call directly in the if -- see the matching comment in
+		# _mbe_activateModules on why a separate `if [ "$?" == ... ]` is
+		# fatal under set -e. No negation needed here (unlike there):
+		# _mbe_isModuleActive's inverted exit code means it's already true
+		# exactly when the module is NOT active, which is the "nothing to
+		# deactivate" case. The old comments below were copy-pasted from
+		# _mbe_activateModules and described the opposite of what this
+		# branch actually does.
+		if _mbe_isModuleActive "$oldmodule"; then
+			# Module is not active -- nothing to deactivate
 			continue
 		else
-			# Module is not yet active
+			# Module is active
 			DEBUG echo "_mbe_deactivateModules: unloading $oldmodule"
 			"_${oldmodule}_unload"
 
@@ -714,8 +731,10 @@ _mbe_listInactiveModules ()
 	local module
 	local result=()
 	for module in $(_mbe_listAllModules); do
-		_mbe_isModuleActive "${module}"
-		if [ $? -eq 0 ]; then
+		# Call directly in the if -- see the matching comment in
+		# _mbe_activateModules on why a separate `if [ $? -eq ... ]` is
+		# fatal under set -e.
+		if _mbe_isModuleActive "${module}"; then
 			result+=( "${module}" )
 		fi
 	done
@@ -861,7 +880,14 @@ _mbe_buildpath ()
 		local -A spvarbefore=( )
 		local v
 		for v in $(compgen -e); do spvarbefore[$v]="${!v}"; done
-		"_${module}_setpath"
+		# A module's _setpath contributes PATH-family side effects only
+		# (see CLAUDE.md); its exit status is not meaningful to this loop
+		# and must never propagate -- informix's _setpath legitimately
+		# returns 1 when neither IFX_DOIDS nor IFX_DOCSDK is configured
+		# (the common no-config case), which under set -e would otherwise
+		# abort the rest of this loop and whatever activation/deactivation
+		# triggered it.
+		"_${module}_setpath" || true
 		for v in $(compgen -e); do
 			case "$v" in
 				PATH|LD_LIBRARY_PATH|MANPATH|INCLUDE) continue ;;

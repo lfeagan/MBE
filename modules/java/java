@@ -45,7 +45,12 @@ _java_setpath ()
 	# Configure JAVA_HOME, PATH, MANPATH, LD_LIBRARY_PATH
 	local module="java"
 	local maybe_java_home
-	maybe_java_home=$(_java_buildjavahomestring "${JAVA_BITS}" "${JAVA_CREATOR}" "${JAVA_VERSION}")
+	# _java_buildjavahomestring returns 1 (with empty output) whenever no
+	# JDK is configured yet -- the common case, since sdkman now owns
+	# JAVA_HOME (see CLAUDE.md) -- which is an expected outcome here, not a
+	# real error. Guard the assignment so that nonzero exit doesn't
+	# propagate under set -e (e.g. bats test bodies) and abort the caller.
+	maybe_java_home=$(_java_buildjavahomestring "${JAVA_BITS}" "${JAVA_CREATOR}" "${JAVA_VERSION}") || true
 
 	if [ -e "${maybe_java_home}" ]; then
 		JAVA_HOME="${maybe_java_home}"
