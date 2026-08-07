@@ -30,7 +30,7 @@
 # %s/homebrew/newname/gc
 
 __homebrew_dependencies=( 'mbe' )
-__homebrew_functions=( '_homebrew_load' '_homebrew_unload' '_homebrew_setpath' '_homebrew_usage' '_homebrew_complete' )
+__homebrew_functions=( '_homebrew_load' '_homebrew_unload' '_homebrew_setpath' '_homebrew_usage' '_homebrew_complete' '_homebrew_findbrew' )
 
 _homebrew_load ()
 {
@@ -53,27 +53,47 @@ _homebrew_unload ()
 	return 0
 }
 
+_homebrew_findbrew ()
+{
+	# Homebrew's install prefix varies by platform: Apple Silicon Macs use
+	# /opt/homebrew, Intel Macs use /usr/local, Linux uses
+	# /home/linuxbrew/.linuxbrew. Rather than hardcoding one, look for the
+	# "brew" binary in each known location (and fall back to PATH) so this
+	# module works unmodified across machines.
+	local candidate
+	for candidate in "/opt/homebrew/bin/brew" "/usr/local/bin/brew" "/home/linuxbrew/.linuxbrew/bin/brew"; do
+		if [ -x "${candidate}" ]; then
+			echo "${candidate}"
+			return 0
+		fi
+	done
+	command -v brew 2>/dev/null
+}
+
 _homebrew_setpath ()
 {
-	if [ -d "/opt/homebrew/bin" ]; then
-		export PATH="/opt/homebrew/bin:${PATH}"
-	fi
-	if [ -d "/opt/homebrew/opt/libpq/bin" ]; then
-		export PATH="/opt/homebrew/opt/libpq/bin:${PATH}"
-	fi
-	if [ -f /usr/local/etc/profile.d/bash_completion.sh ]; then
-		. /usr/local/etc/profile.d/bash_completion.sh
-	fi
-	if [ -f /usr/local/bin/hub ]; then
-		alias git=hub
-	fi
-	if [ -f "/usr/libexec/java_home" ]; then
-		JAVA_HOME=$(/usr/libexec/java_home)
-		export JAVA_HOME
-		export PATH="${JAVA_HOME}/bin:${PATH}"
-	fi
-	if [ -d "/usr/local/share/man" ]; then
-		export MANPATH="/usr/local/share/man":${MANPATH}
+	local brewbin
+	brewbin="$(_homebrew_findbrew)"
+
+	if [ -n "${brewbin}" ]; then
+		# "brew shellenv" is Homebrew's own supported way to wire up
+		# PATH/MANPATH/INFOPATH -- avoids hardcoding install paths ourselves
+		# and avoids setting JAVA_HOME, which sdkman now owns exclusively
+		# (see the sdkman module) rather than /usr/libexec/java_home.
+		eval "$("${brewbin}" shellenv)"
+
+		local homebrew_prefix
+		homebrew_prefix="$("${brewbin}" --prefix)"
+
+		if [ -d "${homebrew_prefix}/opt/libpq/bin" ]; then
+			export PATH="${homebrew_prefix}/opt/libpq/bin:${PATH}"
+		fi
+		if [ -f "${homebrew_prefix}/etc/profile.d/bash_completion.sh" ]; then
+			. "${homebrew_prefix}/etc/profile.d/bash_completion.sh"
+		fi
+		if [ -f "${homebrew_prefix}/bin/hub" ]; then
+			alias git=hub
+		fi
 	fi
 }
 

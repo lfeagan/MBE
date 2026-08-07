@@ -40,7 +40,11 @@ fi
 ################################
 export MBE_DIR="${HOME}/.mbe"
 export MODULES_DIR="${MBE_DIR}/modules"
-export MODULES_INIT=("mbe" "platform" "utils" "colors" "prompt" "eclipse" "java" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "maven" "informix" "intellij" )
+export MODULES_INIT=("mbe" "platform" "utils" "colors" "prompt" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "informix" "intellij" "sdkman" "homebrew" )
+# eclipse/java/maven removed above: they set JAVA_HOME/PATH themselves and fight with sdkman,
+# which now owns those variables. Still available via "mbe activate <name>" if ever needed --
+# note eclipse pulls java back in as a dependency when activated, so JAVA_HOME will be
+# sdkman-managed until you do that in a given session.
 # Loaded modules are stored in MODULES_ACTIVE
 
 source "${MODULES_DIR}/mbe/mbe.conf"

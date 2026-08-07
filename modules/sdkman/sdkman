@@ -1,0 +1,84 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#------------------------------------------------------------------------------
+
+###############################################################################
+# Module: sdkman
+# Description:
+#  Wires up SDKMAN (https://sdkman.io) -- installs it on first load if
+#  missing, then sources its own init script to manage JAVA_HOME/PATH for
+#  Java, Maven, Gradle, etc. SDKMAN owns those variables exclusively; do not
+#  also activate the "java" or "maven" modules, which set JAVA_HOME/PATH
+#  themselves and will fight with SDKMAN over precedence.
+###############################################################################
+
+__sdkman_dependencies=( 'mbe' )
+__sdkman_functions=( '_sdkman_load' '_sdkman_unload' '_sdkman_setpath' '_sdkman_info' '_sdkman_complete' '_sdkman_install' )
+
+_sdkman_load ()
+{
+	DEBUG echo "_sdkman_load: enter"
+	local module="sdkman"
+	export SDKMAN_DIR="${SDKMAN_DIR:-${HOME}/.sdkman}"
+
+	if [ ! -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]; then
+		_sdkman_install
+	fi
+
+	DEBUG echo "_sdkman_load: leave"
+	return 0
+}
+
+_sdkman_unload ()
+{
+	local func
+	for func in "${__sdkman_functions[@]}"; do
+		unset "${func}"
+	done
+	return 0
+}
+
+_sdkman_install ()
+{
+	echo "SDKMAN not found at ${SDKMAN_DIR} -- installing..."
+	# Run the installer under $BASH (the interpreter actually running this
+	# shell), not whatever "bash" resolves to on PATH -- SDKMAN's installer
+	# requires bash 4+ and PATH could point at an older system bash first.
+	curl -s "https://get.sdkman.io" | "${BASH}"
+}
+
+_sdkman_setpath ()
+{
+	if [ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]; then
+		source "${SDKMAN_DIR}/bin/sdkman-init.sh"
+	fi
+}
+
+_sdkman_info ()
+{
+	echo "Wires up SDKMAN (owns JAVA_HOME/PATH for Java, Maven, Gradle, etc.)"
+	echo "SDKMAN_DIR=${SDKMAN_DIR}"
+	echo "Use the \"sdk\" command directly (sdk list, sdk install, sdk use, sdk default, ...)"
+	echo "-- see https://sdkman.io/usage for the full sdk CLI."
+}
+
+_sdkman_complete()
+{
+	COMPREPLY=( )
+	return 0
+}
