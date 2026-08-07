@@ -35,6 +35,22 @@ then
 	return
 fi
 
+# MBE requires bash 4+ (declare -gA, local -A, mapfile, etc. -- see CLAUDE.md
+# and mbe_bash4_modernization_plan in project memory for why the floor was
+# raised). This matters in practice on macOS, where /bin/bash is Apple's
+# frozen bash 3.2 -- e.g. `sudo bash` resolves to it even when the user's own
+# interactive shell is a newer Homebrew bash on $PATH. Rather than let module
+# loading fail midway with a wall of "declare: -g: invalid option" errors and
+# leave the shell half-configured, fall back to a bare prompt and skip MBE
+# entirely.
+if (( BASH_VERSINFO[0] < 4 )); then
+	PS1='\u@\h:\w\$ '
+	echo "mbe: bash ${BASH_VERSION} is below the supported minimum (4.0)," \
+		"skipping module load. Run this shell's own bash (not sudo bash) or" \
+		"install a newer bash (e.g. 'brew install bash') to use MBE." >&2
+	return
+fi
+
 ################################
 # ##### LOAD PREFERENCES ##### #
 ################################
