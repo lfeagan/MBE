@@ -175,7 +175,7 @@ _maven_listVersions ()
 	SEARCH_PATH="${TOOLSPATHGENERIC}/${SEARCH_PRODUCT}"
 
 	local versions
-	_mbe_readlines versions < <(find_eregex "${SEARCH_PATH}" -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort)
+	mapfile -t versions < <(find_eregex "${SEARCH_PATH}" -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort)
 
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 
@@ -195,16 +195,16 @@ _maven_complete()
 			;;
 		list)
 			local list_opts="versions"
-			_mbe_readlines COMPREPLY < <(compgen -W "${list_opts}" -- "${cur}")
+			mapfile -t COMPREPLY < <(compgen -W "${list_opts}" -- "${cur}")
 			return 0
 			;;
 		config)
 			local config_opts="-p -v -j -c -b -n"
-			_mbe_readlines COMPREPLY < <(compgen -W "${config_opts}" -- "${cur}")
+			mapfile -t COMPREPLY < <(compgen -W "${config_opts}" -- "${cur}")
 			return 0
 			;;
 		esac
 
-	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
+	mapfile -t COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }

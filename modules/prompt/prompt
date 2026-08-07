@@ -169,7 +169,7 @@ _prompt_complete()
 			;;
 		esac
 
-	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
+	mapfile -t COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }
 

@@ -158,7 +158,7 @@ _ant_complete()
 
 	if [ "$COMP_CWORD" -eq 2 ]; then
 		funcs="cd config env list"
-		_mbe_readlines COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
+		mapfile -t COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
 		return 0
 	fi
 
@@ -177,30 +177,30 @@ _ant_complete()
 			case "${prev}" in
 				-b)
 					local bits="32 64"
-					_mbe_readlines COMPREPLY < <(compgen -W "${bits}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${bits}" -- "${cur}")
 					return 0
 					;;
 				-c)
 					local creators
 					creators="$(_java_listCreators)"
-					_mbe_readlines COMPREPLY < <(compgen -W "${creators}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${creators}" -- "${cur}")
 					return 0
 					;;
 				-j)
 					local versions
 					versions="$(_java_listVersions)"
-					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 				-p)
 					local products="apache-ant"
-					_mbe_readlines COMPREPLY < <(compgen -W "${products}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${products}" -- "${cur}")
 					return 0
 					;;
 				-v)
 					local versions
 					versions="$(_ant_listVersions)"
-					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 				config|run|*)
@@ -208,7 +208,7 @@ _ant_complete()
 					_mbe_functionFlags=( '-b' '-c' '-j' '-p' '-v' )
 					local flags
 					flags="$(_mbe_getRemainingConfigFlags)"
-					_mbe_readlines COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
 					return 0
 					;;
 			esac
@@ -270,7 +270,7 @@ _ant_listVersions ()
 	SEARCH_PATH="${TOOLSPATHGENERIC}/${SEARCH_PRODUCT}"
 
 	declare -a versions
-	_mbe_readlines versions < <(find_eregex "${SEARCH_PATH}" -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort)
+	mapfile -t versions < <(find_eregex "${SEARCH_PATH}" -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort)
 
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 

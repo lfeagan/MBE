@@ -134,7 +134,7 @@ ifxmkrepo ()
 
 	# Begin directory creation process
 	local dirs
-	_mbe_readlines dirs < "${MODULES_DIR}/${module}/informix_repo.dirs"
+	mapfile -t dirs < "${MODULES_DIR}/${module}/informix_repo.dirs"
 	for dir in "${dirs[@]}"; do
 		mkdir -p "${target}/${dir}"
 	done
@@ -381,7 +381,7 @@ ifxlist ()
 	#read -r -a versions <<< $(ls -1 ${IFX_REPO}/CSDK)
 	#versions=( ${IFX_REPO}/${product}/* )
 	local versions
-	_mbe_readlines versions < <(find "${IFX_REPO}/${product}" -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq)
+	mapfile -t versions < <(find "${IFX_REPO}/${product}" -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq)
 
 	local version_exists=0
 	# If no version argument was provided, list the available versions
@@ -409,7 +409,7 @@ ifxlist ()
 	fi
 
 	local fixpacks
-	_mbe_readlines fixpacks < <(find "${IFX_REPO}/${product}" -maxdepth 1 -name "${version}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq)
+	mapfile -t fixpacks < <(find "${IFX_REPO}/${product}" -maxdepth 1 -name "${version}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq)
 
 	local fixpack_exists=0
 	# If no fixpack argument was provided, list the available fixpacks
@@ -437,7 +437,7 @@ ifxlist ()
 	fi
 
 	local builds
-	_mbe_readlines builds < <(find "${IFX_REPO}/${product}" -maxdepth 1 -name "${version}_${fixpack}_*" -printf "%f\n")
+	mapfile -t builds < <(find "${IFX_REPO}/${product}" -maxdepth 1 -name "${version}_${fixpack}_*" -printf "%f\n")
 	for build in "${builds[@]}"; do
 		echo "${build}"
 	done
@@ -495,7 +495,7 @@ csdklist ()
 	#read -r -a versions <<< $(ls -1 ${IFX_REPO}/CSDK)
 	#versions=( ${IFX_REPO}/CSDK/* )
 	local versions
-	_mbe_readlines versions < <(find "${IFX_REPO}/CSDK" -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq)
+	mapfile -t versions < <(find "${IFX_REPO}/CSDK" -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq)
 
 	local version_exists=0
 	# If no version argument was provided, list the available versions
@@ -523,7 +523,7 @@ csdklist ()
 	fi
 
 	local fixpacks
-	_mbe_readlines fixpacks < <(find "${IFX_REPO}/CSDK" -maxdepth 1 -name "${version_arg}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq)
+	mapfile -t fixpacks < <(find "${IFX_REPO}/CSDK" -maxdepth 1 -name "${version_arg}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq)
 
 	local fixpack_exists=0
 	# If no fixpack argument was provided, list the available fixpacks
@@ -551,7 +551,7 @@ csdklist ()
 	fi
 
 	local builds
-	_mbe_readlines builds < <(find "${IFX_REPO}/CSDK" -maxdepth 1 -name "${version_arg}_${fixpack_arg}_*" -printf "%f\n")
+	mapfile -t builds < <(find "${IFX_REPO}/CSDK" -maxdepth 1 -name "${version_arg}_${fixpack_arg}_*" -printf "%f\n")
 	for build in "${builds[@]}"; do
 		echo "${build}"
 	done
@@ -611,7 +611,7 @@ idslist ()
 
 	#read -r -a versions <<< $(ls -1 ${IFX_REPO}/IDS | cut -d'_' -f1 | sort | uniq)
 	#read -r -a versions <<< $(find ${IFX_REPO}/IDS -maxdepth 1 -regex '.*/*[0-9][0-9]*' -printf "%f\n" | cut -d'_' -f1 | sort | uniq)
-	_mbe_readlines versions < <(find "${IFX_REPO}/IDS" -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq)
+	mapfile -t versions < <(find "${IFX_REPO}/IDS" -maxdepth 1 -regex '.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+' -printf "%f\n" | cut -d'_' -f1 | sort | uniq)
 
 	local version_exists=0
 	# If no version argument was provided, list the available versions
@@ -643,7 +643,7 @@ idslist ()
 	fi
 
 	local fixpacks
-	_mbe_readlines fixpacks < <(find "${IFX_REPO}/IDS" -maxdepth 1 -name "${version_arg}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq)
+	mapfile -t fixpacks < <(find "${IFX_REPO}/IDS" -maxdepth 1 -name "${version_arg}*" -printf "%f\n" | cut -d'_' -f2 | sort | uniq)
 
 	local fixpack_exists=0
 	# If no fixpack argument was provided, list the available fixpacks
@@ -675,7 +675,7 @@ idslist ()
 	fi
 
 	local builds
-	_mbe_readlines builds < <(find "${IFX_REPO}/IDS" -maxdepth 1 -name "${version_arg}_${fixpack_arg}_*" -printf "%f\n")
+	mapfile -t builds < <(find "${IFX_REPO}/IDS" -maxdepth 1 -name "${version_arg}_${fixpack_arg}_*" -printf "%f\n")
 	for build in "${builds[@]}"; do
 		echo "${build}"
 	done
@@ -762,7 +762,7 @@ idscheckout ()
 		# creating problems other than the etc and tmp directories
 		cp_dirs=(etc tmp)
 		local ln_dirs
-		_mbe_readlines ln_dirs < <(find "${source}" -mindepth 1 -maxdepth 1 ! -name 'tmp' ! -name 'etc' -printf "%f\n" | sort)
+		mapfile -t ln_dirs < <(find "${source}" -mindepth 1 -maxdepth 1 ! -name 'tmp' ! -name 'etc' -printf "%f\n" | sort)
 		#echo "ln_dirs=${ln_dirs[*]}"
 	
 		# Create symbolic links for directories that are not writable

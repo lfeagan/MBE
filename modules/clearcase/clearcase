@@ -72,16 +72,16 @@ _clearcase_complete()
 			;;
 		codir)
 			local config_opts="-p -v -b -c -j -n"
-			_mbe_readlines COMPREPLY < <(compgen -W "${config_opts}" -- "${cur}")
+			mapfile -t COMPREPLY < <(compgen -W "${config_opts}" -- "${cur}")
 			return 0
 			;;
 		annotate)
-			_mbe_readlines COMPREPLY < <(compgen -o filenames -A file "${cur}")
+			mapfile -t COMPREPLY < <(compgen -o filenames -A file "${cur}")
 			return 0
 			;;
 		esac
 
-	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
+	mapfile -t COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }
 

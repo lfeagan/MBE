@@ -45,24 +45,24 @@ _mbe_complete()
 	fi
 
 	if [ "$COMP_CWORD" -eq "1" ]; then
-		_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
+		mapfile -t COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 		return 0
 	elif [ -z "${module}" ]; then
 		case "${prev}" in
 			list)
-				_mbe_readlines COMPREPLY < <(compgen -W "all active inactive" -- "${cur}")
+				mapfile -t COMPREPLY < <(compgen -W "all active inactive" -- "${cur}")
 				return 0
 				;;
 			activate)
 				local disabled
 				disabled=$(_mbe_listInactiveModules)
-				_mbe_readlines COMPREPLY < <(compgen -W "${disabled}" -- "${cur}")
+				mapfile -t COMPREPLY < <(compgen -W "${disabled}" -- "${cur}")
 				return 0
 				;;
 			deactivate)
 				local enabled
 				enabled=$(_mbe_listActiveModules)
-				_mbe_readlines COMPREPLY < <(compgen -W "${enabled}" -- "${cur}")
+				mapfile -t COMPREPLY < <(compgen -W "${enabled}" -- "${cur}")
 				return 0
 				;;
 		esac

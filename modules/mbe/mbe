@@ -157,25 +157,6 @@ timestamp ()
 }
 
 ############################################################
-# Function: _mbe_readlines
-# Description:
-#  Portable replacement for 'mapfile -t', since mapfile
-#  requires bash >= 4 and this environment targets much
-#  older bash releases (e.g. bash 3.2 on macOS, AIX, HP-UX).
-#  $1 is the name of the array variable to populate; the
-#  remaining arguments are ignored, input is read from stdin.
-############################################################
-_mbe_readlines ()
-{
-	local __mbe_readlines_var="$1"
-	local __mbe_readlines_line
-	eval "${__mbe_readlines_var}=()"
-	while IFS= read -r __mbe_readlines_line; do
-		eval "${__mbe_readlines_var}+=(\"\${__mbe_readlines_line}\")"
-	done
-}
-
-############################################################
 # Function(s): envpathsearch
 # Description: 
 #  Given an input array of programs in order of preference,
@@ -257,7 +238,7 @@ _mbe_createModuleConfBackups ()
 	local ts
 	ts=$(date '+%Y.%m.%d_%H:%M')
 	local modules
-	_mbe_readlines modules < <(_mbe_listAllModules)
+	mapfile -t modules < <(_mbe_listAllModules)
 	local module
 	for module in "${modules[@]}"; do
 		local modulePath
@@ -272,7 +253,7 @@ _mbe_createModuleConfBackups ()
 _mbe_removeModuleConfBackups ()
 {
 	local backupConfs
-	_mbe_readlines backupConfs < <(find "${MODULES_DIR}" -regex '.*[a-z0-9A-Z]+\.conf\..*' -printf "%p\n")
+	mapfile -t backupConfs < <(find "${MODULES_DIR}" -regex '.*[a-z0-9A-Z]+\.conf\..*' -printf "%p\n")
 
 	if (( ${#backupConfs[*]} == 0 )); then
 		echo "No preferences are available for removal"
@@ -404,7 +385,7 @@ _mbe_reactivateModules ()
 _mbe_activateAllModules ()
 {
 	local modules
-	_mbe_readlines modules < <(_mbe_listAllModules)
+	mapfile -t modules < <(_mbe_listAllModules)
 	_mbe_activateModules "${modules[@]}"
 }
 

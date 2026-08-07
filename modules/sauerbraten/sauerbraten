@@ -171,11 +171,11 @@ _sauerbraten_complete()
 			;;
 		list)
 			local list_opts="versions"
-			_mbe_readlines COMPREPLY < <(compgen -W "${list_opts}" -- "${cur}")
+			mapfile -t COMPREPLY < <(compgen -W "${list_opts}" -- "${cur}")
 			return 0
 			;;
 		esac
 
-	_mbe_readlines COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
+	mapfile -t COMPREPLY < <(compgen -W "${opts}" -- "${cur}")
 	return 0
 }

@@ -97,7 +97,7 @@ _mongo_complete()
 
 	if [ "$COMP_CWORD" -eq 2 ]; then
 		funcs="cd config env list"
-		_mbe_readlines COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
+		mapfile -t COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
 		return 0
 	fi
 
@@ -124,13 +124,13 @@ _mongo_complete()
 			case "${prev}" in
 				-b)
 					local bits="32 64"
-					_mbe_readlines COMPREPLY < <(compgen -W "${bits}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${bits}" -- "${cur}")
 					return 0
 					;;
 				-v)
 					local versions
 					versions="$(_mongo_listVersions)"
-					_mbe_readlines COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${versions}" -- "${cur}")
 					return 0
 					;;
 				config|*)
@@ -138,7 +138,7 @@ _mongo_complete()
 					_mbe_functionFlags=( '-b' '-v' )
 					local flags
 					flags="$(_mbe_getRemainingConfigFlags)"
-					_mbe_readlines COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
+					mapfile -t COMPREPLY < <(compgen -W "${flags}" -- "${cur}")
 					return 0
 					;;
 			esac
@@ -208,7 +208,7 @@ _mongo_listVersions()
 	fi
 
 	declare -a versions
-	_mbe_readlines versions < <(find_eregex "${SEARCH_PATH}" -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort)
+	mapfile -t versions < <(find_eregex "${SEARCH_PATH}" -maxdepth 1 -regex '.*/[0-9]+\.[0-9]+\.[0-9]+' | trimdirs | sort)
 
 	#'.*[0-9]+\.[0-9]+_[a-z0-9A-Z]+_[a-z0-9A-Z]+'
 
