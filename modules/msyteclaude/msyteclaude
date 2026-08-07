@@ -1,0 +1,76 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2026 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#------------------------------------------------------------------------------
+
+###############################################################################
+# Module: msyteclaude
+# Description:
+# 	Environment for the mSyte Claude Code plugins (msyte-devops-claude-plugin,
+# 	msyte-service-claude-plugin, etc.) -- currently just exports
+# 	SOURCE_CODE_ROOT, which those plugins' hooks and scripts read to locate
+# 	the msyte-development checkout.
+###############################################################################
+
+__msyteclaude_dependencies=( 'mbe' )
+
+_msyteclaude_load ()
+{
+	DEBUG echo "_msyteclaude_load: enter"
+	_mbe_activateModules "${__msyteclaude_dependencies[@]}"
+	local module="msyteclaude"
+
+	# Load preferences
+	source "${MODULES_DIR}/${module}/${module}.conf"
+
+	DEBUG echo "_msyteclaude_load: leave"
+}
+
+_msyteclaude_unload ()
+{
+	return 0
+}
+
+_msyteclaude_setpath ()
+{
+	return 0
+}
+
+_msyteclaude_info ()
+{
+	echo "Environment for the mSyte Claude Code plugins (msyte-devops, msyte-service, ...)"
+	echo "SOURCE_CODE_ROOT=${SOURCE_CODE_ROOT}"
+}
+
+_msyteclaude_env()
+{
+	echo "SOURCE_CODE_ROOT=${SOURCE_CODE_ROOT}"
+}
+
+_msyteclaude_complete()
+{
+	COMPREPLY=( )
+
+	if [ "$COMP_CWORD" -eq 2 ]; then
+		local funcs="env"
+		mapfile -t COMPREPLY < <(compgen -W "${funcs}" -- "${cur}")
+		return 0
+	fi
+
+	COMPREPLY=( )
+	return 0
+}
