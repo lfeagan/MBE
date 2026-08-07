@@ -1,0 +1,45 @@
+name: test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  bats:
+    # ubuntu-latest ships bash 5.x as /bin/bash and shellcheck preinstalled --
+    # both required by the suite (see TESTING.md and CLAUDE.md's bash4+
+    # floor), so no setup step is needed for either.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run bats suite (static checks + module lifecycle)
+        run: ./test/bats-core/bin/bats --recursive test/static test/lifecycle
+
+  sudo-bash-fallback:
+    # Verifies the bash<4 guard in bashrc (see mbe_bash4_modernization_plan
+    # in project memory) actually fires cleanly under a real bash 3.2 --
+    # macos-latest's /bin/bash is Apple's frozen 3.2, the same one `sudo
+    # bash` resolves to on a real Mac, so this is the one CI environment
+    # that can exercise that path without faking BASH_VERSINFO.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bash 3.2 falls back to a bare prompt with no errors
+        run: |
+          # bashrc's own first guard returns immediately when $PS1 is empty
+          # (its "not an interactive shell" check) -- MBE_NONINTERACTIVE=1
+          # is the documented escape hatch for exercising the rest of the
+          # file from a non-interactive `bash -c`, same as any other
+          # scripted/CI use of this file.
+          out="$(MBE_NONINTERACTIVE=1 HOME="${RUNNER_TEMP}/mbe_fallback_home" /bin/bash -c 'source bashrc; echo "PS1=[$PS1]"' 2>&1)"
+          echo "$out"
+          echo "$out" | grep -q "below the supported minimum"
+          if echo "$out" | grep -q "invalid option"; then
+            echo "bash4-only syntax was reached before the version guard could return"
+            exit 1
+          fi
