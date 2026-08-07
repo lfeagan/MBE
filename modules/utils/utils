@@ -34,6 +34,7 @@ __utils_dependencies=( 'mbe' 'platform' )
 _utils_load ()
 {
 	DEBUG echo "_utils_load: enter"
+	_mbe_activateModules "${__utils_dependencies[@]}"
 	local module="utils"
 
 	# Load preferences

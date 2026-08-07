@@ -37,6 +37,7 @@ _mongo_product_dir="Mongo"
 _mongo_load ()
 {
 	DEBUG echo "_mongo_load: enter"
+	_mbe_activateModules "${__mongo_dependencies[@]}"
 	local module="mongo"
 
 	# Load preferences
