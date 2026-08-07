@@ -55,16 +55,22 @@ _homebrew_unload ()
 
 _homebrew_setpath ()
 {
-  if [ -f /usr/local/etc/profile.d/bash_completion.sh ]; then
-      . /usr/local/etc/profile.d/bash_completion.sh
-  fi
+	if [ -d "/opt/homebrew/bin" ]; then
+		export PATH="/opt/homebrew/bin:${PATH}"
+	fi
+	if [ -d "/opt/homebrew/opt/libpq/bin" ]; then
+		export PATH="/opt/homebrew/opt/libpq/bin:${PATH}"
+	fi
+	if [ -f /usr/local/etc/profile.d/bash_completion.sh ]; then
+		. /usr/local/etc/profile.d/bash_completion.sh
+	fi
 	if [ -f /usr/local/bin/hub ]; then
 		alias git=hub
 	fi
 	if [ -f "/usr/libexec/java_home" ]; then
-	  JAVA_HOME=$(/usr/libexec/java_home)
-	  export JAVA_HOME
-	  export PATH="${JAVA_HOME}/bin:${PATH}"
+		JAVA_HOME=$(/usr/libexec/java_home)
+		export JAVA_HOME
+		export PATH="${JAVA_HOME}/bin:${PATH}"
 	fi
 	if [ -d "/usr/local/share/man" ]; then
 		export MANPATH="/usr/local/share/man":${MANPATH}
