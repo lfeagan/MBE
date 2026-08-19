@@ -228,6 +228,11 @@ _platform_config ()
 	export CPUTYPE KERNELNAME KERNELBITS BSDARGS
 }
 
+_platform_info ()
+{
+	echo "Detects KERNELNAME/KERNELBITS/CPUTYPE/PLATFORMPATH/TOOLSPATH across OSes; near-universal dependency for other modules"
+}
+
 _platform_desc ()
 {
 	echo "KERNELNAME=$KERNELNAME"

@@ -60,7 +60,7 @@ _sauerbraten_setpath ()
 
 _sauerbraten_usage ()
 {
-	echo "not implemented"
+	echo "Launches the Sauerbraten game (run) with optional console logging and Mumble overlay support"
 }
 
 _sauerbraten_listVersions ()

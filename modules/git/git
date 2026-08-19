@@ -62,7 +62,7 @@ _git_setpath ()
 
 _git_usage ()
 {
-	echo -ne ""
+	echo "Installs git via Homebrew if missing; adds log-graph aliases (glgga, glods)"
 }
 
 _git_complete()

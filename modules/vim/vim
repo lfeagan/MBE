@@ -51,9 +51,9 @@ _vim_setpath ()
 	fi
 }
 
-vim_info ()
+_vim_info ()
 {
-	echo "Configures GNU ViM"
+	echo "Configures Vim, installing it via Homebrew if missing, preferring a custom build under TOOLSPATH if present"
 }
 
 _vim_complete()

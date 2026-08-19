@@ -25,6 +25,11 @@
 ############################################################
 
 
+_colors_info ()
+{
+	echo "Defines human-friendly bash color escape-sequence variables (__colors_red, __colors_blue, ...) for prompts/output"
+}
+
 _colors_load ()
 {
 	DEBUG echo "_colors_load: enter"

@@ -33,6 +33,7 @@ __pathfinder_dependencies=( 'mbe' 'platform' )
 _pathfinder_load ()
 {
 	DEBUG echo "_pathfinder_load: enter"
+	_mbe_activateModules "${__pathfinder_dependencies[@]}"
 	local module="pathfinder"
 
 	if [[ "${KERNELNAME}" != "Darwin" ]]; then

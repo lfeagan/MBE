@@ -120,6 +120,7 @@ From an interactive shell, you drive modules directly:
 
 ```sh
 mbe list [all|active|inactive]   # what's currently loaded
+mbe list info                    # every module + its one-line description
 mbe activate <module>            # turn a module on (and its dependencies)
 mbe deactivate <module>          # turn a module off (warns/cascades to dependents)
 resource                         # re-source .bashrc + .bash_aliases after an edit
@@ -170,6 +171,58 @@ test/                                bats-core test suite (+ bats-support/assert
 CLAUDE.md                            module-authoring contract and naming conventions
 TESTING.md                           manual + automated test plan and rationale
 ```
+
+## Module catalog
+
+One line per module (`mbe list info` prints this same catalog live, since it
+reads each module's own `_<name>_info`/`_<name>_usage` function rather than
+duplicating it here):
+
+| Module | Description |
+| --- | --- |
+| `ant` | Configures Apache Ant |
+| `brlcad` | Configures US ARMY BRLCAD Design Program |
+| `clearcase` | Configures IBM Rational ClearCase |
+| `colors` | Defines human-friendly bash color escape-sequence variables (`__colors_red`, `__colors_blue`, ...) for prompts/output |
+| `cscope` | Configures cscope |
+| `developer` | Sources per-feature dev-tool path scripts declared in `__developer_features` |
+| `dia` | Adds the Dia diagram editor's bin/man to PATH/MANPATH if installed at `/opt/dia-0.96` |
+| `eclipse` | Configures and launches Eclipse-family IDEs with the right JVM/bits/locale (`mbe eclipse config\|run\|list\|cd\|cdworkspace`) |
+| `gcc` | Configures the GNU C compiler |
+| `git` | Installs git via Homebrew if missing; adds log-graph aliases (`glgga`, `glods`) |
+| `homebin` | Adds `$HOME/bin` to `$PATH` |
+| `homebrew` | Wires up Homebrew's PATH/MANPATH/INFOPATH via `brew shellenv`; other modules use `_homebrew_ensureInstalled` to install formulas on demand |
+| `ibmxlc` | Configures the IBM XL C/C++ Compiler |
+| `icscope2` | Configures the Informix cscope suite (a ClearCase/Informix version aware framework for cscope access) |
+| `informix` | Tools for retrieving, configuring, and checking out Informix IDS/CSDK builds from a repo (`ifxlist`, `idsconfig`, `idscheckout`, `ifxenv`, ...) |
+| `intelcc` | Configures the Intel C/C++ Compiler Suite |
+| `intellij` | Provides JetBrains IDE launchers (`intellij`, `pycharm`, `webstorm`, ...) and `idea <repo>` to open a matched git repo directly |
+| `java` | Configures Java |
+| `lotusnotes` | Adds `/opt/ibm/lotus/notes` to PATH |
+| `macports` | Enables MacPorts bash completion if installed under `/opt/local` |
+| `maven` | Configures Apache Maven |
+| `mbe` | The framework itself (module activation, path building, the `mbe` CLI) |
+| `mongo` | Configures MongoDB |
+| `msyteclaude` | Environment for the mSyte Claude Code plugins (msyte-devops, msyte-service, ...) |
+| `netclient` | Adds AT&T NetClient's `/opt/agns/bin` to PATH if present |
+| `opengl` | Exports OpenGL/X11 include and library flags (`OGL_INC_LOC`, `OGL_LIB_LOC`, `X_LIB_LOC`) |
+| `openwin` | Adds Sun OpenWindows' `/usr/openwin/bin` to PATH if present |
+| `pathfinder` | Routes `open` on directories to Path Finder instead of Finder (Darwin only) |
+| `perl` | Configures Perl |
+| `platform` | Detects `KERNELNAME`/`KERNELBITS`/`CPUTYPE`/`PLATFORMPATH`/`TOOLSPATH` across OSes; near-universal dependency for other modules |
+| `prompt` | Configures PS1 (colors, titlebar, weather) based on light/dark terminal background detection |
+| `rar` | Adds the 32-bit RAR archiver tools (under `TOOLSPATH32`) to PATH |
+| `rtc` | Configures IBM Rational Team Concert's Command-Line SCM Tools |
+| `sauerbraten` | Launches the Sauerbraten game (`run`) with optional console logging and Mumble overlay support |
+| `sbin` | Configures various `sbin` paths (`/sbin`, `/usr/sbin`, `/usr/local/sbin`, `/opt/local/sbin`) |
+| `scite` | Configures the path to the SciTE editor |
+| `sdkman` | Wires up SDKMAN (owns `JAVA_HOME`/PATH for Java, Maven, Gradle, etc.) |
+| `sunstudio` | Configures paths for Sun Studio development tools |
+| `userid` | Configures the Informix `userid` privilege-escalation executable; `ur()` falls back to `sudo` if it's absent |
+| `usrlocalbin` | Adds `/usr` and `/opt` directories to PATH, MANPATH, and LD_LIBRARY_PATH |
+| `utils` | Bash shell utility functions |
+| `vim` | Configures Vim, installing it via Homebrew if missing, preferring a custom build under `TOOLSPATH` if present |
+| `xcode` | Configures Apple Xcode |
 
 ## Writing a new module
 

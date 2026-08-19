@@ -54,7 +54,7 @@ _netclient_setpath ()
 
 _netclient_usage ()
 {
-	echo "no usage info"
+	echo "Adds AT&T NetClient's /opt/agns/bin to PATH if present"
 }
 
 _netclient_complete()

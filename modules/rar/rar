@@ -59,7 +59,7 @@ _rar_setpath ()
 
 _rar_usage ()
 {
-	echo "no usage info"
+	echo "Adds the 32-bit RAR archiver tools (under TOOLSPATH32) to PATH"
 }
 
 _rar_complete()

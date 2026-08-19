@@ -26,6 +26,11 @@
 
 __developer_dependencies=( 'mbe' 'platform' )
 
+_developer_info ()
+{
+	echo "Sources per-feature dev-tool path scripts declared in __developer_features"
+}
+
 _developer_load ()
 {
 	DEBUG echo "_developer_load: enter"

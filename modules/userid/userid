@@ -53,9 +53,9 @@ _userid_setpath ()
 	DEBUG echo -n ""
 }
 
-_userid_inf ()
+_userid_info ()
 {
-	echo "Configures the Informix userid executable"
+	echo "Configures the Informix \"userid\" privilege-escalation executable; run() falls back to sudo if it's absent"
 }
 
 ur ()

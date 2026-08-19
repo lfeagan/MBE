@@ -52,7 +52,7 @@ _openwin_setpath ()
 
 _openwin_usage ()
 {
-	echo "no usage info"
+	echo "Adds Sun OpenWindows' /usr/openwin/bin to PATH if present"
 }
 
 _openwin_complete()

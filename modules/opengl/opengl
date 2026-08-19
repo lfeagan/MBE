@@ -52,7 +52,7 @@ _opengl_setpath ()
 
 _opengl_usage ()
 {
-	echo "no usage info"
+	echo "Exports OpenGL/X11 include and library flags (OGL_INC_LOC, OGL_LIB_LOC, X_LIB_LOC)"
 }
 
 _opengl_complete()

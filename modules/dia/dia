@@ -52,9 +52,9 @@ _dia_setpath ()
 	fi
 }
 
-__dia_usage ()
+_dia_usage ()
 {
-	echo "no usage info"
+	echo "Adds the Dia diagram editor's bin/man to PATH/MANPATH if installed at /opt/dia-0.96"
 }
 
 _dia_complete()

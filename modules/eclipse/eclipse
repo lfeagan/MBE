@@ -101,8 +101,7 @@ _eclipse_setmozpath()
 
 _eclipse_usage ()
 {
-	local module="eclipse"
-
+	echo "Configures and launches Eclipse-family IDEs with the right JVM/bits/locale (mbe eclipse config|run|list|cd|cdworkspace)"
 }
 
 _eclipse_complete()

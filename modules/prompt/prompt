@@ -19,6 +19,11 @@
 
 __prompt_dependencies=( 'mbe' 'colors' )
 
+_prompt_info ()
+{
+	echo "Configures PS1 (colors, titlebar, weather) based on light/dark terminal background detection"
+}
+
 _prompt_load ()
 {
 	# Load module dependencies

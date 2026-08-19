@@ -74,7 +74,7 @@ webstorm () { open -a "WebStorm" "$@"; }
 
 _intellij_info ()
 {
-  DEBUG echo "intellij_info: leave"
+	echo "Provides JetBrains IDE launchers (intellij, pycharm, webstorm, ...) and \"idea <repo>\" to open a matched git repo directly"
 }
 
 _intellij_idea ()

@@ -57,8 +57,7 @@ _macports_setpath ()
 
 _macports_usage ()
 {
-	echo -ne ""
-
+	echo "Enables MacPorts bash completion if installed under /opt/local"
 }
 
 _macports_complete()

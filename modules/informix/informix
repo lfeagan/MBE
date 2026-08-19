@@ -9,6 +9,11 @@
 
 __informix_dependencies=( 'mbe' 'platform' )
 
+_informix_info ()
+{
+	echo "Tools for retrieving, configuring, and checking out Informix IDS/CSDK builds from a repo (ifxlist, idsconfig, idscheckout, ifxenv, ...)"
+}
+
 _informix_load ()
 {
 	# Load module dependencies

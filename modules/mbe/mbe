@@ -135,6 +135,7 @@ _mbe_usage ()
 	echo " _mbe_listActiveModules - Lists the active modules in the current environment"
 	echo " _mbe_listInactiveModules - Lists the inactive modules in the current environment"
 	echo " _mbe_listAllModules - Lists all modules in the environment"
+	echo " mbe list info - Lists every module with its one-line description"
 }
 
 ############################################################
@@ -669,7 +670,7 @@ _mbe_isModuleActive ()
 _mbe_list ()
 {
 	if [ -z "$1" ]; then
-		echo "Must specify all, active, or inactive"
+		echo "Must specify all, active, inactive, or info"
 		return 1
 	fi
 
@@ -683,7 +684,41 @@ _mbe_list ()
 	inactive)
 		_mbe_listInactiveModules
 		;;
+	info)
+		_mbe_listModulesWithInfo
+		;;
 	esac
+}
+
+_mbe_moduleDescription ()
+{
+	# Prints the one-line description a module's _<name>_info (or, for
+	# modules that predate that convention, _<name>_usage) function returns,
+	# without activating the module -- sourcing its script only defines
+	# functions/arrays, never runs _<name>_load, so this is safe to call for
+	# inactive modules too. Runs in a subshell so those definitions don't
+	# leak into the caller's environment.
+	local module="$1"
+	local modulepath="${MODULES_DIR}/${module}/${module}"
+	[ -f "${modulepath}" ] || return 1
+	(
+		source "${modulepath}" >/dev/null 2>&1
+		if declare -F "_${module}_info" >/dev/null 2>&1; then
+			"_${module}_info" 2>/dev/null | head -1
+		elif declare -F "_${module}_usage" >/dev/null 2>&1; then
+			"_${module}_usage" 2>/dev/null | head -1
+		fi
+	)
+}
+
+_mbe_listModulesWithInfo ()
+{
+	local modules module desc
+	mapfile -t modules < <(_mbe_listAllModules -1)
+	for module in "${modules[@]}"; do
+		desc="$(_mbe_moduleDescription "${module}")"
+		printf "%-14s %s\n" "${module}" "${desc}"
+	done
 }
 
 _mbe_listActiveModules ()

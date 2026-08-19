@@ -119,8 +119,7 @@ _homebrew_setpath ()
 
 _homebrew_usage ()
 {
-	echo -ne ""
-
+	echo "Wires up Homebrew's PATH/MANPATH/INFOPATH via \"brew shellenv\"; other modules use _homebrew_ensureInstalled to install formulas on demand"
 }
 
 _homebrew_complete()
