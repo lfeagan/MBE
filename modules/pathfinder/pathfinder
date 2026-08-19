@@ -1,0 +1,89 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#------------------------------------------------------------------------------
+
+###############################################################################
+# Module: pathfinder
+# Description:
+# 	Makes "open ." (and opening any directory) launch Path Finder instead
+# 	of Finder. macOS refuses to let LaunchServices' default handler for
+# 	the public.folder UTI be reassigned away from Finder (confirmed via
+# 	"duti -s ... public.folder all" failing with error -50), so Path
+# 	Finder's own "Set as Default" preference can't make /usr/bin/open
+# 	launch it for folders. This wraps "open" in a shell function instead.
+###############################################################################
+
+__pathfinder_dependencies=( 'mbe' 'platform' )
+
+_pathfinder_load ()
+{
+	DEBUG echo "_pathfinder_load: enter"
+	local module="pathfinder"
+
+	if [[ "${KERNELNAME}" != "Darwin" ]]; then
+		DEBUG echo "_pathfinder_load: not Darwin, skipping"
+		return 0
+	fi
+
+	if [[ ! -d "/Applications/Path Finder.app" ]]; then
+		DEBUG echo "_pathfinder_load: Path Finder.app not found, skipping"
+		return 0
+	fi
+
+	open ()
+	{
+		# Route directories (and bare "open" with no args, which opens ".")
+		# to Path Finder; pass everything else, including any "-flag"
+		# invocation like "open -a Xcode .", straight through to the real
+		# "open" untouched.
+		if [[ "$#" -gt 0 && "$1" == -* ]]; then
+			command open "$@"
+			return $?
+		fi
+
+		if [[ "$#" -eq 0 || -d "$1" ]]; then
+			command open -a "Path Finder" "$@"
+			return $?
+		fi
+
+		command open "$@"
+	}
+
+	DEBUG echo "_pathfinder_load: leave"
+}
+
+_pathfinder_unload ()
+{
+	return 0
+}
+
+_pathfinder_setpath ()
+{
+	:
+}
+
+_pathfinder_info ()
+{
+	echo "Routes \"open\" on directories to Path Finder instead of Finder (Darwin only)."
+}
+
+_pathfinder_complete()
+{
+	COMPREPLY=( )
+	return 0
+}
