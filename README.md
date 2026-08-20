@@ -13,6 +13,49 @@ management invariants), see [CLAUDE.md](CLAUDE.md) — that's the reference
 for writing or editing a module. This README is the pitch and the mental
 model.
 
+## Getting started
+
+```sh
+git clone git@github.com:lfeagan/MBE.git
+cd MBE
+./install          # or ./install -s -- see below
+```
+
+`install` asks you to confirm the target directory (`$HOME` by default),
+then backs up any dotfiles it's about to replace and installs `bashrc`,
+`bash_aliases`, `bash_profile`, `mbe_completion`, and `modules/` into
+`~/.mbe`. Two install modes:
+
+- **Plain (default)** — copies files in. Safe, but if you hand-edit an
+  installed file (e.g. `~/.bashrc`) afterward, the next `./install` detects
+  that drift and skips it rather than clobbering your change (use `-f` to
+  force-overwrite anyway).
+- **`-s` (symlink)** — `~/.bashrc`, `~/.bash_profile`, `~/.bash_aliases`, and
+  every `~/.mbe/modules/<name>` become symlinks back into this checkout, so
+  edits to the repo take effect in your next new shell with no re-install
+  step. This is what you want if you're actively developing modules; keep
+  the checkout in a stable location if you use it, since the symlinks point
+  there directly.
+
+Open a new terminal (or `source ~/.bashrc`) and confirm it worked:
+
+```sh
+mbe list active      # modules loaded in this shell right now
+mbe list info        # every available module + what it does
+```
+
+From there:
+
+- **Change what loads automatically** — edit the `MODULES_INIT` array near
+  the top of `bashrc` (in this checkout, then re-run `./install` if you
+  didn't use `-s`), and open a new shell.
+- **Turn a module on/off for just this shell** — `mbe activate <module>` /
+  `mbe deactivate <module>`, no edit or restart needed.
+- **Tune a module's defaults** — its preferences live in
+  `modules/<name>/<name>.conf`; edit that file directly with your editor.
+- **See what a module actually does before turning it on** — `mbe list
+  info` (or the [Module catalog](#module-catalog) below).
+
 ## The problem this solves
 
 A `.bashrc` that's grown for years across many machines tends to converge on
