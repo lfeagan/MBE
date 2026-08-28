@@ -50,6 +50,8 @@ osh () { shutdown -h now; }
 
 p () { ${PAGER}  "$@"; }
 e () { ${EDITOR} "$@"; }
+nvimmd () { nvim "$@" -c MarkdownPreviewToggle; }
+zettlr () { open -Ra "Zettlr" || { echo "zettlr: Zettlr.app is not installed (try: brew install --cask zettlr)" >&2; return 1; }; open -a "Zettlr" "$@"; }
 
 c () { clear; }
 h () { history "$@"; }
