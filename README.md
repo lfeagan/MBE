@@ -23,6 +23,19 @@ resolves to `/bin/bash` even when your login shell is a newer Homebrew
 bash), `bashrc` detects it and falls back to a bare prompt with a warning
 rather than failing halfway through loading modules.
 
+After `brew install bash`, make it your login shell so new terminal
+windows use it (not just interactive subshells):
+
+```sh
+BREW_BASH="$(brew --prefix)/bin/bash"     # /opt/homebrew/bin/bash on Apple
+                                           # Silicon, /usr/local/bin/bash on Intel
+grep -qxF "${BREW_BASH}" /etc/shells || sudo sh -c "echo ${BREW_BASH} >> /etc/shells"
+chsh -s "${BREW_BASH}"
+```
+
+Then open a new terminal window (not just a new tab in some terminal apps,
+which can reuse the old shell) and confirm with `echo $BASH_VERSION`.
+
 ```sh
 git clone git@github.com:lfeagan/MBE.git
 cd MBE
