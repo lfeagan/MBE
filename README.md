@@ -239,7 +239,7 @@ duplicating it here):
 | `icscope2` | Configures the Informix cscope suite (a ClearCase/Informix version aware framework for cscope access) |
 | `informix` | Tools for retrieving, configuring, and checking out Informix IDS/CSDK builds from a repo (`ifxlist`, `idsconfig`, `idscheckout`, `ifxenv`, ...) |
 | `intelcc` | Configures the Intel C/C++ Compiler Suite |
-| `intellij` | Provides JetBrains IDE launchers (`intellij`, `pycharm`, `webstorm`, ...) and `idea <repo>` to open a matched git repo directly |
+| `intellij` | Provides JetBrains IDE launchers (`intellij`, `pycharm`, `webstorm`, ...), `idea <repo>` to open a matched git repo directly, and `proj <repo>` to cd into it |
 | `java` | Configures Java |
 | `lotusnotes` | Adds `/opt/ibm/lotus/notes` to PATH |
 | `macports` | Enables MacPorts bash completion if installed under `/opt/local` |
