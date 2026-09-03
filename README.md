@@ -15,6 +15,14 @@ model.
 
 ## Getting started
 
+MBE requires bash 4 or later. macOS ships Apple's frozen bash 3.2 as
+`/bin/bash` for licensing reasons, so on a Mac you'll need a newer bash on
+`$PATH` (e.g. `brew install bash`) before installing. If you do end up
+running under bash 3.2 anyway (for example inside `sudo bash`, which
+resolves to `/bin/bash` even when your login shell is a newer Homebrew
+bash), `bashrc` detects it and falls back to a bare prompt with a warning
+rather than failing halfway through loading modules.
+
 ```sh
 git clone git@github.com:lfeagan/MBE.git
 cd MBE
