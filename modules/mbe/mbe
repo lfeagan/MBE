@@ -136,6 +136,8 @@ _mbe_usage ()
 	echo " _mbe_listInactiveModules - Lists the inactive modules in the current environment"
 	echo " _mbe_listAllModules - Lists all modules in the environment"
 	echo " mbe list info - Lists every module with its one-line description"
+	echo " mbe <module> conf - Opens <module>.conf in \$EDITOR"
+	echo " mbe <module> edit - Opens the <module> script itself in \$EDITOR"
 }
 
 ############################################################
@@ -183,6 +185,12 @@ mbe ()
 			return
 		elif [ "$1" == "list" ]; then
 			_mbe_list "$2"
+			return
+		elif [ "$2" == "conf" ]; then
+			_mbe_editModuleConf "$1"
+			return
+		elif [ "$2" == "edit" ]; then
+			_mbe_editModule "$1"
 			return
 		else
 			local module_name=$1

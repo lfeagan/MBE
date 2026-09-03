@@ -81,8 +81,9 @@ _intellij_findrepo ()
 {
 	# Shared by "idea" and "proj": resolves <repo-name> to a single git repo
 	# path by substring match, searched across INTELLIJ_IDEA_SEARCH_ROOTS up to
-	# 4 levels deep. On a unique match, echoes the path to stdout. On multiple
-	# matches, prompts (on stderr/tty) and echoes the chosen path to stdout.
+	# INTELLIJ_IDEA_SEARCH_DEPTH levels deep. On a unique match, echoes the
+	# path to stdout. On multiple matches, prompts (on stderr/tty) and echoes
+	# the chosen path to stdout.
 	# All diagnostic/prompt output goes to stderr so callers can safely capture
 	# the resolved path via command substitution. $2 is the caller's command
 	# name, used only in the usage message.
@@ -98,7 +99,7 @@ _intellij_findrepo ()
 		[ -d "${root}" ] || continue
 		while IFS= read -r dir; do
 			[ -e "${dir}/.git" ] && matches+=("${dir}")
-		done < <(find "${root}" -mindepth 1 -maxdepth 4 -type d -iname "*${query}*" 2>/dev/null | sort)
+		done < <(find "${root}" -mindepth 1 -maxdepth "${INTELLIJ_IDEA_SEARCH_DEPTH:-4}" -type d -iname "*${query}*" 2>/dev/null | sort)
 	done
 
 	if [ "${#matches[@]}" -eq 0 ]; then
