@@ -21,7 +21,14 @@
 # background if it is missing or older than PROMPT_WEATHER_REFRESH_SECONDS.
 # Always returns immediately -- never blocks the prompt on the network.
 
-url="${PROMPT_WEATHER_URL:-wttr.in/?format=3}"
+# wttr.in defaults to the units of the IP's geolocation (Fahrenheit for US IPs) unless told
+# otherwise via a "u" (USCS/Fahrenheit) or "m" (metric/Celsius) query param.
+case "${PROMPT_WEATHER_UNITS:-f}" in
+	c) unitparam="&m" ;;
+	f) unitparam="&u" ;;
+	*) unitparam="" ;;
+esac
+url="${PROMPT_WEATHER_URL:-wttr.in/?format=3}${unitparam}"
 maxage="${PROMPT_WEATHER_REFRESH_SECONDS:-3600}"
 cachedir="${MBE_DIR:-${HOME}/.mbe}/cache"
 cachefile="${cachedir}/weather"

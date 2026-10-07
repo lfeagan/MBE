@@ -160,10 +160,10 @@ _prompt_complete()
 {
 	local opts
 	COMPREPLY=( )
-	opts="swcolor weatheron weatheroff"
+	opts="swcolor weatheron weatheroff weatherc weatherf"
 
 	case "${prev}" in
-		swcolor|weatheron|weatheroff)
+		swcolor|weatheron|weatheroff|weatherc|weatherf)
 			COMPREPLY=( )
 			return 0
 			;;
@@ -191,4 +191,17 @@ _prompt_weatheron ()
 _prompt_weatheroff ()
 {
 	export PROMPT_WEATHER_ENABLE="0"
+}
+
+_prompt_weatherc ()
+{
+	export PROMPT_WEATHER_UNITS="c"
+	# Cached reading is in the old units until it ages out -- drop it so the next prompt refetches.
+	rm -f "${MBE_DIR:-${HOME}/.mbe}/cache/weather"
+}
+
+_prompt_weatherf ()
+{
+	export PROMPT_WEATHER_UNITS="f"
+	rm -f "${MBE_DIR:-${HOME}/.mbe}/cache/weather"
 }
