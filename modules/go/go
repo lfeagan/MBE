@@ -1,0 +1,73 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+
+###############################################################################
+# Module: go
+# Description:
+# 	Adds the directory where "go install" places binaries into PATH.
+# 	Follows the Go toolchain's own resolution order: $GOBIN, then the first
+# 	entry of $GOPATH plus /bin, then the default of $HOME/go/bin.
+###############################################################################
+
+__go_dependencies=( 'mbe' )
+
+_go_load ()
+{
+	DEBUG echo "_go_load: enter"
+	local module="go"
+
+	DEBUG echo "_go_load: leave"
+}
+
+_go_unload ()
+{
+	return 0
+}
+
+_go_bindir ()
+{
+	if [ -n "${GOBIN}" ]; then
+		echo "${GOBIN}"
+	elif [ -n "${GOPATH}" ]; then
+		echo "${GOPATH%%:*}/bin"
+	else
+		echo "${HOME}/go/bin"
+	fi
+}
+
+_go_setpath ()
+{
+	local bindir
+	bindir="$(_go_bindir)"
+	if [ -d "${bindir}" ]; then
+		PATH="${bindir}:${PATH}"
+	fi
+}
+
+_go_info ()
+{
+	echo -e "adds the Go install bin directory (\$GOBIN, \$GOPATH/bin, or \$HOME/go/bin) to \$PATH"
+}
+
+_go_complete()
+{
+	COMPREPLY=( )
+	return 0
+}

@@ -254,6 +254,7 @@ duplicating it here):
 | `eclipse` | Configures and launches Eclipse-family IDEs with the right JVM/bits/locale (`mbe eclipse config\|run\|list\|cd\|cdworkspace`) |
 | `gcc` | Configures the GNU C compiler |
 | `git` | Installs git via Homebrew if missing; adds log-graph aliases (`glgga`, `glods`) |
+| `go` | Adds the Go install bin directory (`$GOBIN`, `$GOPATH/bin`, or `$HOME/go/bin`) to `$PATH` |
 | `homebin` | Adds `$HOME/bin` to `$PATH` |
 | `homebrew` | Wires up Homebrew's PATH/MANPATH/INFOPATH via `brew shellenv`; other modules use `_homebrew_ensureInstalled` to install formulas on demand |
 | `ibmxlc` | Configures the IBM XL C/C++ Compiler |
@@ -278,6 +279,7 @@ duplicating it here):
 | `rar` | Adds the 32-bit RAR archiver tools (under `TOOLSPATH32`) to PATH |
 | `rtc` | Configures IBM Rational Team Concert's Command-Line SCM Tools |
 | `sauerbraten` | Launches the Sauerbraten game (`run`) with optional console logging and Mumble overlay support |
+| `rust` | Adds `$CARGO_HOME/bin` (default `$HOME/.cargo/bin`) to `$PATH` |
 | `sbin` | Configures various `sbin` paths (`/sbin`, `/usr/sbin`, `/usr/local/sbin`, `/opt/local/sbin`) |
 | `scite` | Configures the path to the SciTE editor |
 | `sdkman` | Wires up SDKMAN (owns `JAVA_HOME`/PATH for Java, Maven, Gradle, etc.) |
