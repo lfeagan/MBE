@@ -56,7 +56,7 @@ fi
 ################################
 export MBE_DIR="${HOME}/.mbe"
 export MODULES_DIR="${MBE_DIR}/modules"
-export MODULES_INIT=("mbe" "platform" "utils" "colors" "prompt" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "informix" "intellij" "sdkman" "homebrew" "go" "rust" "msyteclaude" "pathfinder" )
+export MODULES_INIT=("mbe" "platform" "utils" "colors" "prompt" "homebin" "icscope2" "netclient" "opengl" "openwin" "rar" "sbin" "scite" "sunstudio" "userid" "usrlocalbin" "vim" "informix" "intellij" "sdkman" "homebrew" "go" "rust" "postgresql" "msyteclaude" "pathfinder" )
 # eclipse/java/maven removed above: they set JAVA_HOME/PATH themselves and fight with sdkman,
 # which now owns those variables. Still available via "mbe activate <name>" if ever needed --
 # note eclipse pulls java back in as a dependency when activated, so JAVA_HOME will be
@@ -249,7 +249,7 @@ if [ "${BASH_VERSINFO[0]}" -ge 3 ]; then
 	complete -A file -A directory -A group chgrp
 	complete -o default -W 'Makefile' -P '-o ' qmake
 	complete -A command man which whatis whereis sudo info apropos
-	complete -A file {,z}cat pico nano vi {,{,r}g,e,r}vi{m,ew} vimdiff elvis emacs {,r}ed e{,x} joe jstar jmacs rjoe jpico {,z}less {,z}more p{,g}
+	complete -A file {,z}cat pico nano vi {,{,r}g,e,r}vi{m,ew} vimdiff elvis emacs {,r}ed e{,x} joe jstar jmacs rjoe jpico {,z}less {,z}more p
 fi
 
 ############################

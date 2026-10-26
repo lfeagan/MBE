@@ -1,0 +1,91 @@
+#!/bin/bash
+# vim: set tabstop=2 shiftwidth=2 autoindent smartindent:
+
+#------------------------------------------------------------------------------
+# Copyright 2009 Lance W. Feagan
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+#------------------------------------------------------------------------------
+
+
+###############################################################################
+# Module: postgresql
+# Description:
+# 	Defines pg, a short wrapper around psql that connects using a named
+# 	service from ~/.pg_service.conf (or $PGSERVICEFILE). Passwords are
+# 	still supplied by ~/.pgpass.
+###############################################################################
+
+__postgresql_dependencies=( 'mbe' )
+
+_postgresql_load ()
+{
+	DEBUG echo "_postgresql_load: enter"
+	local module="postgresql"
+
+	complete -o default -F _postgresql_pgcomplete pg
+
+	DEBUG echo "_postgresql_load: leave"
+}
+
+_postgresql_unload ()
+{
+	complete -r pg 2>/dev/null
+	return 0
+}
+
+_postgresql_setpath ()
+{
+	:
+}
+
+# pg <service> [psql args...]
+# e.g. pg schemata -c 'select 1'
+pg ()
+{
+	if [ $# -lt 1 ]; then
+		echo "usage: pg <service> [psql args...]" >&2
+		return 1
+	fi
+	psql "service=$1" "${@:2}"
+}
+
+# Lists the service names defined in the connection service file.
+_postgresql_services ()
+{
+	local file="${PGSERVICEFILE:-${HOME}/.pg_service.conf}"
+	[ -r "${file}" ] || file="${PGSYSCONFDIR:-/etc/postgresql-common}/pg_service.conf"
+	[ -r "${file}" ] || return 0
+	sed -n 's/^[[:space:]]*\[\([^]]*\)\].*/\1/p' "${file}"
+}
+
+# Completes the first argument of pg with service names.
+_postgresql_pgcomplete ()
+{
+	COMPREPLY=( )
+	if [ "${COMP_CWORD}" -eq 1 ]; then
+		mapfile -t COMPREPLY < <(compgen -W "$(_postgresql_services)" -- "${COMP_WORDS[COMP_CWORD]}")
+	fi
+	return 0
+}
+
+_postgresql_info ()
+{
+	echo -e "defines pg <service> [psql args...], shorthand for psql \"service=<service>\""
+}
+
+_postgresql_complete()
+{
+	COMPREPLY=( )
+	return 0
+}

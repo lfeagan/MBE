@@ -275,6 +275,7 @@ duplicating it here):
 | `pathfinder` | Routes `open` on directories to Path Finder instead of Finder (Darwin only) |
 | `perl` | Configures Perl |
 | `platform` | Detects `KERNELNAME`/`KERNELBITS`/`CPUTYPE`/`PLATFORMPATH`/`TOOLSPATH` across OSes; near-universal dependency for other modules |
+| `postgresql` | Defines `pg <service> [psql args...]`, shorthand for `psql service=<service>` using `~/.pg_service.conf` |
 | `prompt` | Configures PS1 (colors, titlebar, weather) based on light/dark terminal background detection |
 | `rar` | Adds the 32-bit RAR archiver tools (under `TOOLSPATH32`) to PATH |
 | `rtc` | Configures IBM Rational Team Concert's Command-Line SCM Tools |
