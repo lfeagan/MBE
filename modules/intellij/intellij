@@ -65,10 +65,11 @@ _intellij_setpath ()
 android-studio () { open -a "Android Studio" "$@"; }
 clion () { open -a "CLion" "$@"; }
 datagrip () { open -a "DataGrip" "$@"; }
-goland () { open -a "GoLand" "$@"; }
+goland () { _intellij_launch "GoLand" goland "$@"; }
 intellij () { open -a "IntelliJ IDEA" "$@"; }
 phpstorm () { open -a "PhpStorm" "$@"; }
 pycharm () { open -a "PyCharm" "$@"; }
+rustrover () { _intellij_launch "RustRover" rustrover "$@"; }
 toolbox () { open -a "JetBrains Toolbox" "$@"; }
 webstorm () { open -a "WebStorm" "$@"; }
 
@@ -122,6 +123,24 @@ _intellij_findrepo ()
 			echo "Invalid selection." >&2
 			return 1
 		fi
+	fi
+}
+
+_intellij_launch ()
+{
+	# Launcher for IDEs that also accept a repo name. A lone argument that isn't
+	# a flag or an existing path is resolved via _intellij_findrepo; anything
+	# else (no args, a path, flags) goes straight to "open -a" as usual.
+	# $1 is the app name, $2 the command name (for the usage message).
+	local app="$1" cmd="$2"
+	shift 2
+	if [ $# -eq 1 ] && [[ "$1" != -* ]] && [ ! -e "$1" ]; then
+		local match
+		match="$(_intellij_findrepo "$1" "${cmd}")" || return 1
+		echo "Opening ${match}"
+		open -na "${app}" --args "${match}"
+	else
+		open -a "${app}" "$@"
 	fi
 }
 
