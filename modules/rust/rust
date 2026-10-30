@@ -23,9 +23,11 @@
 # Description:
 # 	Adds the Cargo bin directory (where "cargo install" and rustup place
 # 	binaries) into PATH. Honors $CARGO_HOME, defaulting to $HOME/.cargo.
+# 	Also adds Homebrew's keg-only rustup bin directory, which holds the
+# 	cargo/rustc proxies when rustup was installed via "brew install rustup".
 ###############################################################################
 
-__rust_dependencies=( 'mbe' )
+__rust_dependencies=( 'mbe' 'homebrew' )
 
 _rust_load ()
 {
@@ -46,11 +48,18 @@ _rust_setpath ()
 	if [ -d "${bindir}" ]; then
 		PATH="${bindir}:${PATH}"
 	fi
+
+	# Homebrew's rustup formula is keg-only, so its proxies are not linked
+	# into ${HOMEBREW_PREFIX}/bin; they only exist under opt/rustup/bin.
+	# HOMEBREW_PREFIX is set once by the homebrew module's _load.
+	if [ -n "${HOMEBREW_PREFIX}" ] && [ -d "${HOMEBREW_PREFIX}/opt/rustup/bin" ]; then
+		PATH="${HOMEBREW_PREFIX}/opt/rustup/bin:${PATH}"
+	fi
 }
 
 _rust_info ()
 {
-	echo -e "adds \$CARGO_HOME/bin (default \$HOME/.cargo/bin) to \$PATH"
+	echo -e "adds \$CARGO_HOME/bin (default \$HOME/.cargo/bin) and Homebrew's rustup bin to \$PATH"
 }
 
 _rust_complete()
