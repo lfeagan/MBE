@@ -42,6 +42,18 @@ _homebrew_load ()
 	HOMEBREW_BREWBIN="$(_homebrew_findbrew)"
 	if [ -n "${HOMEBREW_BREWBIN}" ]; then
 		HOMEBREW_PREFIX="$("${HOMEBREW_BREWBIN}" --prefix)"
+
+		# Formulas drop their bash completions into etc/bash_completion.d,
+		# which only gets sourced if the bash-completion@2 formula is
+		# installed (see _setpath). If it isn't, source them directly so
+		# we don't require that extra dependency. Done here rather than in
+		# _setpath so it doesn't re-run on every path rebuild.
+		if [ ! -f "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ] && [ -d "${HOMEBREW_PREFIX}/etc/bash_completion.d" ]; then
+			local completion
+			for completion in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
+				[ -r "${completion}" ] && . "${completion}"
+			done
+		fi
 	fi
 
 	DEBUG echo "_homebrew_load: leave"
